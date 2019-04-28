@@ -41,6 +41,7 @@ public class GSIProfile {
      * Refer to class documentation and setters for setting other properties.
      *
      * @param uri the URI of the server, including port and protocol
+     * @throws NullPointerException if the provided {@code uri} argument is null
      */
     public GSIProfile(String uri) {
         setURI(uri);
@@ -50,8 +51,12 @@ public class GSIProfile {
     /**
      * @param uri the URI of the server to send state data to
      * @return this current object
+     * @throws NullPointerException if the provided {@code uri} argument is null
      */
     public GSIProfile setURI(String uri) {
+        if(uri == null)
+            throw new NullPointerException("URI argument cannot be null");
+        
         this.uri = uri;
         return this;
     }
