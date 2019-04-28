@@ -21,14 +21,14 @@ import java.util.Set;
  * supported data components:
  *
  * <pre>
- *  GSIConfig profile = new GSIConfig("http://127.0.0.1:80")
+ *  GSIProfile profile = new GSIProfile("http://127.0.0.1:80")
  *          .setTimeoutPeriod(1.0)
  *          .setBufferPeriod(0.5)
  *          .addAuthToken("token", "Q79v5tcxVQ8u")
  *          .setDataComponents(EnumSet.allOf(DataComponent.class));
  * </pre></p>
  */
-public class GSIConfig {
+public class GSIProfile {
     
     private String uri, description;
     private Map<String, String> authData = new HashMap<>();
@@ -42,7 +42,7 @@ public class GSIConfig {
      *
      * @param uri the URI of the server, including port and protocol
      */
-    public GSIConfig(String uri) {
+    public GSIProfile(String uri) {
         setURI(uri);
     }
     
@@ -51,7 +51,7 @@ public class GSIConfig {
      * @param uri the URI of the server to send state data to
      * @return this current object
      */
-    public GSIConfig setURI(String uri) {
+    public GSIProfile setURI(String uri) {
         this.uri = uri;
         return this;
     }
@@ -74,7 +74,7 @@ public class GSIConfig {
      * @param authData the new map of auth tokens, or null
      * @return this current object
      */
-    public GSIConfig setAuthTokens(Map<String, String> authData) {
+    public GSIProfile setAuthTokens(Map<String, String> authData) {
         this.authData = authData == null
                 ? new HashMap<>() //Ensure stored value isn't null
                 : new HashMap<>(authData); //Clone map
@@ -88,7 +88,7 @@ public class GSIConfig {
      * @param token the associated value, or null to remove the key
      * @return this current object
      */
-    public GSIConfig setAuthToken(String key, String token) {
+    public GSIProfile setAuthToken(String key, String token) {
         if(key == null)
             throw new IllegalArgumentException("Auth token key cannot be null");
         
@@ -114,7 +114,7 @@ public class GSIConfig {
      * @param desc the service description
      * @return this current object
      */
-    public GSIConfig setDescription(String desc) {
+    public GSIProfile setDescription(String desc) {
         this.description = desc;
         return this;
     }
@@ -142,7 +142,7 @@ public class GSIConfig {
      * @return this current object
      * @see <a href="https://developer.valvesoftware.com/wiki/Counter-Strike:_Global_Offensive_Game_State_Integration">Valve Developer Community</a>
      */
-    public GSIConfig setTimeoutPeriod(Double timeout) {
+    public GSIProfile setTimeoutPeriod(Double timeout) {
         this.timeout = timeout;
         return this;
     }
@@ -170,7 +170,7 @@ public class GSIConfig {
      * @return this current object
      * @see <a href="https://developer.valvesoftware.com/wiki/Counter-Strike:_Global_Offensive_Game_State_Integration">Valve Developer Community</a>
      */
-    public GSIConfig setBufferPeriod(Double buffer) {
+    public GSIProfile setBufferPeriod(Double buffer) {
         this.buffer = buffer;
         return this;
     }
@@ -197,7 +197,7 @@ public class GSIConfig {
      * @return this current object
      * @see <a href="https://developer.valvesoftware.com/wiki/Counter-Strike:_Global_Offensive_Game_State_Integration">Valve Developer Community</a>
      */
-    public GSIConfig setThrottlePeriod(Double throttle) {
+    public GSIProfile setThrottlePeriod(Double throttle) {
         this.throttle = throttle;
         return this;
     }
@@ -224,7 +224,7 @@ public class GSIConfig {
      * @return this current object
      * @see <a href="https://developer.valvesoftware.com/wiki/Counter-Strike:_Global_Offensive_Game_State_Integration">Valve Developer Community</a>
      */
-    public GSIConfig setHeartbeatPeriod(Double heartbeat) {
+    public GSIProfile setHeartbeatPeriod(Double heartbeat) {
         this.heartbeat = heartbeat;
         return this;
     }
@@ -248,7 +248,7 @@ public class GSIConfig {
      * @param reportedData the new set of data components to be sent, or null
      * @return this current object
      */
-    public GSIConfig setDataComponents(Set<DataComponent> reportedData) {
+    public GSIProfile setDataComponents(Set<DataComponent> reportedData) {
         this.dataComponents = reportedData != null
                 ? EnumSet.copyOf(reportedData)
                 : EnumSet.noneOf(DataComponent.class);
@@ -258,9 +258,9 @@ public class GSIConfig {
     /**
      * Adds the specified data component to the current list, which will be sent by the client.
      * @param reportedData the data component
-     * @return
+     * @return this current object
      */
-    public GSIConfig addDataComponent(DataComponent reportedData) {
+    public GSIProfile addDataComponent(DataComponent reportedData) {
         this.dataComponents.add(reportedData);
         return this;
     }
@@ -320,7 +320,7 @@ public class GSIConfig {
     
     /**
      * <p>Creates or replaces a configuration file within the specified directory for the provided
-     * {@link GSIConfig} object.</p>
+     * {@link GSIProfile} object.</p>
      *
      * <p>The provided service name should be unique and represent your application or organisation,
      * and must conform with file naming standards.</p>
@@ -330,7 +330,7 @@ public class GSIConfig {
      * @param serviceName   the name of the service
      * @throws IOException  if the file cannot be written to
      */
-    public static void createConfig(Path dir, GSIConfig config, String serviceName) throws IOException {
+    public static void createConfig(Path dir, GSIProfile config, String serviceName) throws IOException {
         if(!Files.exists(dir))
             throw new FileNotFoundException("Path argument is not an existing directory");
         if(!Files.isDirectory(dir))
@@ -347,8 +347,8 @@ public class GSIConfig {
      *
      * @param dir           the directory of the profile configuration
      * @param serviceName   the identifying service name of the profile
-     * @return whether the file was successfully removed
-     * @throws IOException
+     * @return true if the file was successfully removed
+     * @throws IOException if the file could not be removed
      */
     public static boolean removeConfig(Path dir, String serviceName) throws IOException {
         if(!Files.exists(dir))
