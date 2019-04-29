@@ -1,5 +1,6 @@
 package uk.oczadly.karl.csgsi.config;
 
+import uk.oczadly.karl.csgsi.util.SteamLibraryException;
 import uk.oczadly.karl.csgsi.util.SteamUtils;
 
 import java.io.*;
@@ -14,7 +15,7 @@ import java.util.Set;
  * <p>This class represents a series of parameters used in the game state profile configuration, and provides static
  * utilities for creating and deleting these profiles.</p>
  *
- * <p>The class follows a similar model to the builder pattern, whereby each optional parameter can be set by calling
+ * <p>The class follows a similar design to the builder pattern, whereby each optional parameter can be set by calling
  * the appropriate setter methods (which return the current instance). Mandatory parameters (callback URI) are passed
  * within the class constructor.</p>
  *
@@ -26,7 +27,9 @@ import java.util.Set;
  *          .setBufferPeriod(0.5)
  *          .addAuthToken("password", "Q79v5tcxVQ8u")
  *          .setDataComponents(EnumSet.allOf(DataComponent.class));
- * </pre></p>
+ * </pre>
+ * Profiles can then be created and written to the system using the {@link #createConfig(Path, GSIProfile, String)}
+ * static method (refer to method documentation).</p>
  */
 public class GSIProfile {
     
@@ -328,8 +331,26 @@ public class GSIProfile {
      * object. The provided service name should be unique and represent your application or organisation, and must
      * conform with universal file naming standards (ie. no special characters).</p>
      *
-     * <p>The directory parameter can be passed the result from the {@link SteamUtils#findCsgoConfigFolder()} method,
-     * which will automatically locate this for you.</p>
+     * <p>The {@code dir} parameter can be passed the value returned from {@link SteamUtils#findCsgoConfigFolder()},
+     * which will automatically locate this folder on the current system for you. Be aware that the utility method can
+     * return null if no CS:GO directory is found, and throw a {@link SteamLibraryException} if no valid Steam
+     * installation can be found on the system. The following example demonstrates how to create and write a configuration
+     * file to the system:
+     * <pre>
+     *  GSIProfile profile = ... //Create profile here
+     *
+     *  try {
+     *      Path configPath = SteamUtils.findCsgoConfigFolder();
+     *      if (configPath != null) {
+     *          GSIProfile.createConfig(configPath, profile, "myservice");
+     *          System.out.println("Profile successfully created!");
+     *      } else {
+     *          System.out.println("Couldn't locate CS:GO directory");
+     *      }
+     *  } catch (SteamLibraryException e) {
+     *      System.out.println("Couldn't locate Steam installation directory");
+     *  }
+     * </pre></p>
      *
      * @param dir           the directory in which the file is created
      * @param config        the profile configuration object
@@ -353,7 +374,7 @@ public class GSIProfile {
      * <p>Removes a configuration file in the provided directory, if it exists.</p>
      *
      * <p>The directory parameter can be passed the result from the {@link SteamUtils#findCsgoConfigFolder()} method,
-     * which will automatically locate this for you.</p>
+     * which will attempt to automatically locate the directory for you.</p>
      *
      * @param dir           the directory of the profile configuration
      * @param serviceName   the identifying service name of the profile
