@@ -1,5 +1,7 @@
 package uk.oczadly.karl.csgsi.config;
 
+import uk.oczadly.karl.csgsi.util.SteamUtils;
+
 import java.io.*;
 import java.nio.charset.Charset;
 import java.nio.file.*;
@@ -9,22 +11,20 @@ import java.util.Map;
 import java.util.Set;
 
 /**
- * <p>This class represents a series of parameters used in the game state profile configuration,
- * and provides static utilities for creating and deleting these profiles.</p>
+ * <p>This class represents a series of parameters used in the game state profile configuration, and provides static
+ * utilities for creating and deleting these profiles.</p>
  *
- * <p>The class follows a similar model to the builder pattern, whereby each optional parameter
- * can be set by calling the appropriate setter methods (which return the current instance).
- * Mandatory parameters (callback URI) are passed within the class constructor.</p>
+ * <p>The class follows a similar model to the builder pattern, whereby each optional parameter can be set by calling
+ * the appropriate setter methods (which return the current instance). Mandatory parameters (callback URI) are passed
+ * within the class constructor.</p>
  *
- * <p>The following example demonstrates how to configure a profile with a local receiver on port
- * 80 with a timeout of 1s, a buffer of 500ms, an authentication value "token", and receives all
- * supported data components:
- *
+ * <p>The following example demonstrates how to configure a profile with a local receiver on port 80 with a timeout of
+ * 1 second, a buffer of 500ms, an authentication value "password", and receives all supported data components:
  * <pre>
  *  GSIProfile profile = new GSIProfile("http://127.0.0.1:80")
  *          .setTimeoutPeriod(1.0)
  *          .setBufferPeriod(0.5)
- *          .addAuthToken("token", "Q79v5tcxVQ8u")
+ *          .addAuthToken("password", "Q79v5tcxVQ8u")
  *          .setDataComponents(EnumSet.allOf(DataComponent.class));
  * </pre></p>
  */
@@ -38,7 +38,7 @@ public class GSIProfile {
     
     /**
      * Constructs a new GSI configuration object with the specified URI.
-     * Refer to class documentation and setters for setting other properties.
+     * Refer to class documentation and setter methods for configuring other properties.
      *
      * @param uri the URI of the server, including port and protocol
      * @throws NullPointerException if the provided {@code uri} argument is null
@@ -70,11 +70,9 @@ public class GSIProfile {
     
     
     /**
-     * Sets the auth token to a specified map of {@link String} elements. The map will be
-     * cloned when calling this method, so future changes to the provided map won't change
-     * the state of this object.
-     *
-     * If a null value is passed, the method will generate an empty {@link Map} instance.
+     * Sets the auth token to a specified map of {@link String} elements. The map will be copied when calling this
+     * method, so future changes to the provided map won't change the state of this object. If a null value is passed,
+     * the method will generate an empty {@link Map} instance.
      *
      * @param authData the new map of auth tokens, or null
      * @return this current object
@@ -114,8 +112,9 @@ public class GSIProfile {
     
     
     /**
-     * Sets the description of the configuration. Has no effect on the profile other than
-     * being included within the file for the user's reference.
+     * Sets the description of the configuration. Has no effect on the profile other than being included within the
+     * file for the user's reference.
+     *
      * @param desc the service description
      * @return this current object
      */
@@ -244,11 +243,9 @@ public class GSIProfile {
     
     
     /**
-     * Sets the which data values will be sent by the client. The set will be
-     * cloned when calling this method, so future changes to the provided set won't change
-     * the state of this object.
-     *
-     * If a null value is passed, the method will generate an empty {@link EnumSet} instance.
+     * Sets the which data values will be sent by the client. The set will be copied when calling this method, so future
+     * changes to the provided set won't change the state of this object. If a null value is passed, the method will
+     * generate an empty {@link EnumSet} instance.
      *
      * @param reportedData the new set of data components to be sent, or null
      * @return this current object
@@ -262,6 +259,7 @@ public class GSIProfile {
     
     /**
      * Adds the specified data component to the current list, which will be sent by the client.
+     *
      * @param reportedData the data component
      * @return this current object
      */
@@ -279,13 +277,15 @@ public class GSIProfile {
     
     
     /**
-     * Generates a valid profile configuration from the current set parameter values and outputs
-     * it to the provided {@link PrintWriter} object.
+     * Generates a valid profile configuration from the current set parameter values and outputs it to the provided
+     * {@link PrintWriter} object.
      *
      * @param writer the {@link PrintWriter} to write the configuration to
      */
     public void generate(PrintWriter writer) {
-        writer.println("\"" + (this.getDescription() != null ? this.getDescription().replace("\"", "\\\"") : "") + "\" {");
+        writer.println("\""
+                + (this.getDescription() != null ? this.getDescription().replace("\"", "\\\"") : "") //Escape quotes
+                + "\" {");
         
         appendParameter(writer, "uri", this.getURI());
         appendParameter(writer, "timeout", this.getTimeoutPeriod());
@@ -324,16 +324,18 @@ public class GSIProfile {
     
     
     /**
-     * <p>Creates or replaces a configuration file within the specified directory for the provided
-     * {@link GSIProfile} object.</p>
+     * <p>Creates or replaces a configuration file within the specified directory for the provided {@link GSIProfile}
+     * object. The provided service name should be unique and represent your application or organisation, and must
+     * conform with universal file naming standards (ie. no special characters).</p>
      *
-     * <p>The provided service name should be unique and represent your application or organisation,
-     * and must conform with file naming standards.</p>
+     * <p>The directory parameter can be passed the result from the {@link SteamUtils#findCsgoConfigFolder()} method,
+     * which will automatically locate this for you.</p>
      *
      * @param dir           the directory in which the file is created
      * @param config        the profile configuration object
      * @param serviceName   the name of the service
      * @throws IOException  if the file cannot be written to
+     * @see SteamUtils#findCsgoConfigFolder()
      */
     public static void createConfig(Path dir, GSIProfile config, String serviceName) throws IOException {
         if(!Files.exists(dir))
@@ -348,12 +350,16 @@ public class GSIProfile {
     }
     
     /**
-     * Removes a configuration file in the provided directory, if it exists.
+     * <p>Removes a configuration file in the provided directory, if it exists.</p>
+     *
+     * <p>The directory parameter can be passed the result from the {@link SteamUtils#findCsgoConfigFolder()} method,
+     * which will automatically locate this for you.</p>
      *
      * @param dir           the directory of the profile configuration
      * @param serviceName   the identifying service name of the profile
      * @return true if the file was successfully removed
      * @throws IOException if the file could not be removed
+     * @see SteamUtils#findCsgoConfigFolder()
      */
     public static boolean removeConfig(Path dir, String serviceName) throws IOException {
         if(!Files.exists(dir))
