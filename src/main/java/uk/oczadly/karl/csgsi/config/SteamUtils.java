@@ -10,14 +10,14 @@ import java.util.Set;
 
 public class SteamUtils {
     
-    /** Installation folder name */
+    // Installation folder name
     private static final String CSGO_DIR_NAME = "Counter-Strike Global Offensive";
-    /** Config path relative to game dir */
+    // Config path relative to game dir
     private static final String CSGO_CONFIG_PATH = "csgo/cfg";
     
-    /** Relative folder for list of game library dirs */
+    // Relative folder for list of game library dirs
     private static final String STEAM_LIBRARY_FOLDERS = "steamapps/libraryfolders.vdf";
-    /** Relative folder for game install dirs */
+    // Relative folder for game install dirs
     private static final String STEAM_APPS_FOLDER = "steamapps/common";
     
     
@@ -41,24 +41,22 @@ public class SteamUtils {
                 //Attempt to read from registry
                 String regVal = readWinRegValue("HKEY_CURRENT_USER\\Software\\Valve\\Steam", "SteamPath");
                 
-                if (regVal != null) {
-                    //Directory found in registry, use
-                    return Paths.get(regVal);
-                } else {
-                    //Registry value not found, use common path
-                    foundPath = Paths.get("C:\\Program Files (x86)\\Steam");
-                    if (!Files.isDirectory(foundPath)) {
-                        //Not found, try 32 bit version
-                        foundPath = Paths.get("C:\\Program Files\\Steam");
-                    }
+                if (regVal != null)
+                    return Paths.get(regVal); //Directory found in registry
+                
+                //Registry value not found, use common 64-bit path
+                foundPath = Paths.get("C:\\Program Files (x86)\\Steam");
+                if (!Files.isDirectory(foundPath)) {
+                    //Not found, try 32-bit version
+                    foundPath = Paths.get("C:\\Program Files\\Steam");
                 }
             } else if (os.contains("mac")) { //Mac
                 foundPath = Paths.get(System.getProperty("user.home"), "Library/Application Support/Steam"); //TODO Untested(?)
             } else { //Unknown OS type
                 throw new SteamLibraryException("Unknown or unsupported operating system \"" + os + "\".");
             }
-        } catch (InvalidPathException e1) {
-            throw new SteamLibraryException("Expected Steam path was rejected by the filesystem.", e1);
+        } catch (InvalidPathException e) {
+            throw new SteamLibraryException("Expected Steam path was rejected by the filesystem.", e);
         }
         
         if (!Files.isDirectory(foundPath))
@@ -112,10 +110,10 @@ public class SteamUtils {
                 
                 return paths;
             } catch (IOException e) {
-                throw new SteamLibraryException("Unable to read Steam's library file.", e);
+                throw new SteamLibraryException("Unable to read the Steam library configuration file.", e);
             }
         } else {
-            throw new SteamLibraryException("Failed to locate Steam's library file.");
+            throw new SteamLibraryException("Failed to locate the Steam library configuration file.");
         }
     }
     
@@ -136,7 +134,7 @@ public class SteamUtils {
                 return gamePath; //File exists as valid directory, return
             }
         }
-        return null;
+        return null; //No dir found, return null
     }
     
     
@@ -169,14 +167,10 @@ public class SteamUtils {
             reader.close();
             proc.destroy();
             
-            if (line != null) {
+            if (line != null)
                 return line.substring(line.indexOf("REG_SZ") + 10);
-            } else {
-                return null;
-            }
-        } catch (IOException e2) {
-            return null;
-        }
+        } catch (IOException ignored) {}
+        return null;
     }
 
 }
