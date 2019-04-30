@@ -78,6 +78,7 @@ public class SteamUtils {
     public static Set<Path> getSteamLibraries() throws SteamDirectoryException {
         Path steamDir = getSteamInstallDirectory();
         Path libFile = steamDir.resolve(STEAM_LIBRARY_FOLDERS);
+        
         if (Files.exists(libFile)) {
             try {
                 Set<Path> paths = new HashSet<>();
@@ -128,7 +129,7 @@ public class SteamUtils {
      * @throws SteamDirectoryException if no Steam installation or library directories are located
      */
     public static Path findApplicationDirectoryByName(String name) throws SteamDirectoryException {
-        for(Path p : getSteamLibraries()) {
+        for (Path p : getSteamLibraries()) {
             Path gamePath = p.resolve(STEAM_APPS_FOLDER).resolve(name);
             if (Files.isDirectory(gamePath)) {
                 return gamePath; //File exists as valid directory, return
