@@ -1,6 +1,4 @@
-package uk.oczadly.karl.csgsi.util;
-
-import uk.oczadly.karl.csgsi.config.GSIProfile;
+package uk.oczadly.karl.csgsi.config;
 
 import java.io.*;
 import java.nio.file.Files;

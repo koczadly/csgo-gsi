@@ -1,4 +1,4 @@
-package uk.oczadly.karl.csgsi.util;
+package uk.oczadly.karl.csgsi.config;
 
 public class SteamLibraryException extends Exception {
     

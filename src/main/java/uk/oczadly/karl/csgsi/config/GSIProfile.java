@@ -1,8 +1,5 @@
 package uk.oczadly.karl.csgsi.config;
 
-import uk.oczadly.karl.csgsi.util.SteamLibraryException;
-import uk.oczadly.karl.csgsi.util.SteamUtils;
-
 import java.io.*;
 import java.nio.charset.Charset;
 import java.nio.file.*;
