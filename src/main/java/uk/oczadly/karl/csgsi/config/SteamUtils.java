@@ -25,12 +25,12 @@ public class SteamUtils {
      * <p>Obtains the primary installation directory for the Steam client on this computer system.</p>
      * <p>Currently this method is only supported on Windows, Linux and Macintosh operating systems due to
      * complications and restrictions between the various different filesystem. If an unsupported OS is detected,
-     * the method will throw a {@link SteamLibraryException}.</p>
+     * the method will throw a {@link SteamDirectoryException}.</p>
      *
      * @return the Steam installation directory
-     * @throws SteamLibraryException if a Steam installation couldn't be found or there was an error in the process
+     * @throws SteamDirectoryException if a Steam installation couldn't be found or there was an error in the process
      */
-    public static Path getSteamInstallDirectory() throws SteamLibraryException {
+    public static Path getSteamInstallDirectory() throws SteamDirectoryException {
         String os = System.getProperty("os.name").toLowerCase();
         
         Path foundPath;
@@ -53,14 +53,14 @@ public class SteamUtils {
             } else if (os.contains("mac")) { //Mac
                 foundPath = Paths.get(System.getProperty("user.home"), "Library/Application Support/Steam"); //TODO Untested(?)
             } else { //Unknown OS type
-                throw new SteamLibraryException("Unknown or unsupported operating system \"" + os + "\".");
+                throw new SteamDirectoryException("Unknown or unsupported operating system \"" + os + "\".");
             }
         } catch (InvalidPathException e) {
-            throw new SteamLibraryException("Expected Steam path was rejected by the filesystem.", e);
+            throw new SteamDirectoryException("Expected Steam path was rejected by the filesystem.", e);
         }
         
         if (!Files.isDirectory(foundPath))
-            throw new SteamLibraryException();
+            throw new SteamDirectoryException();
         
         return foundPath;
     }
@@ -73,9 +73,9 @@ public class SteamUtils {
      * {@value #STEAM_APPS_FOLDER} relative subdirectories.</p>
      *
      * @return a list of Steam library directories
-     * @throws SteamLibraryException if no Steam installation or library directories are located
+     * @throws SteamDirectoryException if no Steam installation or library directories are located
      */
-    public static Set<Path> getSteamLibraries() throws SteamLibraryException {
+    public static Set<Path> getSteamLibraries() throws SteamDirectoryException {
         Path steamDir = getSteamInstallDirectory();
         Path libFile = steamDir.resolve(STEAM_LIBRARY_FOLDERS);
         if (Files.exists(libFile)) {
@@ -110,10 +110,10 @@ public class SteamUtils {
                 
                 return paths;
             } catch (IOException e) {
-                throw new SteamLibraryException("Unable to read the Steam library configuration file.", e);
+                throw new SteamDirectoryException("Unable to read the Steam library configuration file.", e);
             }
         } else {
-            throw new SteamLibraryException("Failed to locate the Steam library configuration file.");
+            throw new SteamDirectoryException("Failed to locate the Steam library configuration file.");
         }
     }
     
@@ -125,9 +125,9 @@ public class SteamUtils {
      *
      * @param name the installation name of the application
      * @return the path of the found directory, or null if the application can't be found
-     * @throws SteamLibraryException if no Steam installation or library directories are located
+     * @throws SteamDirectoryException if no Steam installation or library directories are located
      */
-    public static Path findApplicationDirectoryByName(String name) throws SteamLibraryException {
+    public static Path findApplicationDirectoryByName(String name) throws SteamDirectoryException {
         for(Path p : getSteamLibraries()) {
             Path gamePath = p.resolve(STEAM_APPS_FOLDER).resolve(name);
             if (Files.isDirectory(gamePath)) {
@@ -142,10 +142,10 @@ public class SteamUtils {
      * Attempts to locate the CS:GO configuration folder installed on this computer.
      *
      * @return the CS:GO configuration folder, or null if the game can't be found
-     * @throws SteamLibraryException if no Steam installation or library directories are located
+     * @throws SteamDirectoryException if no Steam installation or library directories are located
      * @see GSIProfile#createConfig(Path, GSIProfile, String)
      */
-    public static Path findCsgoConfigFolder() throws SteamLibraryException {
+    public static Path findCsgoConfigFolder() throws SteamDirectoryException {
         Path gameDir = findApplicationDirectoryByName(CSGO_DIR_NAME);
         if (gameDir != null) {
             return gameDir.resolve(CSGO_CONFIG_PATH);

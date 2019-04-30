@@ -330,7 +330,7 @@ public class GSIProfile {
      *
      * <p>The {@code dir} parameter can be passed the value returned from {@link SteamUtils#findCsgoConfigFolder()},
      * which will automatically locate this folder on the current system for you. Be aware that the utility method can
-     * return null if no CS:GO directory is found, and throw a {@link SteamLibraryException} if no valid Steam
+     * return null if no CS:GO directory is found, and throw a {@link SteamDirectoryException} if no valid Steam
      * installation can be found on the system. The following example demonstrates how to create and write a configuration
      * file to the system:
      * <pre>
@@ -344,7 +344,7 @@ public class GSIProfile {
      *      } else {
      *          System.out.println("Couldn't locate CS:GO directory");
      *      }
-     *  } catch (SteamLibraryException e) {
+     *  } catch (SteamDirectoryException e) {
      *      System.out.println("Couldn't locate Steam installation directory");
      *  }
      * </pre></p>
