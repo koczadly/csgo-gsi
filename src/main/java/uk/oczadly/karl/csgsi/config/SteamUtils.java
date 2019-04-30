@@ -36,7 +36,7 @@ public class SteamUtils {
         Path foundPath;
         try {
             if (os.contains("linux")) { //Linux-based
-                foundPath = Paths.get("~/.local/share/Steam"); //TODO Untested(?)
+                foundPath = Paths.get(System.getProperty("user.home"), ".local/share/Steam"); //TODO Untested(?)
             } else if (os.contains("win")) { //Windows
                 //Attempt to read from registry
                 String regVal = readWinRegValue("HKEY_CURRENT_USER\\Software\\Valve\\Steam", "SteamPath");
@@ -53,7 +53,7 @@ public class SteamUtils {
                     }
                 }
             } else if (os.contains("mac")) { //Mac
-                foundPath = Paths.get("~/Library/Application Support/Steam"); //TODO Untested(?)
+                foundPath = Paths.get(System.getProperty("user.home"), "Library/Application Support/Steam"); //TODO Untested(?)
             } else { //Unknown OS type
                 throw new SteamLibraryException("Unknown or unsupported operating system \"" + os + "\".");
             }
