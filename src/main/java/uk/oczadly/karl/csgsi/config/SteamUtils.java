@@ -6,19 +6,21 @@ import java.nio.file.InvalidPathException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.HashSet;
+import java.util.LinkedHashSet;
 import java.util.Set;
 
 public class SteamUtils {
     
-    // Installation folder name
+    /** Installation folder name */
     private static final String CSGO_DIR_NAME = "Counter-Strike Global Offensive";
-    // Config path relative to game dir
+    /** Config path relative to game dir */
     private static final String CSGO_CONFIG_PATH = "csgo/cfg";
     
-    // Relative folder for list of game library dirs
+    /** Relative folder for list of game library dirs */
     private static final String STEAM_LIBRARY_FOLDERS = "steamapps/libraryfolders.vdf";
-    // Relative folder for game install dirs
+    /** Relative folder for game install dirs */
     private static final String STEAM_APPS_FOLDER = "steamapps/common";
+    
     
     
     /**
@@ -31,39 +33,42 @@ public class SteamUtils {
      * @throws SteamDirectoryException if a Steam installation couldn't be found or there was an error in the process
      */
     public static Path getSteamInstallDirectory() throws SteamDirectoryException {
-        String os = System.getProperty("os.name").toLowerCase(); //Obtains OS name
+        String os = System.getProperty("os.name").toLowerCase(); //Obtain current OS name
+        String homePath = System.getProperty("user.home");
         
-        Path foundPath;
+        Set<Path> candidatePaths = new LinkedHashSet<>(); //Ordered set of potential installation dirs
         try {
-            if (os.contains("linux")) { //Linux-based
-                foundPath = Paths.get(System.getProperty("user.home"), ".local/share/Steam"); //TODO untested
+            if (os.contains("linux")) { //Linux-based, TODO untested
+                candidatePaths.add(Paths.get(homePath, ".local/share/Steam"));
+                candidatePaths.add(Paths.get(homePath, ".steam"));
             } else if (os.contains("win")) { //Windows
                 //Attempt to read from registry
                 String regVal = readWinRegValue("HKEY_CURRENT_USER\\Software\\Valve\\Steam", "SteamPath");
-                
                 if (regVal != null) {
-                    foundPath = Paths.get(regVal); //Directory found in registry
-                } else {
-                    //Registry value not found, use common 64-bit path
-                    foundPath = Paths.get("C:\\Program Files (x86)\\Steam");
-                    if (!Files.isDirectory(foundPath)) {
-                        //Not found, try 32-bit version
-                        foundPath = Paths.get("C:\\Program Files\\Steam");
-                    }
+                    candidatePaths.add(Paths.get(regVal));
                 }
-            } else if (os.contains("mac")) { //Mac
-                foundPath = Paths.get(System.getProperty("user.home"), "Library/Application Support/Steam"); //TODO untested
+                
+                //Common installation directories
+                candidatePaths.add(Paths.get("C:\\Program Files (x86)\\Steam")); //64 bit
+                candidatePaths.add(Paths.get("C:\\Program Files\\Steam")); //32 bit
+            } else if (os.contains("mac")) { //Mac TODO untested
+                candidatePaths.add(Paths.get(homePath, "Library/Application Support/Steam"));
             } else { //Unknown OS type
-                throw new SteamDirectoryException("Unknown or unsupported operating system \"" + os + "\".");
+                throw new SteamDirectoryException("Unknown or unsupported operating system.");
             }
         } catch (InvalidPathException e) {
             throw new SteamDirectoryException("Expected Steam path was rejected by the filesystem.", e);
         }
         
-        if (!Files.isDirectory(foundPath))
-            throw new SteamDirectoryException();
+        //Search for valid path
+        for (Path p : candidatePaths) {
+            if (Files.isDirectory(p)) {
+                return p; //Exists!
+            }
+        }
         
-        return foundPath;
+        //No suitable path found
+        throw new SteamDirectoryException("No Steam installation directory could be located.");
     }
     
     
