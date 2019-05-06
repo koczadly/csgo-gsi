@@ -23,35 +23,36 @@ public class SteamUtils {
     
     /**
      * <p>Obtains the primary installation directory for the Steam client on this computer system.</p>
-     * <p>Currently this method is only supported on Windows, Linux and Macintosh operating systems due to
-     * complications and restrictions between the various different filesystem. If an unsupported OS is detected,
-     * the method will throw a {@link SteamDirectoryException}.</p>
+     * <p>Currently this method is only supported on Windows, Linux and Macintosh operating systems due to complications
+     * between the various different file systems. If an unsupported OS is detected, the method will throw a
+     * {@link SteamDirectoryException} with an appropriate message.</p>
      *
      * @return the Steam installation directory
      * @throws SteamDirectoryException if a Steam installation couldn't be found or there was an error in the process
      */
     public static Path getSteamInstallDirectory() throws SteamDirectoryException {
-        String os = System.getProperty("os.name").toLowerCase();
+        String os = System.getProperty("os.name").toLowerCase(); //Obtains OS name
         
         Path foundPath;
         try {
             if (os.contains("linux")) { //Linux-based
-                foundPath = Paths.get(System.getProperty("user.home"), ".local/share/Steam"); //TODO Untested(?)
+                foundPath = Paths.get(System.getProperty("user.home"), ".local/share/Steam"); //TODO untested
             } else if (os.contains("win")) { //Windows
                 //Attempt to read from registry
                 String regVal = readWinRegValue("HKEY_CURRENT_USER\\Software\\Valve\\Steam", "SteamPath");
                 
-                if (regVal != null)
-                    return Paths.get(regVal); //Directory found in registry
-                
-                //Registry value not found, use common 64-bit path
-                foundPath = Paths.get("C:\\Program Files (x86)\\Steam");
-                if (!Files.isDirectory(foundPath)) {
-                    //Not found, try 32-bit version
-                    foundPath = Paths.get("C:\\Program Files\\Steam");
+                if (regVal != null) {
+                    foundPath = Paths.get(regVal); //Directory found in registry
+                } else {
+                    //Registry value not found, use common 64-bit path
+                    foundPath = Paths.get("C:\\Program Files (x86)\\Steam");
+                    if (!Files.isDirectory(foundPath)) {
+                        //Not found, try 32-bit version
+                        foundPath = Paths.get("C:\\Program Files\\Steam");
+                    }
                 }
             } else if (os.contains("mac")) { //Mac
-                foundPath = Paths.get(System.getProperty("user.home"), "Library/Application Support/Steam"); //TODO Untested(?)
+                foundPath = Paths.get(System.getProperty("user.home"), "Library/Application Support/Steam"); //TODO untested
             } else { //Unknown OS type
                 throw new SteamDirectoryException("Unknown or unsupported operating system \"" + os + "\".");
             }
