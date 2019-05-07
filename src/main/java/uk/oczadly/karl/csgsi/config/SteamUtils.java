@@ -81,15 +81,12 @@ public class SteamUtils {
     public static Set<Path> getSteamLibraries() throws SteamDirectoryException {
         Path steamDir = getSteamInstallDirectory();
         Path libFile = steamDir.resolve(STEAM_LIBRARY_FOLDERS);
+    
+        Set<Path> paths = new HashSet<>();
+        paths.add(steamDir); //Add Steam install dir
         
         if (Files.exists(libFile)) {
-            try {
-                Set<Path> paths = new HashSet<>();
-                
-                //Add Steam install dir
-                paths.add(steamDir);
-                
-                BufferedReader reader = Files.newBufferedReader(libFile);
+            try (BufferedReader reader = Files.newBufferedReader(libFile)) {
                 String line;
                 while ((line = reader.readLine()) != null) {
                     if (line.startsWith("\t")) {
