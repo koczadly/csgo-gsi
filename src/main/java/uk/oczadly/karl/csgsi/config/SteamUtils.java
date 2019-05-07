@@ -202,7 +202,7 @@ public class SteamUtils {
             
             if (line != null)
                 return line.substring(line.indexOf("REG_SZ") + 10);
-        } catch (IOException e) {
+        } catch (IOException | IndexOutOfBoundsException e) {
             LOGGER.warn("Failed to read registry key {} at path {}", key, path, e);
         }
         return null;
