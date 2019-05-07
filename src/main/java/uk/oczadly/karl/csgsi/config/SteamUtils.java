@@ -1,10 +1,7 @@
 package uk.oczadly.karl.csgsi.config;
 
 import java.io.*;
-import java.nio.file.Files;
-import java.nio.file.InvalidPathException;
-import java.nio.file.Path;
-import java.nio.file.Paths;
+import java.nio.file.*;
 import java.util.HashSet;
 import java.util.LinkedHashSet;
 import java.util.Set;
@@ -107,8 +104,9 @@ public class SteamUtils {
                                 Integer.parseInt(vals[1].substring(1, vals[1].length() - 1));
                                 
                                 Path path = Paths.get(vals[3].substring(1, vals[3].length() - 1));
-                                if (Files.isDirectory(path))
+                                if (Files.isDirectory(path)) {
                                     paths.add(path);
+                                }
                             } catch (NumberFormatException ignored) {}
                         }
                     }
@@ -156,9 +154,8 @@ public class SteamUtils {
         Path gameDir = findApplicationDirectoryByName(CSGO_DIR_NAME);
         if (gameDir != null) {
             return gameDir.resolve(CSGO_CONFIG_PATH);
-        } else {
-            return null; //Game not found
         }
+        return null; //Game not found
     }
     
     
