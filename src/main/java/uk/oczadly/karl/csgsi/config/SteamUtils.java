@@ -1,5 +1,8 @@
 package uk.oczadly.karl.csgsi.config;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import java.io.*;
 import java.nio.file.*;
 import java.util.HashSet;
@@ -7,6 +10,9 @@ import java.util.LinkedHashSet;
 import java.util.Set;
 
 public class SteamUtils {
+    
+    private static final Logger LOGGER = LoggerFactory.getLogger(SteamUtils.class);
+    
     
     /** Installation folder name */
     private static final String CSGO_DIR_NAME = "Counter-Strike Global Offensive";
@@ -42,6 +48,10 @@ public class SteamUtils {
                 //Attempt to read from registry
                 String regVal = readWinRegValue("HKEY_CURRENT_USER\\Software\\Valve\\Steam", "SteamPath");
                 if (regVal != null) {
+                    if (LOGGER.isDebugEnabled()) {
+                        LOGGER.debug("Obtained Steam installation dir from registry ({})", regVal);
+                    }
+                    
                     candidatePaths.add(Paths.get(regVal));
                 }
                 
@@ -57,15 +67,25 @@ public class SteamUtils {
             throw new SteamDirectoryException("Expected Steam path was rejected by the filesystem.", e);
         }
         
+        if (LOGGER.isDebugEnabled()) {
+            LOGGER.debug("Located a total of {} possible Steam installation candidates", candidatePaths.size());
+        }
+        
         //Search for valid path
+        boolean caughtSecurityEx = false;
         for (Path p : candidatePaths) {
-            if (Files.isDirectory(p)) {
-                return p; //Exists!
+            try {
+                if (Files.isDirectory(p)) {
+                    return p; //Exists!
+                }
+            } catch (SecurityException e) {
+                caughtSecurityEx = true;
             }
         }
         
         //No suitable path found
-        throw new SteamDirectoryException("No Steam installation directory could be located.");
+        throw new SteamDirectoryException("No Steam installation directory could be located."
+                + (caughtSecurityEx ? " Additionally, a SecurityException was caught during the process." : ""));
     }
     
     
@@ -85,37 +105,47 @@ public class SteamUtils {
         Set<Path> paths = new HashSet<>();
         paths.add(steamDir); //Add Steam install dir
         
-        if (Files.exists(libFile)) {
-            try (BufferedReader reader = Files.newBufferedReader(libFile)) {
-                String line;
-                while ((line = reader.readLine()) != null) {
-                    if (line.startsWith("\t")) {
+        try {
+            if (Files.exists(libFile)) {
+                try (BufferedReader reader = Files.newBufferedReader(libFile)) {
+                    String line;
+                    while ((line = reader.readLine()) != null) {
+                        if (line.startsWith("\t")) {
                         /* Values follow the format: [tab]"id"[tab][tab]"value"
                            ID is index 1 and value is index 3 */
-                        
-                        String[] vals = line.split("\t");
-                        if (vals.length == 4) {
-                            try {
-                                //Verify first value is an integer - if not, ignore property in file
-                                //Substring is to remove surrounding quotes
-                                Integer.parseInt(vals[1].substring(1, vals[1].length() - 1));
-                                
-                                Path path = Paths.get(vals[3].substring(1, vals[3].length() - 1));
-                                if (Files.isDirectory(path)) {
-                                    paths.add(path);
+                            
+                            String[] vals = line.split("\t");
+                            if (vals.length == 4) {
+                                try {
+                                    /* Verify first value is an integer - if not, ignore property in file
+                                       Substring is to remove surrounding quotes */
+                                    Integer.parseInt(vals[1].substring(1, vals[1].length() - 1));
+                                    
+                                    Path path = Paths.get(vals[3].substring(1, vals[3].length() - 1));
+                                    try {
+                                        if (Files.isDirectory(path)) {
+                                            paths.add(path);
+                                        }
+                                    } catch (SecurityException e) {
+                                        LOGGER.warn("SecurityException occured while checking Steam library path \""
+                                                + path.toString() + "\"", e);
+                                    }
+                                } catch (NumberFormatException ignored) {
                                 }
-                            } catch (NumberFormatException ignored) {}
+                            }
                         }
                     }
+                    reader.close();
+                    
+                    return paths;
+                } catch (IOException e) {
+                    throw new SteamDirectoryException("Failed to read the Steam library configuration file.", e);
                 }
-                reader.close();
-                
-                return paths;
-            } catch (IOException e) {
-                throw new SteamDirectoryException("Unable to read the Steam library configuration file.", e);
+            } else {
+                throw new SteamDirectoryException("Failed to locate the Steam library configuration file.");
             }
-        } else {
-            throw new SteamDirectoryException("Failed to locate the Steam library configuration file.");
+        } catch (SecurityException e) {
+            throw new SteamDirectoryException("Unable to read the Steam library configuration file.", e);
         }
     }
     
@@ -127,7 +157,8 @@ public class SteamUtils {
      *
      * @param name the installation name of the application
      * @return the path of the found directory, or null if the application can't be found
-     * @throws SteamDirectoryException if no Steam installation or library directories are located
+     * @throws SteamDirectoryException  if no Steam installation or library directories are located
+     * @throws SecurityException        if the current security manager disallows access to the directory
      */
     public static Path findApplicationDirectoryByName(String name) throws SteamDirectoryException {
         for (Path p : getSteamLibraries()) {
@@ -144,7 +175,8 @@ public class SteamUtils {
      * Attempts to locate the CS:GO configuration folder installed on this computer.
      *
      * @return the CS:GO configuration folder, or null if the game can't be found
-     * @throws SteamDirectoryException if no Steam installation or library directories are located
+     * @throws SteamDirectoryException  if no Steam installation or library directories are located
+     * @throws SecurityException        if the current security manager disallows access to the directory
      * @see GSIProfile#createConfig(Path, GSIProfile, String)
      */
     public static Path findCsgoConfigFolder() throws SteamDirectoryException {
@@ -170,7 +202,9 @@ public class SteamUtils {
             
             if (line != null)
                 return line.substring(line.indexOf("REG_SZ") + 10);
-        } catch (IOException ignored) {}
+        } catch (IOException e) {
+            LOGGER.warn("Failed to read registry key {} at path {}", key, path, e);
+        }
         return null;
     }
 

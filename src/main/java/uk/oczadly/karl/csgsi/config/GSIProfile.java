@@ -1,5 +1,8 @@
 package uk.oczadly.karl.csgsi.config;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import java.io.*;
 import java.nio.charset.Charset;
 import java.nio.file.*;
@@ -30,6 +33,9 @@ import java.util.Set;
  */
 public class GSIProfile {
     
+    private static final Logger LOGGER = LoggerFactory.getLogger(GSIProfile.class);
+    
+    
     private String uri, description;
     private Map<String, String> authData = new HashMap<>();
     private Double timeout, buffer, throttle, heartbeat;
@@ -54,7 +60,7 @@ public class GSIProfile {
      * @throws NullPointerException if the provided {@code uri} argument is null
      */
     public GSIProfile setURI(String uri) {
-        if(uri == null)
+        if (uri == null)
             throw new NullPointerException("URI argument cannot be null");
         
         this.uri = uri;
@@ -89,13 +95,14 @@ public class GSIProfile {
      *
      * @param key the key of the authentication token
      * @param token the associated value, or null to remove the key
+     * @throws NullPointerException if the key value is null
      * @return this current object
      */
     public GSIProfile setAuthToken(String key, String token) {
-        if(key == null)
-            throw new IllegalArgumentException("Auth token key cannot be null");
+        if (key == null)
+            throw new NullPointerException("Auth token key cannot be null");
         
-        if(token == null) {
+        if (token == null) {
             this.authData.remove(key);
         } else {
             this.authData.put(key, token);
@@ -294,9 +301,9 @@ public class GSIProfile {
         appendParameter(writer, "heartbeat", this.getHeartbeatPeriod());
         
         //Authentication tokens
-        if(!this.getAuthTokens().isEmpty()) {
+        if (!this.getAuthTokens().isEmpty()) {
             writer.println("\"auth\" {");
-            for(Map.Entry<String, String> token : this.getAuthTokens().entrySet()) {
+            for (Map.Entry<String, String> token : this.getAuthTokens().entrySet()) {
                 appendParameter(writer, token.getKey(), token.getValue());
             }
             writer.println("}");
@@ -304,7 +311,7 @@ public class GSIProfile {
         
         //Data components to retrieve
         writer.println("\"data\" {");
-        for(DataComponent type : DataComponent.values()) {
+        for (DataComponent type : DataComponent.values()) {
             appendParameter(writer, type.getConfigName(),
                     this.getDataComponents().contains(type) ? "1" : "0");
         }
@@ -313,7 +320,7 @@ public class GSIProfile {
     
     /** Helper method for {@link #generate(PrintWriter)} */
     private static void appendParameter(PrintWriter writer, String name, Object value) {
-        if(value == null) return; //Dont write empty values
+        if (value == null) return; //Dont write empty values
         
         writer.print("\"");
         writer.print(name);
@@ -352,17 +359,23 @@ public class GSIProfile {
      * @param dir           the directory in which the file is created
      * @param config        the profile configuration object
      * @param serviceName   the name of the service
-     * @throws IOException  if the file cannot be written to
+     * @throws IOException if the file cannot be written to
+     * @throws FileNotFoundException if the given path argument is not an existing directory
+     * @throws NotDirectoryException if the given path argument is not a directory
      * @see SteamUtils#findCsgoConfigFolder()
      */
     public static void createConfig(Path dir, GSIProfile config, String serviceName) throws IOException {
-        if(!Files.exists(dir))
+        if (!Files.exists(dir))
             throw new FileNotFoundException("Path argument is not an existing directory");
-        if(!Files.isDirectory(dir))
+        if (!Files.isDirectory(dir))
             throw new NotDirectoryException("Path must be a directory");
         
         Path file = dir.resolve(generateConfigName(serviceName));
-        try(PrintWriter writer = new PrintWriter(Files.newBufferedWriter(file, Charset.forName("UTF-8")))) {
+        
+        if (LOGGER.isDebugEnabled())
+            LOGGER.debug("Attempting to create config file {}...", file.toString());
+        
+        try (PrintWriter writer = new PrintWriter(Files.newBufferedWriter(file, Charset.forName("UTF-8")))) {
             config.generate(writer);
         }
     }
@@ -376,16 +389,24 @@ public class GSIProfile {
      * @param dir           the directory of the profile configuration
      * @param serviceName   the identifying service name of the profile
      * @return true if the file was successfully removed
-     * @throws IOException if the file could not be removed
+     * @throws IOException              if the file could not be removed
+     * @throws SecurityException        if the security manager disallows access to the file
+     * @throws FileNotFoundException    if the given path argument is not an existing directory
+     * @throws NotDirectoryException    if the given path argument is not a directory
      * @see SteamUtils#findCsgoConfigFolder()
      */
     public static boolean removeConfig(Path dir, String serviceName) throws IOException {
-        if(!Files.exists(dir))
+        if (!Files.exists(dir))
             throw new FileNotFoundException("Path argument is not an existing directory");
-        if(!Files.isDirectory(dir))
+        if (!Files.isDirectory(dir))
             throw new NotDirectoryException("Path must be a directory");
         
-        return Files.deleteIfExists(dir.resolve(generateConfigName(serviceName)));
+        Path file = dir.resolve(generateConfigName(serviceName));
+        
+        if (LOGGER.isDebugEnabled())
+            LOGGER.debug("Attempting to remove config file {}...", file.toString());
+        
+        return Files.deleteIfExists(file);
     }
     
     
