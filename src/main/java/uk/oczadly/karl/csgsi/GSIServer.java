@@ -1,9 +1,7 @@
 package uk.oczadly.karl.csgsi;
 
 import com.google.gson.Gson;
-import com.google.gson.JsonElement;
-import com.google.gson.JsonObject;
-import com.google.gson.JsonParser;
+import com.google.gson.GsonBuilder;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import uk.oczadly.karl.csgsi.httpserver.HTTPConnectionHandler;
@@ -40,7 +38,7 @@ public class GSIServer {
     public GSIServer(int port, ExecutorService observerExecutor) {
         this.server = new HTTPServer(port, 1, handler);
         this.observerExecutor = observerExecutor;
-        this.gson = new Gson(); //TODO?
+        this.gson = new GsonBuilder().setLenient().excludeFieldsWithoutExposeAnnotation().create();
     }
     
     /**
@@ -135,7 +133,7 @@ public class GSIServer {
     private class Handler implements HTTPConnectionHandler {
         @Override
         public void handle(InetAddress address, String path, String method, Map<String, String> headers, String body) {
-            GameState state = gson.fromJson(body, GameState.class);
+            GameState state = gson.fromJson(body.trim(), GameState.class);
             notifyObservers(state, latestGameState, address);
             latestGameState = state;
         }
