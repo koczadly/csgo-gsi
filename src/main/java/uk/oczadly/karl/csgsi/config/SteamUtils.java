@@ -177,7 +177,7 @@ public class SteamUtils {
      * @return the CS:GO configuration folder, or null if the game can't be found
      * @throws SteamDirectoryException  if no Steam installation or library directories are located
      * @throws SecurityException        if the current security manager disallows access to the directory
-     * @see GSIProfile#createConfig(Path, GSIProfile, String)
+     * @see GSIConfig#createConfig(Path, GSIConfig, String)
      */
     public static Path findCsgoConfigFolder() throws SteamDirectoryException {
         Path gameDir = findApplicationDirectoryByName(CSGO_DIR_NAME);

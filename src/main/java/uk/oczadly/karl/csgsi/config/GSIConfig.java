@@ -22,18 +22,18 @@ import java.util.Set;
  * <p>The following example demonstrates how to configure a profile with a local receiver on port 80 with a timeout of
  * 1 second, a buffer of 500ms, an authentication value "password", and receives all supported data components:
  * <pre>
- *  GSIProfile profile = new GSIProfile("http://127.0.0.1:80")
+ *  GSIConfig profile = new GSIConfig("http://127.0.0.1:80")
  *          .setTimeoutPeriod(1.0)
  *          .setBufferPeriod(0.5)
  *          .addAuthToken("password", "Q79v5tcxVQ8u")
  *          .setDataComponents(EnumSet.allOf(DataComponent.class));
  * </pre>
- * Profiles can then be created and written to the system using the {@link #createConfig(Path, GSIProfile, String)}
+ * Profiles can then be created and written to the system using the {@link #createConfig(Path, GSIConfig, String)}
  * static method (refer to method documentation).</p>
  */
-public class GSIProfile {
+public class GSIConfig {
     
-    private static final Logger LOGGER = LoggerFactory.getLogger(GSIProfile.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(GSIConfig.class);
     
     
     private String uri, description;
@@ -49,7 +49,7 @@ public class GSIProfile {
      * @param uri the URI of the server, including port and protocol
      * @throws NullPointerException if the provided {@code uri} argument is null
      */
-    public GSIProfile(String uri) {
+    public GSIConfig(String uri) {
         setURI(uri);
     }
     
@@ -59,7 +59,7 @@ public class GSIProfile {
      * @return this current object
      * @throws NullPointerException if the provided {@code uri} argument is null
      */
-    public GSIProfile setURI(String uri) {
+    public GSIConfig setURI(String uri) {
         if (uri == null)
             throw new NullPointerException("URI argument cannot be null");
         
@@ -83,7 +83,7 @@ public class GSIProfile {
      * @param authData the new map of auth tokens, or null
      * @return this current object
      */
-    public GSIProfile setAuthTokens(Map<String, String> authData) {
+    public GSIConfig setAuthTokens(Map<String, String> authData) {
         this.authData = authData == null
                 ? new HashMap<>() //Ensure stored value isn't null
                 : new HashMap<>(authData); //Clone map
@@ -98,7 +98,7 @@ public class GSIProfile {
      * @throws NullPointerException if the key value is null
      * @return this current object
      */
-    public GSIProfile setAuthToken(String key, String token) {
+    public GSIConfig setAuthToken(String key, String token) {
         if (key == null)
             throw new NullPointerException("Auth token key cannot be null");
         
@@ -125,7 +125,7 @@ public class GSIProfile {
      * @param desc the service description
      * @return this current object
      */
-    public GSIProfile setDescription(String desc) {
+    public GSIConfig setDescription(String desc) {
         this.description = desc;
         return this;
     }
@@ -153,7 +153,7 @@ public class GSIProfile {
      * @return this current object
      * @see <a href="https://developer.valvesoftware.com/wiki/Counter-Strike:_Global_Offensive_Game_State_Integration">Valve Developer Community</a>
      */
-    public GSIProfile setTimeoutPeriod(Double timeout) {
+    public GSIConfig setTimeoutPeriod(Double timeout) {
         this.timeout = timeout;
         return this;
     }
@@ -181,7 +181,7 @@ public class GSIProfile {
      * @return this current object
      * @see <a href="https://developer.valvesoftware.com/wiki/Counter-Strike:_Global_Offensive_Game_State_Integration">Valve Developer Community</a>
      */
-    public GSIProfile setBufferPeriod(Double buffer) {
+    public GSIConfig setBufferPeriod(Double buffer) {
         this.buffer = buffer;
         return this;
     }
@@ -208,7 +208,7 @@ public class GSIProfile {
      * @return this current object
      * @see <a href="https://developer.valvesoftware.com/wiki/Counter-Strike:_Global_Offensive_Game_State_Integration">Valve Developer Community</a>
      */
-    public GSIProfile setThrottlePeriod(Double throttle) {
+    public GSIConfig setThrottlePeriod(Double throttle) {
         this.throttle = throttle;
         return this;
     }
@@ -235,7 +235,7 @@ public class GSIProfile {
      * @return this current object
      * @see <a href="https://developer.valvesoftware.com/wiki/Counter-Strike:_Global_Offensive_Game_State_Integration">Valve Developer Community</a>
      */
-    public GSIProfile setHeartbeatPeriod(Double heartbeat) {
+    public GSIConfig setHeartbeatPeriod(Double heartbeat) {
         this.heartbeat = heartbeat;
         return this;
     }
@@ -257,7 +257,7 @@ public class GSIProfile {
      * @param reportedData the new set of data components to be sent, or null
      * @return this current object
      */
-    public GSIProfile setDataComponents(Set<DataComponent> reportedData) {
+    public GSIConfig setDataComponents(Set<DataComponent> reportedData) {
         this.dataComponents = reportedData != null
                 ? EnumSet.copyOf(reportedData)
                 : EnumSet.noneOf(DataComponent.class);
@@ -270,7 +270,7 @@ public class GSIProfile {
      * @param reportedData the data component
      * @return this current object
      */
-    public GSIProfile addDataComponent(DataComponent reportedData) {
+    public GSIConfig addDataComponent(DataComponent reportedData) {
         this.dataComponents.add(reportedData);
         return this;
     }
@@ -331,7 +331,7 @@ public class GSIProfile {
     
     
     /**
-     * <p>Creates or replaces a configuration file within the specified directory for the provided {@link GSIProfile}
+     * <p>Creates or replaces a configuration file within the specified directory for the provided {@link GSIConfig}
      * object. The provided service name should be unique and represent your application or organisation, and must
      * conform with universal file naming standards (ie. no special characters).</p>
      *
@@ -341,12 +341,12 @@ public class GSIProfile {
      * installation can be found on the system. The following example demonstrates how to create and write a configuration
      * file to the system:
      * <pre>
-     *  GSIProfile profile = ... //Create profile here
+     *  GSIConfig profile = ... //Create profile here
      *
      *  try {
      *      Path configPath = SteamUtils.findCsgoConfigFolder();
      *      if (configPath != null) {
-     *          GSIProfile.createConfig(configPath, profile, "myservice");
+     *          GSIConfig.createConfig(configPath, profile, "myservice");
      *          System.out.println("Profile successfully created!");
      *      } else {
      *          System.out.println("Couldn't locate CS:GO directory");
@@ -364,7 +364,7 @@ public class GSIProfile {
      * @throws NotDirectoryException if the given path argument is not a directory
      * @see SteamUtils#findCsgoConfigFolder()
      */
-    public static void createConfig(Path dir, GSIProfile config, String serviceName) throws IOException {
+    public static void createConfig(Path dir, GSIConfig config, String serviceName) throws IOException {
         if (!Files.exists(dir))
             throw new FileNotFoundException("Path argument is not an existing directory");
         if (!Files.isDirectory(dir))
