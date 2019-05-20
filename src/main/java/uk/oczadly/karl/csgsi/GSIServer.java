@@ -7,6 +7,9 @@ import org.slf4j.LoggerFactory;
 import uk.oczadly.karl.csgsi.httpserver.HTTPConnectionHandler;
 import uk.oczadly.karl.csgsi.httpserver.HTTPServer;
 import uk.oczadly.karl.csgsi.state.GameState;
+import uk.oczadly.karl.csgsi.state.components.Coordinate;
+import uk.oczadly.karl.csgsi.state.json.CoordinateDeserializer;
+import uk.oczadly.karl.csgsi.state.json.MapToListAdapterFactory;
 
 import java.io.IOException;
 import java.net.InetAddress;
@@ -38,7 +41,12 @@ public class GSIServer {
     public GSIServer(int port, ExecutorService observerExecutor) {
         this.server = new HTTPServer(port, 1, handler);
         this.observerExecutor = observerExecutor;
-        this.gson = new GsonBuilder().setLenient().excludeFieldsWithoutExposeAnnotation().create();
+        
+        this.gson = new GsonBuilder()
+                .setLenient().excludeFieldsWithoutExposeAnnotation()
+                .registerTypeAdapterFactory(new MapToListAdapterFactory())
+                .registerTypeAdapter(Coordinate.class, new CoordinateDeserializer())
+                .create();
     }
     
     /**
