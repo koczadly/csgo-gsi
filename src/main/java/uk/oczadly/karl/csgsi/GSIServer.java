@@ -9,7 +9,6 @@ import uk.oczadly.karl.csgsi.httpserver.HTTPServer;
 import uk.oczadly.karl.csgsi.state.GameState;
 import uk.oczadly.karl.csgsi.state.components.Coordinate;
 import uk.oczadly.karl.csgsi.state.json.CoordinateDeserializer;
-import uk.oczadly.karl.csgsi.state.json.MapToListAdapterFactory;
 
 import java.io.IOException;
 import java.net.InetAddress;
@@ -44,7 +43,6 @@ public class GSIServer {
         
         this.gson = new GsonBuilder()
                 .setLenient().excludeFieldsWithoutExposeAnnotation()
-                .registerTypeAdapterFactory(new MapToListAdapterFactory())
                 .registerTypeAdapter(Coordinate.class, new CoordinateDeserializer())
                 .create();
     }
