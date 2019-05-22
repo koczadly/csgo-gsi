@@ -41,7 +41,7 @@ public class GSIServer {
         this.server = new HTTPServer(port, 1, handler);
         this.observerExecutor = observerExecutor;
         
-        this.gson = createGson().create();
+        this.gson = GSIUtil.createGsonObject().create();
     }
     
     /**
@@ -132,12 +132,6 @@ public class GSIServer {
     }
     
     
-    
-    protected static GsonBuilder createGson() {
-        return new GsonBuilder()
-            .setLenient().excludeFieldsWithoutExposeAnnotation()
-            .registerTypeAdapter(Coordinate.class, new CoordinateDeserializer());
-    }
     
     /** Handles HTTP connection requests */
     private class Handler implements HTTPConnectionHandler {
