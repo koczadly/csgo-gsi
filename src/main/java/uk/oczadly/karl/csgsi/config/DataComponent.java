@@ -118,7 +118,6 @@ public enum DataComponent {
     }
     
     /**
-     *
      * @return whether the data is only available for spectators/observers
      */
     public boolean isObserverOnly() {
