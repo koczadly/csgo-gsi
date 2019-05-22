@@ -1,17 +1,19 @@
 package uk.oczadly.karl.csgsi.config;
 
 import org.junit.Test;
+import uk.oczadly.karl.csgsi.config.DataComponent;
+import uk.oczadly.karl.csgsi.config.GSIConfig;
 
 import java.io.PrintWriter;
 import java.io.StringWriter;
 
 import static org.junit.Assert.*;
 
-public class GSIProfileTest {
+public class GSIConfigTest {
     
     @Test
     public void testGettersAndSetters() {
-        GSIProfile profile = new GSIProfile("");
+        GSIConfig profile = new GSIConfig("");
         
         //URI
         profile.setURI("http://1.2.3.4:56");
@@ -44,7 +46,7 @@ public class GSIProfileTest {
     @Test
     public void testProfileCreation() {
         //Profile
-        GSIProfile profile = new GSIProfile("http://1.2.3.4:567")
+        GSIConfig profile = new GSIConfig("http://1.2.3.4:567")
                 .setAuthToken("token", "42")
                 .addDataComponent(DataComponent.BOMB)
                 .setBufferPeriod(20d)
@@ -74,7 +76,7 @@ public class GSIProfileTest {
                 conf.contains("\"" + key + "\" \"" + expectedValue.toString() + "\""));
     }
     
-    private static String genConfig(GSIProfile profile) {
+    private static String genConfig(GSIConfig profile) {
         StringWriter sw = new StringWriter();
         profile.generate(new PrintWriter(sw));
         return sw.toString();
