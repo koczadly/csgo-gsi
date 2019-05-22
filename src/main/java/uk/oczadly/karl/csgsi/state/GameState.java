@@ -45,35 +45,35 @@ public class GameState {
     
     
     /**
-     * @return the game client provider information
+     * @return the game client provider information, or null if not sent
      */
     public ProviderState getProviderDetails() {
         return providerDetails;
     }
     
     /**
-     * @return the authentication tokens sent by the client
+     * @return the authentication tokens sent by the client, or null if not sent
      */
     public Map<String, String> getAuthenticationTokens() {
         return authTokens;
     }
     
     /**
-     * @return the current map state data
+     * @return the current map state data, or null if not sent
      */
     public MapState getMapState() {
         return mapState;
     }
     
     /**
-     * @return the current player's state data
+     * @return the current player's state data, or null if not sent
      */
     public PlayerState getPlayerState() {
         return playerState;
     }
     
     /**
-     * @return the current round's state data
+     * @return the current round's state data, or null if not sent
      */
     public RoundState getRoundState() {
         return roundState;
@@ -82,7 +82,7 @@ public class GameState {
     /**
      * Returns a list of grenades on the map. The key represents a unique ID, which is generated and sent by the
      * game client.
-     * @return the grenades on the map
+     * @return the grenades on the map, or null if not sent
      */
     public Map<Integer, GrenadeState> getGrenadeStates() {
         return grenadeStates;
@@ -90,14 +90,14 @@ public class GameState {
     
     /**
      * The key represents the Steam ID of the player, and the value the associated player state information.
-     * @return a list of other players in the game
+     * @return a list of other players in the game, or null if not sent
      */
     public Map<String, PlayerState> getPlayerStates() {
         return playerStates;
     }
     
     /**
-     * @return the state of the bomb on the map
+     * @return the state of the bomb on the map, or null if not sent
      */
     public BombState getBombState() {
         return bombState;
@@ -105,7 +105,7 @@ public class GameState {
     
     /**
      * Returns the current phase in the round, and how long the phase will last before proceeding.
-     * @return the phase countdown state
+     * @return the phase countdown state, or null if not sent
      */
     public PhaseCountdownState getPhaseCountdownState() {
         return phaseCountdownState;
