@@ -32,6 +32,7 @@ public class Coordinate {
     
     @Override
     public boolean equals(Object obj) {
+        if (obj == this) return true;
         if (obj instanceof Coordinate) {
             Coordinate cObj = (Coordinate)obj;
             return cObj.x == this.x &&
