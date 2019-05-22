@@ -54,6 +54,10 @@ public class PlayerState {
     private List<WeaponDetails> weapons;
     
     @Expose
+    @SerializedName("spectarget")
+    private String specTarget;
+    
+    @Expose
     @SerializedName("position")
     private Coordinate position;
     
@@ -123,6 +127,13 @@ public class PlayerState {
      */
     public List<WeaponDetails> getWeaponsInventory() {
         return weapons;
+    }
+    
+    /**
+     * @return the ID of the player being spectated, or null if not spectating
+     */
+    public String getSpectatorTarget() {
+        return specTarget;
     }
     
     /**
