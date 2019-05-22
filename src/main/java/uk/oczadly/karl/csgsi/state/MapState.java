@@ -137,7 +137,10 @@ public class MapState {
                     new TypeToken<TreeMap<Integer, RoundOutcome>>(){}.getType());
             
             List<RoundOutcome> list = new ArrayList<>(map.size());
-            list.addAll(map.values());
+            
+            if (map != null)
+                list.addAll(map.values());
+            
             return Collections.unmodifiableList(list);
         }
     }

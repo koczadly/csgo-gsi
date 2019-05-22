@@ -159,7 +159,10 @@ public class PlayerState {
                     new TypeToken<TreeMap<String, WeaponDetails>>(){}.getType());
             
             List<WeaponDetails> list = new ArrayList<>(map.size());
-            list.addAll(map.values());
+            
+            if (map != null)
+                list.addAll(map.values());
+            
             return Collections.unmodifiableList(list);
         }
     }
