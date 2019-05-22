@@ -95,7 +95,8 @@ public class GSIServer {
         LOGGER.debug("Notifying {} observers of new GSI state from server on port {}", observers.size(), server.getPort());
         
         for (GSIObserver observer : observers) {
-            observerExecutor.submit(() -> observer.update(state, previousState, addr));
+            observerExecutor.submit(
+                    new ThrowableTask(() -> observer.update(state, previousState, addr)));
         }
     }
     
@@ -143,6 +144,26 @@ public class GSIServer {
             notifyObservers(state, latestGameState, address);
             latestGameState = state;
         }
+    }
+    
+    /** Used for notifying observers and logging exceptions */
+    private static class ThrowableTask implements Runnable {
+        
+        Runnable task;
+        
+        ThrowableTask(Runnable task) {
+            this.task = task;
+        }
+        
+        @Override
+        public void run() {
+            try {
+                task.run();
+            } catch (Throwable t) {
+                LOGGER.warn("Uncaught exception in GSIServer observer notification", t);
+            }
+        }
+        
     }
     
 }
