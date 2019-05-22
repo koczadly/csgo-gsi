@@ -88,7 +88,7 @@ public class PlayerState {
     }
     
     /**
-     * @return the observer slot this player is using, or null if not a spectator
+     * @return the slot this player is using (associated numerical key to spectate)
      */
     public Integer getObserverSlot() {
         return observerSlot;
