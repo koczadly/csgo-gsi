@@ -4,10 +4,10 @@ import com.google.gson.annotations.SerializedName;
 
 public enum Team {
 
-    @SerializedName("T")
+    @SerializedName(value = "t", alternate = {"T"})
     TERRORIST,
     
-    @SerializedName("CT")
+    @SerializedName(value = "ct", alternate = {"CT"})
     COUNTER_TERRORIST;
     
 }
