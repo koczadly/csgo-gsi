@@ -2,8 +2,6 @@ package uk.oczadly.karl.csgsi.state.json;
 
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
-import com.google.gson.JsonObject;
-import com.google.gson.annotations.SerializedName;
 import org.junit.Test;
 import uk.oczadly.karl.csgsi.state.components.Coordinate;
 
