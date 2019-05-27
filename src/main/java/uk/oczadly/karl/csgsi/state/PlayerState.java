@@ -198,7 +198,11 @@ public class PlayerState {
         @Expose
         @SerializedName("flashed")
         private int flashed;
-        
+    
+        @Expose
+        @SerializedName("smoked")
+        private int smoked;
+    
         @Expose
         @SerializedName("burning")
         private int burning;
@@ -239,7 +243,11 @@ public class PlayerState {
         public int getFlashed() {
             return flashed;
         }
-        
+    
+        public int getSmoked() {
+            return smoked;
+        }
+    
         public int getBurning() {
             return burning;
         }
