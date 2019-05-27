@@ -42,10 +42,14 @@ public class PhaseCountdownState {
         /** Bomb is currently being defused. */
         @SerializedName("defuse")
         DEFUSE,
-        
+    
         /** Round is over. */
         @SerializedName("over")
-        OVER;
+        OVER,
+    
+        /** Round is over. */
+        @SerializedName("freezetime")
+        FREEZE_TIME;
     }
     
 }
