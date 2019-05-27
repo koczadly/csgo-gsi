@@ -17,11 +17,6 @@ public class GameStateBaseTest {
         return GSON.fromJson(json, GameState.class);
     }
     
-    @Test
-    public void test() {
-        testEnums(RoundState.RoundPhase.class, "over", "freezetime", "live");
-    }
-    
     public static <T extends Enum> void testEnums(Class<T> clazz, String... values) {
         //Test values
         for (String name : values) {
@@ -32,7 +27,7 @@ public class GameStateBaseTest {
         }
         
         //Test null
-        T nullVal = GSON.fromJson("\"\"", clazz);
+        T nullVal = GSON.fromJson("\"slugs8984328942\"", clazz);
         assertNull("Unknown enum value was deserialized for " + clazz.getCanonicalName(),
                 nullVal);
     }
