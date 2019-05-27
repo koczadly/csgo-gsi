@@ -1,14 +1,11 @@
 package uk.oczadly.karl.csgsi;
 
 import com.google.gson.Gson;
-import com.google.gson.GsonBuilder;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import uk.oczadly.karl.csgsi.httpserver.HTTPConnectionHandler;
 import uk.oczadly.karl.csgsi.httpserver.HTTPServer;
 import uk.oczadly.karl.csgsi.state.GameState;
-import uk.oczadly.karl.csgsi.state.components.Coordinate;
-import uk.oczadly.karl.csgsi.state.json.CoordinateDeserializer;
 
 import java.io.IOException;
 import java.net.InetAddress;
@@ -131,6 +128,11 @@ public class GSIServer {
         return server.isRunning();
     }
     
+    
+    /** Used for unit tests */
+    ExecutorService getObserverExecutorService() {
+        return observerExecutor;
+    }
     
     
     /** Handles HTTP connection requests */
