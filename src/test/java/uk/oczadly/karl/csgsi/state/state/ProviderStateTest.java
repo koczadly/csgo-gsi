@@ -24,11 +24,11 @@ public class ProviderStateTest extends GameStateBaseTest {
         assertNotNull(gameState);
         assertNotNull(state);
     
-        assertEquals(state.getName(), "Counter-Strike: Global Offensive");
-        assertEquals(state.getAppId(), 730);
-        assertEquals(state.getVersion(), 13688);
-        assertEquals(state.getClientSteamId(), "76561198050830377");
-        assertEquals(state.getTimeStamp(), 1556199071);
+        assertEquals("Counter-Strike: Global Offensive", state.getName());
+        assertEquals(730, state.getAppId());
+        assertEquals(13688, state.getVersion());
+        assertEquals("76561198050830377", state.getClientSteamId());
+        assertEquals(1556199071, state.getTimeStamp());
     }
     
     @Test
