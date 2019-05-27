@@ -90,7 +90,7 @@ public class GSIServer {
         
         for (GSIObserver observer : observers) {
             observerExecutor.submit(
-                    new ThrowableTask(() -> observer.update(state, previousState, addr)));
+                    new LoggableTask(() -> observer.update(state, previousState, addr)));
         }
     }
     
@@ -146,11 +146,11 @@ public class GSIServer {
     }
     
     /** Used for notifying observers and logging exceptions */
-    private static class ThrowableTask implements Runnable {
+    private static class LoggableTask implements Runnable {
         
         Runnable task;
-        
-        ThrowableTask(Runnable task) {
+    
+        LoggableTask(Runnable task) {
             this.task = task;
         }
         
