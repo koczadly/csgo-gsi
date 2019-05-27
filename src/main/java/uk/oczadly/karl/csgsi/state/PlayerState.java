@@ -321,18 +321,32 @@ public class PlayerState {
     
     public static class WeaponDetails {
         
+        @Expose
+        @SerializedName("name")
         private String name;
-        
+    
+        @Expose
+        @SerializedName("paintkit")
         private String skin;
-        
+    
+        @Expose
+        @SerializedName("type")
         private WeaponType weaponType;
-        
+    
+        @Expose
+        @SerializedName("ammo_clip")
         private int ammoClip;
-        
+    
+        @Expose
+        @SerializedName("ammo_clip_max")
         private int maxAmmoClip;
-        
+    
+        @Expose
+        @SerializedName("ammo_reserve")
         private int ammoReserve;
-        
+    
+        @Expose
+        @SerializedName("state")
         private WeaponState state;
     
     
