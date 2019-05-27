@@ -3,6 +3,7 @@ package uk.oczadly.karl.csgsi.state;
 import com.google.gson.annotations.Expose;
 import com.google.gson.annotations.SerializedName;
 
+import java.util.Collections;
 import java.util.Map;
 
 public class GameState {
@@ -55,9 +56,12 @@ public class GameState {
     /**
      * Returns a map of authentication tokens sent by the game client. These are defined in the service's game state
      * configuration file, and can be used to authenticate the sending game client.
-     * @return the authentication tokens, or null if not sent
+     * @return the authentication tokens
      */
     public Map<String, String> getAuthenticationTokens() {
+        if (authTokens == null)
+            authTokens = Collections.unmodifiableMap(Collections.emptyMap());
+        
         return authTokens;
     }
     
