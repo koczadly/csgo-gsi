@@ -15,6 +15,13 @@ import java.util.concurrent.CopyOnWriteArraySet;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
+/**
+ * This class is used to listen for live game state information as sent by the game client.
+ *
+ * The listening network port is configured within the class constructor, and the server is started through the
+ * {@link #startServer()} method. Observers can be registered through the {@link #registerObserver(GSIObserver)} method,
+ * which subscribes the object to new game state information as it is received.
+ */
 public class GSIServer {
     
     private static final Logger LOGGER = LoggerFactory.getLogger(GSIServer.class);
@@ -58,7 +65,8 @@ public class GSIServer {
     
     
     /**
-     * Subscribes a new observer to receive game state information when sent by the game client.
+     * Subscribes a new observer to receive game state information when sent by the game client. New observers can be
+     * registered regardless of the running state of the server.
      * @param observer the observer to register
      */
     public void registerObserver(GSIObserver observer) {
@@ -69,7 +77,8 @@ public class GSIServer {
     }
     
     /**
-     * Removes an observer from the list, and will no longer receive updates.
+     * Removes an observer from the list, and will no longer receive updates. Observers can be removed while the server
+     * is running, although they may still receive updates for a short period while being removed.
      * @param observer the observer to unsubscribe
      */
     public void removeObserver(GSIObserver observer) {
