@@ -5,13 +5,16 @@ A Java library for retrieving live game information from Counter-Strike: Global 
 This project is currently a work in progress, although most features are already implemented.
 
 ## Features
-This library provides 2 features for retrieving game information:
-- The effortless creation of game state configurations
+This library provides 3 main features::
+- Automatic location of the Steam and game directories
+- The creation of game state configurations
 - A server which listens for updates and parses the state details
 
 ## Usage
 ### Configuration generation
-To create a configuration file, use the GSIConfig class. The example below demonstrates how to use this utility:
+To create a configuration file, use the GSIConfig class. The SteamUtils class provides a range of static methods
+which can be used to automatically locate the CSGO game directory. The example below demonstrates how to use
+these utilities:
 
 ```java
 GSIConfig config = new GSIConfig("http://127.0.0.1:1337")
