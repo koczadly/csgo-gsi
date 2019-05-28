@@ -5,7 +5,7 @@ A Java library for retrieving live game information from Counter-Strike: Global 
 This project is currently a work in progress, although most features are already implemented.
 
 ## Features
-This library provides 3 main features::
+This library provides 3 main features:
 - Automatic location of the Steam and game directories
 - The creation of game state configurations
 - A server which listens for updates and parses the state details
@@ -25,6 +25,7 @@ GSIConfig config = new GSIConfig("http://127.0.0.1:1337")
 
 try {
     Path configPath = SteamUtils.findCsgoConfigFolder();
+    
     if (configPath != null) {
         GSIConfig.createConfig(configPath, config, "myservice");
         System.out.println("Config successfully created!");
@@ -33,6 +34,8 @@ try {
     }
 } catch (SteamDirectoryException e) {
     System.out.println("Couldn't locate Steam installation directory");
+} catch (IOException e) {
+    System.out.println("Couldn't write configuration file");
 }
 ```
 

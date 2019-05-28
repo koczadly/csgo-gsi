@@ -345,6 +345,7 @@ public class GSIConfig {
      *
      *  try {
      *      Path configPath = SteamUtils.findCsgoConfigFolder();
+     *
      *      if (configPath != null) {
      *          GSIConfig.createConfig(configPath, profile, "myservice");
      *          System.out.println("Profile successfully created!");
@@ -353,6 +354,8 @@ public class GSIConfig {
      *      }
      *  } catch (SteamDirectoryException e) {
      *      System.out.println("Couldn't locate Steam installation directory");
+     *  } catch (IOException e) {
+     *      System.out.println("Couldn't write configuration file");
      *  }
      * </pre></p>
      *
