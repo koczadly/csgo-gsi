@@ -197,9 +197,8 @@ public class GSIServer {
         for (Map.Entry<String, String> token : requiredAuthTokens.entrySet()) {
             String val = authTokens.get(token.getKey());
             if (!token.getValue().equals(val)) {
-                LOGGER.debug("GSI state update rejected due to auth token mismatch (key '{}': expected '{}'," +
-                                "got '{}')",
-                        token.getKey(), token.getValue(), val);
+                LOGGER.debug("GSI state update rejected due to auth token mismatch (key '{}': expected '{}',"
+                                + "got '{}')", token.getKey(), token.getValue(), val);
                 return; //Invalid auth token(s), ignore
             }
         }
