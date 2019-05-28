@@ -11,10 +11,6 @@ public class GameState {
     @Expose
     @SerializedName("provider")
     private ProviderState providerDetails;
-
-    @Expose
-    @SerializedName("auth")
-    private Map<String, String> authTokens;
     
     @Expose
     @SerializedName("map")
@@ -51,18 +47,6 @@ public class GameState {
      */
     public ProviderState getProviderDetails() {
         return providerDetails;
-    }
-    
-    /**
-     * Returns a map of authentication tokens sent by the game client. These are defined in the service's game state
-     * configuration file, and can be used to authenticate the sending game client.
-     * @return the authentication tokens
-     */
-    public Map<String, String> getAuthenticationTokens() {
-        if (authTokens == null)
-            authTokens = Collections.unmodifiableMap(Collections.emptyMap());
-        
-        return authTokens;
     }
     
     /**

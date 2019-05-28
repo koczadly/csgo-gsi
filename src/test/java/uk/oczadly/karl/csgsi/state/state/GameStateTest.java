@@ -13,9 +13,6 @@ public class GameStateTest extends GameStateBaseTest {
     public void testEmpty() {
         GameState state = deserilizeState("{}");
         
-        assertNotNull(state.getAuthenticationTokens());
-        assertTrue(state.getAuthenticationTokens().isEmpty());
-        
         assertNull(state.getBombState());
         assertNull(state.getGrenadeStates());
         assertNull(state.getMapState());
