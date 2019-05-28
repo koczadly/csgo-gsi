@@ -42,7 +42,8 @@ implementing GSIObserver must be registered to the server object. The example be
 listener which prints the client's logged in Steam ID to the console.
 ```java
 GSIObserver observer = new GSIObserver() {
-    public void update(GameState state, GameState previous, InetAddress address) {
+    @Override
+    public void update(GameState state, GameState previousState, Map<String, String> authTokens, InetAddress address) {
         //Access state information with the 'state' object...
         System.out.println("Client SteamID: " + state.getProvider().getClientSteamId());
     }
