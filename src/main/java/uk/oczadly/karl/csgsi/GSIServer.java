@@ -122,6 +122,7 @@ public class GSIServer {
      * Notifies the registered observers of an updated state.
      * @param state         the new game state information
      * @param previousState the previous game state information
+     * @param authTokens    the authentication tokens sent by the client
      * @param addr          the network address of the client
      */
     protected void notifyObservers(GameState state, GameState previousState, Map<String, String> authTokens, InetAddress addr) {

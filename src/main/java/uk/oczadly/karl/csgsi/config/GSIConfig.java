@@ -28,7 +28,7 @@ import java.util.Set;
  *          .addAuthToken("password", "Q79v5tcxVQ8u")
  *          .setDataComponents(EnumSet.allOf(DataComponent.class));
  * </pre>
- * Profiles can then be created and written to the system using the {@link #createConfig(Path, GSIConfig, String)}
+ * <p>Profiles can then be created and written to the system using the {@link #createConfig(Path, GSIConfig, String)}
  * static method (refer to method documentation).</p>
  */
 public class GSIConfig {
@@ -339,7 +339,7 @@ public class GSIConfig {
      * which will automatically locate this folder on the current system for you. Be aware that the utility method can
      * return null if no CS:GO directory is found, and throw a {@link SteamDirectoryException} if no valid Steam
      * installation can be found on the system. The following example demonstrates how to create and write a configuration
-     * file to the system:
+     * file to the system:</p>
      * <pre>
      *  GSIConfig profile = ... //Create profile here
      *
@@ -357,7 +357,7 @@ public class GSIConfig {
      *  } catch (IOException e) {
      *      System.out.println("Couldn't write configuration file");
      *  }
-     * </pre></p>
+     * </pre>
      *
      * @param dir           the directory in which the file is created
      * @param config        the profile configuration object
