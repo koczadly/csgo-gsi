@@ -11,6 +11,25 @@ This library provides 3 main features:
 - A server which listens for updates and parses the state details
 
 ## Usage
+### Maven
+Add the JitPack repository in your pom.xml:
+```xml
+<repositories>
+    <repository>
+        <id>jitpack.io</id>
+        <url>https://jitpack.io</url>
+    </repository>
+</repositories>
+```
+Import the dependency into your pom.xml:
+```xml
+<dependency>
+    <groupId>com.github.koczadly</groupId>
+    <artifactId>csgo-gsi</artifactId>
+    <version>1.0.0</version>
+</dependency>
+```
+
 ### Configuration generation
 To create a configuration file, use the GSIConfig class. The SteamUtils class provides a range of static methods
 which can be used to automatically locate the CSGO game directory. The example below demonstrates how to use
