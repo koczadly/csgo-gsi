@@ -15,14 +15,14 @@ public class SteamUtils {
     
     
     /** Installation folder name */
-    private static final String CSGO_DIR_NAME = "Counter-Strike Global Offensive";
+    public static final String CSGO_DIR_NAME = "Counter-Strike Global Offensive";
     /** Config path relative to game dir */
-    private static final String CSGO_CONFIG_PATH = "csgo/cfg";
+    public static final String CSGO_CONFIG_PATH = "csgo/cfg";
     
     /** Relative folder for list of game library dirs */
-    private static final String STEAM_LIBRARY_FOLDERS = "steamapps/libraryfolders.vdf";
+    public static final String STEAM_LIBRARY_FOLDERS = "steamapps/libraryfolders.vdf";
     /** Relative folder for game install dirs */
-    private static final String STEAM_APPS_FOLDER = "steamapps/common";
+    public static final String STEAM_APPS_FOLDER = "steamapps/common";
     
     
     

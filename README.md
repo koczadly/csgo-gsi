@@ -30,6 +30,9 @@ Import the dependency into your pom.xml:
 </dependency>
 ```
 
+### Documentation
+The latest Javadoc can be found [here, hosted by JitPack](https://javadoc.jitpack.io/com/github/koczadly/csgo-gsi/latest/javadoc/).
+
 ### Configuration generation
 To create a configuration file, use the GSIConfig class. The SteamUtils class provides a range of static methods
 which can be used to automatically locate the CSGO game directory. The example below demonstrates how to use
