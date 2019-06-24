@@ -26,7 +26,7 @@ Import the dependency into your pom.xml:
 <dependency>
     <groupId>com.github.koczadly</groupId>
     <artifactId>csgo-gsi</artifactId>
-    <version>1.0.0</version>
+    <version>1.0.1</version>
 </dependency>
 ```
 
