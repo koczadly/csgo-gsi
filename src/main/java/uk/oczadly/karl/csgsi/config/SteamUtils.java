@@ -179,7 +179,7 @@ public class SteamUtils {
      * @throws SecurityException        if the current security manager disallows access to the directory
      * @see GSIConfig#createConfig(Path, GSIConfig, String)
      */
-    public static Path findCsgoConfigFolder() throws SteamDirectoryException {
+    public static Path locateCsgoConfigFolder() throws SteamDirectoryException {
         Path gameDir = findApplicationDirectoryByName(CSGO_DIR_NAME);
         if (gameDir != null) {
             return gameDir.resolve(CSGO_CONFIG_PATH);

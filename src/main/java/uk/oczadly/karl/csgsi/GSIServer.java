@@ -136,7 +136,8 @@ public class GSIServer {
     
     
     /**
-     * Starts the server on the configured network port and listens for game state information.
+     * Starts the server on the configured network port and listens for game state information. This server is ran
+     * from a newly issued thread, and can safely be called from the main application thread.
      * @throws IllegalStateException if the server is already running
      * @throws IOException if the configured port cannot be bound to
      */

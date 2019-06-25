@@ -6,10 +6,7 @@ import org.slf4j.LoggerFactory;
 import java.io.*;
 import java.nio.charset.Charset;
 import java.nio.file.*;
-import java.util.EnumSet;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 
 /**
  * <p>This class represents a series of parameters used in the game state profile configuration, and provides static
@@ -25,8 +22,10 @@ import java.util.Set;
  *  GSIConfig profile = new GSIConfig("http://127.0.0.1:80")
  *          .setTimeoutPeriod(1.0)
  *          .setBufferPeriod(0.5)
- *          .addAuthToken("password", "Q79v5tcxVQ8u")
- *          .setDataComponents(EnumSet.allOf(DataComponent.class));
+ *          .setAuthToken("password", "Q79v5tcxVQ8u")
+ *          .setDataComponents(
+ *                 DataComponent.PROVIDER,
+ *                 DataComponent.ROUND);
  * </pre>
  * <p>Profiles can then be created and written to the system using the {@link #createConfig(Path, GSIConfig, String)}
  * static method (refer to method documentation).</p>
@@ -265,6 +264,30 @@ public class GSIConfig {
     }
     
     /**
+     * Sets the which data values will be sent by the client. If a null value is passed, the method will generate an
+     * empty {@link EnumSet} instance.
+     *
+     * @param reportedData the new set of data components to be sent, or null
+     * @return this current object
+     */
+    public GSIConfig setDataComponents(DataComponent... reportedData) {
+        Set<DataComponent> set = EnumSet.noneOf(DataComponent.class);
+        if (reportedData != null)
+            Collections.addAll(set, reportedData);
+        this.dataComponents = set;
+        return this;
+    }
+    
+    /**
+     * Sets the configuration so that all the data components will be sent by the client.
+     * @return this current object
+     */
+    public GSIConfig setAllDataComponents() {
+        this.dataComponents = EnumSet.allOf(DataComponent.class);
+        return this;
+    }
+    
+    /**
      * Adds the specified data component to the current list, which will be sent by the client.
      *
      * @param reportedData the data component
@@ -276,10 +299,10 @@ public class GSIConfig {
     }
     
     /**
-     * @return a set of data components to be sent by the client
+     * @return an immutable set of data components to be sent by the client
      */
     public Set<DataComponent> getDataComponents() {
-        return dataComponents;
+        return Collections.unmodifiableSet(dataComponents);
     }
     
     
@@ -335,7 +358,7 @@ public class GSIConfig {
      * object. The provided service name should be unique and represent your application or organisation, and must
      * conform with universal file naming standards (ie. no special characters).</p>
      *
-     * <p>The {@code dir} parameter can be passed the value returned from {@link SteamUtils#findCsgoConfigFolder()},
+     * <p>The {@code dir} parameter can be passed the value returned from {@link SteamUtils#locateCsgoConfigFolder()},
      * which will automatically locate this folder on the current system for you. Be aware that the utility method can
      * return null if no CS:GO directory is found, and throw a {@link SteamDirectoryException} if no valid Steam
      * installation can be found on the system. The following example demonstrates how to create and write a configuration
@@ -344,7 +367,7 @@ public class GSIConfig {
      *  GSIConfig profile = ... //Create profile here
      *
      *  try {
-     *      Path configPath = SteamUtils.findCsgoConfigFolder();
+     *      Path configPath = SteamUtils.locateCsgoConfigFolder();
      *
      *      if (configPath != null) {
      *          GSIConfig.createConfig(configPath, profile, "myservice");
@@ -365,7 +388,7 @@ public class GSIConfig {
      * @throws IOException if the file cannot be written to
      * @throws FileNotFoundException if the given path argument is not an existing directory
      * @throws NotDirectoryException if the given path argument is not a directory
-     * @see SteamUtils#findCsgoConfigFolder()
+     * @see SteamUtils#locateCsgoConfigFolder()
      */
     public static void createConfig(Path dir, GSIConfig config, String serviceName) throws IOException {
         if (!Files.exists(dir))
@@ -386,7 +409,7 @@ public class GSIConfig {
     /**
      * <p>Removes a configuration file in the provided directory, if it exists.</p>
      *
-     * <p>The directory parameter can be passed the result from the {@link SteamUtils#findCsgoConfigFolder()} method,
+     * <p>The directory parameter can be passed the result from the {@link SteamUtils#locateCsgoConfigFolder()} method,
      * which will attempt to automatically locate the directory for you.</p>
      *
      * @param dir           the directory of the profile configuration
@@ -396,7 +419,7 @@ public class GSIConfig {
      * @throws SecurityException        if the security manager disallows access to the file
      * @throws FileNotFoundException    if the given path argument is not an existing directory
      * @throws NotDirectoryException    if the given path argument is not a directory
-     * @see SteamUtils#findCsgoConfigFolder()
+     * @see SteamUtils#locateCsgoConfigFolder()
      */
     public static boolean removeConfig(Path dir, String serviceName) throws IOException {
         if (!Files.exists(dir))

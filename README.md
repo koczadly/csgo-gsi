@@ -26,7 +26,7 @@ Import the dependency into your pom.xml:
 <dependency>
     <groupId>com.github.koczadly</groupId>
     <artifactId>csgo-gsi</artifactId>
-    <version>1.0.1</version>
+    <version>1.0.2</version>
 </dependency>
 ```
 
@@ -42,14 +42,17 @@ these utilities:
 GSIConfig config = new GSIConfig("http://127.0.0.1:1337")
         .setTimeoutPeriod(1.0)
         .setBufferPeriod(0.5)
-        .addAuthToken("password", "Q79v5tcxVQ8u")
-        .setDataComponents(EnumSet.allOf(DataComponent.class));
+        .setAuthToken("password", "Q79v5tcxVQ8u")
+        .setDataComponents(
+                DataComponent.PROVIDER,
+                DataComponent.ROUND);
 
 try {
-    Path configPath = SteamUtils.findCsgoConfigFolder();
+    //Locate the CSGO configuration folder
+    Path configPath = SteamUtils.locateCsgoConfigFolder();
     
     if (configPath != null) {
-        GSIConfig.createConfig(configPath, config, "myservice");
+        GSIConfig.createConfig(configPath, config, "my_service");
         System.out.println("Config successfully created!");
     } else {
         System.out.println("Couldn't locate CS:GO directory");
@@ -66,11 +69,12 @@ To listen for new game state information, a GSIServer object must be created and
 implementing GSIObserver must be registered to the server object. The example below demonstrates a basic
 listener which prints the client's logged in Steam ID to the console.
 ```java
+//Create a new observer (anonymous class)
 GSIObserver observer = new GSIObserver() {
     @Override
     public void update(GameState state, GameState previousState, Map<String, String> authTokens, InetAddress address) {
         //Access state information with the 'state' object...
-        System.out.println("Client SteamID: " + state.getProvider().getClientSteamId());
+        System.out.println("New state! Client SteamID: " + state.getProvider().getClientSteamId());
     }
 };
 
