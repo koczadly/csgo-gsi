@@ -12,26 +12,17 @@ This library provides 3 main features:
 
 ## Usage
 ### Maven
-Add the JitPack repository in your pom.xml:
-```xml
-<repositories>
-    <repository>
-        <id>jitpack.io</id>
-        <url>https://jitpack.io</url>
-    </repository>
-</repositories>
-```
-Import the dependency into your pom.xml:
+This project is hosted on Maven Central. To import this library, add the following dependency into your pom.xml:
 ```xml
 <dependency>
-    <groupId>com.github.koczadly</groupId>
+    <groupId>uk.oczadly.karl</groupId>
     <artifactId>csgo-gsi</artifactId>
-    <version>1.0.2</version>
+    <version>1.0.3</version>
 </dependency>
 ```
 
 ### Documentation
-The latest Javadoc can be found [here, hosted by JitPack](https://javadoc.jitpack.io/com/github/koczadly/csgo-gsi/latest/javadoc/).
+The latest Javadoc pages can be [viewed online through Javadoc.io](https://www.javadoc.io/doc/uk.oczadly.karl/csgo-gsi).
 
 ### Configuration generation
 To create a configuration file, use the GSIConfig class. The SteamUtils class provides a range of static methods
