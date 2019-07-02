@@ -1,13 +1,14 @@
 # CSGO-GSI
 ## About
-A Java library for retrieving live game information from Counter-Strike: Global Offensive.
+A Java library for retrieving real-time game information and statistics from Counter-Strike: Global Offensive using
+its built-in *game state integration* service.
 
-This project is currently a work in progress, although most features are already implemented.
+This project is in active development, although has already been tested and should provide full functionality.
 
 ## Features
 This library provides 3 main features:
-- Automatic location of the Steam and game directories
-- The creation of game state configurations
+- Automated location of the Steam and game directories
+- The creation of game state service configurations
 - A server which listens for updates and parses the state details
 
 ## Usage
@@ -73,3 +74,7 @@ GSIServer server = new GSIServer(1337); //Configure on port 1337
 server.registerObserver(observer); //Register observer
 server.start(); //Start the server (on the above specified port)
 ```
+
+## Development
+If you experience an issue or feel the library is missing functionality, submit an issue (or a pull request if you've
+already resolved the problem).
