@@ -1,4 +1,4 @@
-package uk.oczadly.karl.csgsi.httpserver;
+package uk.oczadly.karl.csgsi.internal.httpserver;
 
 import java.net.InetAddress;
 import java.util.Map;

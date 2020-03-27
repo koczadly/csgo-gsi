@@ -1,4 +1,4 @@
-package uk.oczadly.karl.csgsi.httpserver;
+package uk.oczadly.karl.csgsi.internal.httpserver;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
