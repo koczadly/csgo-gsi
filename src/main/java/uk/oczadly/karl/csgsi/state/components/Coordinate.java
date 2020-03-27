@@ -1,7 +1,7 @@
 package uk.oczadly.karl.csgsi.state.components;
 
 public class Coordinate {
-
+    
     private final double x, y, z;
     
     public Coordinate(double x, double y, double z) {
@@ -22,7 +22,6 @@ public class Coordinate {
     public double getZ() {
         return z;
     }
-    
     
     
     @Override

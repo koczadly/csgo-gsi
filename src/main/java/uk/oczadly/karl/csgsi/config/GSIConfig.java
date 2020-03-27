@@ -3,9 +3,14 @@ package uk.oczadly.karl.csgsi.config;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.io.*;
+import java.io.FileNotFoundException;
+import java.io.IOException;
+import java.io.PrintWriter;
 import java.nio.charset.Charset;
-import java.nio.file.*;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.nio.file.NotDirectoryException;
+import java.nio.file.Path;
 import java.util.*;
 
 /**
@@ -42,8 +47,8 @@ public class GSIConfig {
     
     
     /**
-     * Constructs a new GSI configuration object with the specified URI.
-     * Refer to class documentation and setter methods for configuring other properties.
+     * Constructs a new GSI configuration object with the specified URI. Refer to class documentation and setter methods
+     * for configuring other properties.
      *
      * @param uri the URI of the server, including port and protocol
      * @throws NullPointerException if the provided {@code uri} argument is null
@@ -56,6 +61,7 @@ public class GSIConfig {
     /**
      * @param uri the URI of the server to send state data to
      * @return this current object
+     *
      * @throws NullPointerException if the provided {@code uri} argument is null
      */
     public GSIConfig setURI(String uri) {
@@ -92,10 +98,11 @@ public class GSIConfig {
     /**
      * Adds the authentication token to the current map of values.
      *
-     * @param key the key of the authentication token
+     * @param key   the key of the authentication token
      * @param token the associated value, or null to remove the key
-     * @throws NullPointerException if the key value is null
      * @return this current object
+     *
+     * @throws NullPointerException if the key value is null
      */
     public GSIConfig setAuthToken(String key, String token) {
         if (key == null)
@@ -118,8 +125,8 @@ public class GSIConfig {
     
     
     /**
-     * Sets the description of the configuration. Has no effect on the profile other than being included within the
-     * file for the user's reference.
+     * Sets the description of the configuration. Has no effect on the profile other than being included within the file
+     * for the user's reference.
      *
      * @param desc the service description
      * @return this current object
@@ -140,17 +147,17 @@ public class GSIConfig {
     /**
      * As defined on the Valve Developer Community documentation page:
      * <blockquote>
-     *     Game expects an HTTP 2XX response code from its HTTP POST request, and game will not
-     *     attempt submitting the next HTTP POST request while a previous request is still in
-     *     flight. The game will consider the request as timed out if a response is not received
-     *     within so many seconds, and will re-heartbeat next time with full state omitting any
-     *     delta-computation. If the setting is not specified then default short timeout of 1.1
-     *     sec will be used.
+     * Game expects an HTTP 2XX response code from its HTTP POST request, and game will not attempt submitting the next
+     * HTTP POST request while a previous request is still in flight. The game will consider the request as timed out if
+     * a response is not received within so many seconds, and will re-heartbeat next time with full state omitting any
+     * delta-computation. If the setting is not specified then default short timeout of 1.1 sec will be used.
      * </blockquote>
      *
      * @param timeout the timeout value in seconds, or null to use client default
      * @return this current object
-     * @see <a href="https://developer.valvesoftware.com/wiki/Counter-Strike:_Global_Offensive_Game_State_Integration">Valve Developer Community</a>
+     *
+     * @see <a href="https://developer.valvesoftware.com/wiki/Counter-Strike:_Global_Offensive_Game_State_Integration">Valve
+     * Developer Community</a>
      */
     public GSIConfig setTimeoutPeriod(Double timeout) {
         this.timeout = timeout;
@@ -159,6 +166,7 @@ public class GSIConfig {
     
     /**
      * @return the timeout period in seconds, or null if not set (default)
+     *
      * @see #setTimeoutPeriod(Double)
      */
     public Double getTimeoutPeriod() {
@@ -169,16 +177,18 @@ public class GSIConfig {
     /**
      * As defined on the Valve Developer Community documentation page:
      * <blockquote>
-     *     Because multiple game events tend to occur one after another very quickly, it is recommended
-     *     to specify a non-zero buffer. When buffering is enabled, the game will collect events for
-     *     so many seconds to report a bigger delta. For localhost service integration this is less of
-     *     an issue and can be tuned to match the needs of the service or set to 0.0 to disable buffering
-     *     completely. If the setting is not specified then default buffer of 0.1 sec will be used.
+     * Because multiple game events tend to occur one after another very quickly, it is recommended to specify a
+     * non-zero buffer. When buffering is enabled, the game will collect events for so many seconds to report a bigger
+     * delta. For localhost service integration this is less of an issue and can be tuned to match the needs of the
+     * service or set to 0.0 to disable buffering completely. If the setting is not specified then default buffer of 0.1
+     * sec will be used.
      * </blockquote>
      *
      * @param buffer the buffer value in seconds, or null to use client default
      * @return this current object
-     * @see <a href="https://developer.valvesoftware.com/wiki/Counter-Strike:_Global_Offensive_Game_State_Integration">Valve Developer Community</a>
+     *
+     * @see <a href="https://developer.valvesoftware.com/wiki/Counter-Strike:_Global_Offensive_Game_State_Integration">Valve
+     * Developer Community</a>
      */
     public GSIConfig setBufferPeriod(Double buffer) {
         this.buffer = buffer;
@@ -187,6 +197,7 @@ public class GSIConfig {
     
     /**
      * @return the buffer period in seconds, or null if not set (default)
+     *
      * @see #setBufferPeriod(Double)
      */
     public Double getBufferPeriod() {
@@ -197,15 +208,16 @@ public class GSIConfig {
     /**
      * As defined on the Valve Developer Community documentation page:
      * <blockquote>
-     *     For high-traffic endpoints this setting will make the game client not send another request
-     *     for at least this many seconds after receiving previous HTTP 2XX response to avoid notifying
-     *     the service when game state changes too frequently. If the setting is not specified then
-     *     default throttle of 1.0 sec will be used.
+     * For high-traffic endpoints this setting will make the game client not send another request for at least this many
+     * seconds after receiving previous HTTP 2XX response to avoid notifying the service when game state changes too
+     * frequently. If the setting is not specified then default throttle of 1.0 sec will be used.
      * </blockquote>
      *
      * @param throttle the throttle value in seconds, or null to use client default
      * @return this current object
-     * @see <a href="https://developer.valvesoftware.com/wiki/Counter-Strike:_Global_Offensive_Game_State_Integration">Valve Developer Community</a>
+     *
+     * @see <a href="https://developer.valvesoftware.com/wiki/Counter-Strike:_Global_Offensive_Game_State_Integration">Valve
+     * Developer Community</a>
      */
     public GSIConfig setThrottlePeriod(Double throttle) {
         this.throttle = throttle;
@@ -214,6 +226,7 @@ public class GSIConfig {
     
     /**
      * @return the timeout period in seconds, or null if not set (default)
+     *
      * @see #setThrottlePeriod(Double)
      */
     public Double getThrottlePeriod() {
@@ -224,15 +237,16 @@ public class GSIConfig {
     /**
      * As defined on the Valve Developer Community documentation page:
      * <blockquote>
-     *     Even if no game state change occurs, this setting instructs the game to send a request so many
-     *     seconds after receiving previous HTTP 2XX response. The service can be configured to consider
-     *     game as offline or disconnected if it didn't get a notification for a significant period of
-     *     time exceeding the heartbeat interval.
+     * Even if no game state change occurs, this setting instructs the game to send a request so many seconds after
+     * receiving previous HTTP 2XX response. The service can be configured to consider game as offline or disconnected
+     * if it didn't get a notification for a significant period of time exceeding the heartbeat interval.
      * </blockquote>
      *
      * @param heartbeat the heartbeat period in seconds, or null to use client default
      * @return this current object
-     * @see <a href="https://developer.valvesoftware.com/wiki/Counter-Strike:_Global_Offensive_Game_State_Integration">Valve Developer Community</a>
+     *
+     * @see <a href="https://developer.valvesoftware.com/wiki/Counter-Strike:_Global_Offensive_Game_State_Integration">Valve
+     * Developer Community</a>
      */
     public GSIConfig setHeartbeatPeriod(Double heartbeat) {
         this.heartbeat = heartbeat;
@@ -241,6 +255,7 @@ public class GSIConfig {
     
     /**
      * @return the heartbeat period in seconds, or null if not set (default)
+     *
      * @see #setHeartbeatPeriod(Double)
      */
     public Double getHeartbeatPeriod() {
@@ -280,6 +295,7 @@ public class GSIConfig {
     
     /**
      * Sets the configuration so that all the data components will be sent by the client.
+     *
      * @return this current object
      */
     public GSIConfig setAllDataComponents() {
@@ -341,7 +357,9 @@ public class GSIConfig {
         writer.println("}}");
     }
     
-    /** Helper method for {@link #generate(PrintWriter)} */
+    /**
+     * Helper method for {@link #generate(PrintWriter)}
+     */
     private static void appendParameter(PrintWriter writer, String name, Object value) {
         if (value == null) return; //Dont write empty values
         
@@ -361,8 +379,8 @@ public class GSIConfig {
      * <p>The {@code dir} parameter can be passed the value returned from {@link SteamUtils#locateCsgoConfigFolder()},
      * which will automatically locate this folder on the current system for you. Be aware that the utility method can
      * return null if no CS:GO directory is found, and throw a {@link SteamDirectoryException} if no valid Steam
-     * installation can be found on the system. The following example demonstrates how to create and write a configuration
-     * file to the system:</p>
+     * installation can be found on the system. The following example demonstrates how to create and write a
+     * configuration file to the system:</p>
      * <pre>
      *  GSIConfig profile = ... //Create profile here
      *
@@ -382,10 +400,10 @@ public class GSIConfig {
      *  }
      * </pre>
      *
-     * @param dir           the directory in which the file is created
-     * @param config        the profile configuration object
-     * @param serviceName   the name of the service
-     * @throws IOException if the file cannot be written to
+     * @param dir         the directory in which the file is created
+     * @param config      the profile configuration object
+     * @param serviceName the name of the service
+     * @throws IOException           if the file cannot be written to
      * @throws FileNotFoundException if the given path argument is not an existing directory
      * @throws NotDirectoryException if the given path argument is not a directory
      * @see SteamUtils#locateCsgoConfigFolder()
@@ -401,7 +419,7 @@ public class GSIConfig {
         if (LOGGER.isDebugEnabled())
             LOGGER.debug("Attempting to create config file {}...", file.toString());
         
-        try (PrintWriter writer = new PrintWriter(Files.newBufferedWriter(file, Charset.forName("UTF-8")))) {
+        try (PrintWriter writer = new PrintWriter(Files.newBufferedWriter(file, StandardCharsets.UTF_8))) {
             config.generate(writer);
         }
     }
@@ -412,13 +430,14 @@ public class GSIConfig {
      * <p>The directory parameter can be passed the result from the {@link SteamUtils#locateCsgoConfigFolder()} method,
      * which will attempt to automatically locate the directory for you.</p>
      *
-     * @param dir           the directory of the profile configuration
-     * @param serviceName   the identifying service name of the profile
+     * @param dir         the directory of the profile configuration
+     * @param serviceName the identifying service name of the profile
      * @return true if the file was successfully removed
-     * @throws IOException              if the file could not be removed
-     * @throws SecurityException        if the security manager disallows access to the file
-     * @throws FileNotFoundException    if the given path argument is not an existing directory
-     * @throws NotDirectoryException    if the given path argument is not a directory
+     *
+     * @throws IOException           if the file could not be removed
+     * @throws SecurityException     if the security manager disallows access to the file
+     * @throws FileNotFoundException if the given path argument is not an existing directory
+     * @throws NotDirectoryException if the given path argument is not a directory
      * @see SteamUtils#locateCsgoConfigFolder()
      */
     public static boolean removeConfig(Path dir, String serviceName) throws IOException {
@@ -436,7 +455,9 @@ public class GSIConfig {
     }
     
     
-    /** Generates the name of the configuration file based on the provided service name. */
+    /**
+     * Generates the name of the configuration file based on the provided service name.
+     */
     private static String generateConfigName(String service) {
         return "gamestate_integration_" + service.toLowerCase().replace(' ', '_') + ".cfg";
     }

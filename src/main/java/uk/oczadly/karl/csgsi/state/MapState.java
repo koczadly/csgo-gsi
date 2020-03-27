@@ -10,7 +10,6 @@ import com.google.gson.annotations.SerializedName;
 import com.google.gson.reflect.TypeToken;
 import uk.oczadly.karl.csgsi.state.components.Team;
 
-import java.lang.reflect.Array;
 import java.lang.reflect.Type;
 import java.util.*;
 
@@ -129,12 +128,11 @@ public class MapState {
     }
     
     
-    
     private class RoundOutcomeDeserializer implements JsonDeserializer<List<RoundOutcome>> {
         @Override
         public List<RoundOutcome> deserialize(JsonElement json, Type typeOfT, JsonDeserializationContext context) throws JsonParseException {
             Map<Integer, RoundOutcome> map = context.deserialize(json,
-                    new TypeToken<TreeMap<Integer, RoundOutcome>>(){}.getType());
+                    new TypeToken<TreeMap<Integer, RoundOutcome>>() {}.getType());
             
             List<RoundOutcome> list = new ArrayList<>(map.size());
             
@@ -146,37 +144,53 @@ public class MapState {
     }
     
     public enum RoundOutcome {
-        /** Represents a T win from the bomb exploding. */
+        /**
+         * Represents a T win from the bomb exploding.
+         */
         @SerializedName("t_win_bomb")
-        T_BOMB_EXPLODE  (Team.TERRORIST),
-    
-        /** Represents a T win from elimination of the opposing team. */
+        T_BOMB_EXPLODE(Team.TERRORIST),
+        
+        /**
+         * Represents a T win from elimination of the opposing team.
+         */
         @SerializedName("t_win_elimination")
-        T_ELIMINATION   (Team.TERRORIST),
-    
-        /** Represents a T win from the timer reaching zero. */
+        T_ELIMINATION(Team.TERRORIST),
+        
+        /**
+         * Represents a T win from the timer reaching zero.
+         */
         @SerializedName("t_win_time")
-        T_TIME          (Team.TERRORIST),
-    
-        /** Represents a CT win from elimination of the opposing team. */
+        T_TIME(Team.TERRORIST),
+        
+        /**
+         * Represents a CT win from elimination of the opposing team.
+         */
         @SerializedName("ct_win_elimination")
-        CT_ELIMINATION  (Team.COUNTER_TERRORIST),
+        CT_ELIMINATION(Team.COUNTER_TERRORIST),
         
-        /** Represents a CT win from the timer reaching zero. */
+        /**
+         * Represents a CT win from the timer reaching zero.
+         */
         @SerializedName("ct_win_time")
-        CT_TIME         (Team.COUNTER_TERRORIST),
+        CT_TIME(Team.COUNTER_TERRORIST),
         
-        /** Represents a CT win from a bomb defuse. */
+        /**
+         * Represents a CT win from a bomb defuse.
+         */
         @SerializedName("ct_win_defuse")
-        CT_DEFUSE       (Team.COUNTER_TERRORIST),
+        CT_DEFUSE(Team.COUNTER_TERRORIST),
         
-        /** Represents a CT win from a hostage rescue. */
+        /**
+         * Represents a CT win from a hostage rescue.
+         */
         @SerializedName("ct_win_rescue")
-        CT_RESCUE       (Team.COUNTER_TERRORIST),
+        CT_RESCUE(Team.COUNTER_TERRORIST),
         
-        /** Represents a skipped round with no winner. */
+        /**
+         * Represents a skipped round with no winner.
+         */
         @SerializedName("")
-        SKIPPED         (null);
+        SKIPPED(null);
         
         
         private Team winningTeam;
@@ -185,7 +199,7 @@ public class MapState {
             this.winningTeam = winningTeam;
         }
         
-    
+        
         /**
          * @return the winning team, or null if the round was skipped
          */
@@ -195,62 +209,82 @@ public class MapState {
     }
     
     public enum GameMode {
-        /** The 5v5 ranked competitive game mode. */
+        /**
+         * The 5v5 ranked competitive game mode.
+         */
         @SerializedName("competitive")
         COMPETITIVE,
         
-        /** The casual 10v10 game mode. */
+        /**
+         * The casual 10v10 game mode.
+         */
         @SerializedName("casual")
         CASUAL,
         
-        /** The free-for-all game mode. */
+        /**
+         * The free-for-all game mode.
+         */
         @SerializedName("deathmatch")
         DEATHMATCH,
         
-        /** One of the 'war games' modes. */
+        /**
+         * One of the 'war games' modes.
+         */
         @SerializedName("skirmish")
         WAR_GAMES,
         
-        /** Battle-royale danger zone mode. */
+        /**
+         * Battle-royale danger zone mode.
+         */
         @SerializedName("survival")
         DANGER_ZONE,
         
-        /** A 2 vs 2 competitive game. */
+        /**
+         * A 2 vs 2 competitive game.
+         */
         @SerializedName("scrimcomp2v2")
-        WINGMAN_2v2;
+        WINGMAN_2v2
     }
     
     public enum GamePhase {
-        /** Represents a currently in-progress game. */
+        /**
+         * Represents a currently in-progress game.
+         */
         @SerializedName("live")
         LIVE,
-    
-        /** Represents a concluded game. */
+        
+        /**
+         * Represents a concluded game.
+         */
         @SerializedName("gameover")
         GAME_OVER,
-    
-        /** Represents the pre-game warmup stage. */
+        
+        /**
+         * Represents the pre-game warmup stage.
+         */
         @SerializedName("warmup")
         WARMUP,
         
-        /** Represents a paused state of the game. */
+        /**
+         * Represents a paused state of the game.
+         */
         @SerializedName("intermission")
-        INTERMISSION;
+        INTERMISSION
     }
     
     public static class TeamStats {
         @Expose
         @SerializedName("score")
         private int score;
-    
+        
         @Expose
         @SerializedName("consecutive_round_losses")
         private int consecutiveLosses;
-    
+        
         @Expose
         @SerializedName("timeouts_remaining")
         private int timeoutsRemaining;
-    
+        
         @Expose
         @SerializedName("matches_won_this_series")
         private int seriesMatchesWon;
@@ -262,21 +296,21 @@ public class MapState {
         public int getScore() {
             return score;
         }
-    
+        
         /**
          * @return the number of consecutive losses for this team
          */
         public int getConsecutiveLosses() {
             return consecutiveLosses;
         }
-    
+        
         /**
          * @return the number of timeouts remaining which this team can use
          */
         public int getTimeoutsRemaining() {
             return timeoutsRemaining;
         }
-    
+        
         /**
          * @return the number of matches won by the team this series
          */
@@ -284,5 +318,5 @@ public class MapState {
             return seriesMatchesWon;
         }
     }
-
+    
 }

@@ -17,5 +17,5 @@ public class SteamDirectoryException extends Exception {
     public SteamDirectoryException(String msg, Throwable cause) {
         super(msg, cause);
     }
-
+    
 }

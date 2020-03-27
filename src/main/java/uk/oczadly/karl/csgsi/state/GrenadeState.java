@@ -74,7 +74,6 @@ public class GrenadeState {
     }
     
     
-    
     public enum Type {
         @SerializedName("smoke")
         SMOKE,
@@ -87,7 +86,7 @@ public class GrenadeState {
         @SerializedName("flashbang")
         FLASHBANG,
         @SerializedName("frag")
-        FRAG;
+        FRAG
     }
-
+    
 }

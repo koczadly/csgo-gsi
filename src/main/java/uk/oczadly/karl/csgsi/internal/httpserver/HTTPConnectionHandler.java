@@ -12,12 +12,12 @@ public interface HTTPConnectionHandler {
     /**
      * Handles the data from an incoming HTTP request.
      *
-     * @param address   the address of the client connection
-     * @param path      the requested URL path
-     * @param method    the HTTP request method (eg. POST, GET)
-     * @param headers   a map of headers
-     * @param body      the payload body contents
+     * @param address the address of the client connection
+     * @param path    the requested URL path
+     * @param method  the HTTP request method (eg. POST, GET)
+     * @param headers a map of headers
+     * @param body    the payload body contents
      */
     void handle(InetAddress address, String path, String method, Map<String, String> headers, String body);
-
+    
 }

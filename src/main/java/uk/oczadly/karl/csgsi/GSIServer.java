@@ -22,10 +22,10 @@ import java.util.concurrent.Executors;
 
 /**
  * This class is used to listen for live game state information as sent by the game client.
- *
- * The listening network port is configured within the class constructor, and the server is started through the
- * {@link #startServer()} method. Observers can be registered through the {@link #registerObserver(GSIObserver)} method,
- * which subscribes the object to new game state information as it is received.
+ * <p>
+ * The listening network port is configured within the class constructor, and the server is started through the {@link
+ * #startServer()} method. Observers can be registered through the {@link #registerObserver(GSIObserver)} method, which
+ * subscribes the object to new game state information as it is received.
  */
 public class GSIServer {
     
@@ -47,6 +47,7 @@ public class GSIServer {
     
     /**
      * Constructs a new GSIServer object with pre-processed client authentication.
+     *
      * @param port               the network port for the server to listen on
      * @param requiredAuthTokens the authentication tokens required to accept state reports
      */
@@ -69,6 +70,7 @@ public class GSIServer {
     
     /**
      * Constructs a new GSIServer object with pre-processed client authentication.
+     *
      * @param port              the network port for the server to listen on
      * @param requiredAuthToken the authentication key value "token" required to accept state reports
      */
@@ -78,6 +80,7 @@ public class GSIServer {
     
     /**
      * Constructs a new GSIServer object with no pre-processed client authentication.
+     *
      * @param port the network port for the server to listen on
      */
     public GSIServer(int port) {
@@ -96,6 +99,7 @@ public class GSIServer {
     /**
      * Subscribes a new observer to receive game state information when sent by the game client. New observers can be
      * registered regardless of the running state of the server.
+     *
      * @param observer the observer to register
      */
     public void registerObserver(GSIObserver observer) {
@@ -108,6 +112,7 @@ public class GSIServer {
     /**
      * Removes an observer from the list, and will no longer receive updates. Observers can be removed while the server
      * is running, although they may still receive updates for a short period while being removed.
+     *
      * @param observer the observer to unsubscribe
      */
     public void removeObserver(GSIObserver observer) {
@@ -119,6 +124,7 @@ public class GSIServer {
     
     /**
      * Notifies the registered observers of an updated state.
+     *
      * @param state         the new game state information
      * @param previousState the previous game state information
      * @param authTokens    the authentication tokens sent by the client
@@ -135,10 +141,11 @@ public class GSIServer {
     
     
     /**
-     * Starts the server on the configured network port and listens for game state information. This server is ran
-     * from a newly issued thread, and can safely be called from the main application thread.
+     * Starts the server on the configured network port and listens for game state information. This server is ran from
+     * a newly issued thread, and can safely be called from the main application thread.
+     *
      * @throws IllegalStateException if the server is already running
-     * @throws IOException if the configured port cannot be bound to
+     * @throws IOException           if the configured port cannot be bound to
      */
     public void startServer() throws IOException {
         LOGGER.debug("Attempting to start GSI server on port {}...", server.getPort());
@@ -153,6 +160,7 @@ public class GSIServer {
     
     /**
      * Stops the server from listening for game state information, and frees the assigned network port.
+     *
      * @throws IllegalStateException if the server is not currently running
      */
     public void stopServer() {
@@ -169,26 +177,32 @@ public class GSIServer {
     }
     
     
-    /** Used for unit tests */
+    /**
+     * Used for unit tests
+     */
     ExecutorService getObserverExecutorService() {
         return observerExecutor;
     }
     
     
-    /** Helper method for constructor */
+    /**
+     * Helper method for constructor
+     */
     private static Map<String, String> createTokenMap(String token) {
         Map<String, String> map = new HashMap<>();
         map.put("token", token);
         return map;
     }
     
-    /** Handles a new JSON state and notifies the appropriate observers. */
+    /**
+     * Handles a new JSON state and notifies the appropriate observers.
+     */
     void handleStateUpdate(String json, InetAddress address) {
         JsonObject jsonObject = new JsonParser().parse(json).getAsJsonObject();
-    
+        
         //Parse auth tokens
         Map<String, String> authTokens = gson.fromJson(jsonObject.getAsJsonObject("auth"),
-                new TypeToken<Map<String, String>>(){}.getType());
+                new TypeToken<Map<String, String>>() {}.getType());
         
         authTokens = authTokens == null
                 ? Collections.emptyMap()
@@ -199,7 +213,7 @@ public class GSIServer {
             String val = authTokens.get(token.getKey());
             if (!token.getValue().equals(val)) {
                 LOGGER.debug("GSI state update rejected due to auth token mismatch (key '{}': expected '{}',"
-                                + "got '{}')", token.getKey(), token.getValue(), val);
+                        + "got '{}')", token.getKey(), token.getValue(), val);
                 return; //Invalid auth token(s), ignore
             }
         }
@@ -211,7 +225,9 @@ public class GSIServer {
     }
     
     
-    /** Handles HTTP connection requests */
+    /**
+     * Handles HTTP connection requests
+     */
     private class Handler implements HTTPConnectionHandler {
         @Override
         public void handle(InetAddress address, String path, String method, Map<String, String> headers, String body) {
@@ -219,7 +235,9 @@ public class GSIServer {
         }
     }
     
-    /** Used for notifying observers and logging exceptions */
+    /**
+     * Used for notifying observers and logging exceptions
+     */
     private static class LoggableTask implements Runnable {
         Runnable task;
         

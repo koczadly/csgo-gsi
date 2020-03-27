@@ -151,12 +151,11 @@ public class PlayerState {
     }
     
     
-    
     private class WeaponDeserializer implements JsonDeserializer<List<WeaponDetails>> {
         @Override
         public List<WeaponDetails> deserialize(JsonElement json, Type typeOfT, JsonDeserializationContext context) throws JsonParseException {
             Map<String, WeaponDetails> map = context.deserialize(json,
-                    new TypeToken<TreeMap<String, WeaponDetails>>(){}.getType());
+                    new TypeToken<TreeMap<String, WeaponDetails>>() {}.getType());
             
             List<WeaponDetails> list = new ArrayList<>(map.size());
             
@@ -168,17 +167,23 @@ public class PlayerState {
     }
     
     public enum Activity {
-        /** Currently playing/watching the game. */
+        /**
+         * Currently playing/watching the game.
+         */
         @SerializedName("playing")
         PLAYING,
-    
-        /** Currently typing in the chat. */
+        
+        /**
+         * Currently typing in the chat.
+         */
         @SerializedName("textinput")
         TEXT_INPUT,
         
-        /** Currently navigating a game menu. */
+        /**
+         * Currently navigating a game menu.
+         */
         @SerializedName("menu")
-        MENU;
+        MENU
     }
     
     public static class PlayerStateDetails {
@@ -198,11 +203,11 @@ public class PlayerState {
         @Expose
         @SerializedName("flashed")
         private int flashed;
-    
+        
         @Expose
         @SerializedName("smoked")
         private int smoked;
-    
+        
         @Expose
         @SerializedName("burning")
         private int burning;
@@ -243,11 +248,11 @@ public class PlayerState {
         public int getFlashed() {
             return flashed;
         }
-    
+        
         public int getSmoked() {
             return smoked;
         }
-    
+        
         public int getBurning() {
             return burning;
         }
@@ -324,56 +329,56 @@ public class PlayerState {
         @Expose
         @SerializedName("name")
         private String name;
-    
+        
         @Expose
         @SerializedName("paintkit")
         private String skin;
-    
+        
         @Expose
         @SerializedName("type")
         private WeaponType weaponType;
-    
+        
         @Expose
         @SerializedName("ammo_clip")
         private int ammoClip;
-    
+        
         @Expose
         @SerializedName("ammo_clip_max")
         private int maxAmmoClip;
-    
+        
         @Expose
         @SerializedName("ammo_reserve")
         private int ammoReserve;
-    
+        
         @Expose
         @SerializedName("state")
         private WeaponState state;
-    
-    
+        
+        
         public String getName() {
             return name;
         }
-    
+        
         public String getSkin() {
             return skin;
         }
-    
+        
         public WeaponType getWeaponType() {
             return weaponType;
         }
-    
+        
         public int getAmmoClip() {
             return ammoClip;
         }
-    
+        
         public int getMaxAmmoClip() {
             return maxAmmoClip;
         }
-    
+        
         public int getAmmoReserve() {
             return ammoReserve;
         }
-    
+        
         public WeaponState getState() {
             return state;
         }
@@ -402,21 +407,27 @@ public class PlayerState {
         @SerializedName("Breach Charge")
         BREACH_CHARGE,
         @SerializedName("Grenade")
-        GRENADE;
+        GRENADE
     }
     
     public enum WeaponState {
-        /** Weapon is currently being held by the player. */
+        /**
+         * Weapon is currently being held by the player.
+         */
         @SerializedName("active")
         ACTIVE,
-    
-        /** Weapon is currently holstered (not selected). */
+        
+        /**
+         * Weapon is currently holstered (not selected).
+         */
         @SerializedName("holstered")
         HOLSTERED,
         
-        /** Weapon is currently active and being reloaded. */
+        /**
+         * Weapon is currently active and being reloaded.
+         */
         @SerializedName("reloading")
-        RELOADING;
+        RELOADING
     }
     
 }

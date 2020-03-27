@@ -3,8 +3,13 @@ package uk.oczadly.karl.csgsi.config;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.io.*;
-import java.nio.file.*;
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStreamReader;
+import java.nio.file.Files;
+import java.nio.file.InvalidPathException;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.HashSet;
 import java.util.LinkedHashSet;
 import java.util.Set;
@@ -14,25 +19,34 @@ public class SteamUtils {
     private static final Logger LOGGER = LoggerFactory.getLogger(SteamUtils.class);
     
     
-    /** Installation folder name */
+    /**
+     * Installation folder name
+     */
     public static final String CSGO_DIR_NAME = "Counter-Strike Global Offensive";
-    /** Config path relative to game dir */
+    /**
+     * Config path relative to game dir
+     */
     public static final String CSGO_CONFIG_PATH = "csgo/cfg";
     
-    /** Relative folder for list of game library dirs */
+    /**
+     * Relative folder for list of game library dirs
+     */
     public static final String STEAM_LIBRARY_FOLDERS = "steamapps/libraryfolders.vdf";
-    /** Relative folder for game install dirs */
+    /**
+     * Relative folder for game install dirs
+     */
     public static final String STEAM_APPS_FOLDER = "steamapps/common";
-    
     
     
     /**
      * <p>Obtains the primary installation directory for the Steam client on this computer system.</p>
-     * <p>Currently this method is only supported on Windows, Linux and Macintosh operating systems due to complications
-     * between the various different file systems. If an unsupported OS is detected, the method will throw a
-     * {@link SteamDirectoryException} with an appropriate message.</p>
+     * <p>Currently this method is only supported on Windows, Linux and Macintosh operating systems due to
+     * complications
+     * between the various different file systems. If an unsupported OS is detected, the method will throw a {@link
+     * SteamDirectoryException} with an appropriate message.</p>
      *
      * @return the Steam installation directory
+     *
      * @throws SteamDirectoryException if a Steam installation couldn't be found or there was an error in the process
      */
     public static Path getSteamInstallDirectory() throws SteamDirectoryException {
@@ -96,12 +110,13 @@ public class SteamUtils {
      * {@value #STEAM_APPS_FOLDER} relative subdirectories.</p>
      *
      * @return a list of Steam library directories
+     *
      * @throws SteamDirectoryException if no Steam installation or library directories are located
      */
     public static Set<Path> getSteamLibraries() throws SteamDirectoryException {
         Path steamDir = getSteamInstallDirectory();
         Path libFile = steamDir.resolve(STEAM_LIBRARY_FOLDERS);
-    
+        
         Set<Path> paths = new HashSet<>();
         paths.add(steamDir); //Add Steam install dir
         
@@ -157,8 +172,9 @@ public class SteamUtils {
      *
      * @param name the installation name of the application
      * @return the path of the found directory, or null if the application can't be found
-     * @throws SteamDirectoryException  if no Steam installation or library directories are located
-     * @throws SecurityException        if the current security manager disallows access to the directory
+     *
+     * @throws SteamDirectoryException if no Steam installation or library directories are located
+     * @throws SecurityException       if the current security manager disallows access to the directory
      */
     public static Path findApplicationDirectoryByName(String name) throws SteamDirectoryException {
         for (Path p : getSteamLibraries()) {
@@ -175,8 +191,9 @@ public class SteamUtils {
      * Attempts to locate the CS:GO configuration folder installed on this computer.
      *
      * @return the CS:GO configuration folder, or null if the game can't be found
-     * @throws SteamDirectoryException  if no Steam installation or library directories are located
-     * @throws SecurityException        if the current security manager disallows access to the directory
+     *
+     * @throws SteamDirectoryException if no Steam installation or library directories are located
+     * @throws SecurityException       if the current security manager disallows access to the directory
      * @see GSIConfig#createConfig(Path, GSIConfig, String)
      */
     public static Path locateCsgoConfigFolder() throws SteamDirectoryException {
@@ -188,15 +205,16 @@ public class SteamUtils {
     }
     
     
-    
-    /** Helper method to read Windows registry keys */
+    /**
+     * Helper method to read Windows registry keys
+     */
     private static String readWinRegValue(String path, String key) {
         try {
             Process proc = Runtime.getRuntime().exec("reg query \"" + path + "\" /v \"" + key + "\"");
             BufferedReader reader = new BufferedReader(new InputStreamReader(proc.getInputStream()));
             
             String line;
-            while ((line = reader.readLine()) != null && !line.startsWith("    ")); //Loop until line with delimiter
+            while ((line = reader.readLine()) != null && !line.startsWith("    ")) ; //Loop until line with delimiter
             reader.close();
             proc.destroy();
             
@@ -207,5 +225,5 @@ public class SteamUtils {
         }
         return null;
     }
-
+    
 }

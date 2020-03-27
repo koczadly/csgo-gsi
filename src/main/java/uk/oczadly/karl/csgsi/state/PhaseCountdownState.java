@@ -29,27 +29,36 @@ public class PhaseCountdownState {
     }
     
     
-    
     public enum Phase {
-        /** Game currently in progress. */
+        /**
+         * Game currently in progress.
+         */
         @SerializedName("live")
         LIVE,
-    
-        /** Game in progress and bomb has been planted. */
+        
+        /**
+         * Game in progress and bomb has been planted.
+         */
         @SerializedName("bomb")
         BOMB,
-    
-        /** Bomb is currently being defused. */
+        
+        /**
+         * Bomb is currently being defused.
+         */
         @SerializedName("defuse")
         DEFUSE,
-    
-        /** Round is over. */
+        
+        /**
+         * Round is over.
+         */
         @SerializedName("over")
         OVER,
-    
-        /** Round is over. */
+        
+        /**
+         * Round is over.
+         */
         @SerializedName("freezetime")
-        FREEZE_TIME;
+        FREEZE_TIME
     }
     
 }

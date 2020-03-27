@@ -5,7 +5,7 @@ import com.google.gson.annotations.SerializedName;
 import uk.oczadly.karl.csgsi.state.components.Team;
 
 public class RoundState {
-
+    
     @Expose
     @SerializedName("phase")
     private RoundPhase phase;
@@ -41,33 +41,44 @@ public class RoundState {
     }
     
     
-    
     public enum RoundPhase {
-        /** Round has ended. */
+        /**
+         * Round has ended.
+         */
         @SerializedName("over")
         OVER,
-    
-        /** Round is currently in freeze time. */
+        
+        /**
+         * Round is currently in freeze time.
+         */
         @SerializedName("freezetime")
         FREEZE_TIME,
         
-        /** Round is currently in progress. */
+        /**
+         * Round is currently in progress.
+         */
         @SerializedName("live")
-        LIVE;
+        LIVE
     }
     
     public enum BombPhase {
-        /** Bomb has exploded. */
+        /**
+         * Bomb has exploded.
+         */
         @SerializedName("exploded")
         EXPLODED,
         
-        /** Bomb has been planted. */
+        /**
+         * Bomb has been planted.
+         */
         @SerializedName("planted")
         PLANTED,
         
-        /** Bomb has been defused. */
+        /**
+         * Bomb has been defused.
+         */
         @SerializedName("defused")
-        DEFUSED;
+        DEFUSED
     }
-
+    
 }
