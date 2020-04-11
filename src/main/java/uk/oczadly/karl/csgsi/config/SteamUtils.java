@@ -85,21 +85,25 @@ public class SteamUtils {
             LOGGER.debug("Located a total of {} possible Steam installation candidates", candidatePaths.size());
         }
         
-        //Search for valid path
-        boolean caughtSecurityEx = false;
+        // Search for valid path
+        SecurityException caughtEx = null;
         for (Path p : candidatePaths) {
             try {
-                if (Files.isDirectory(p)) {
-                    return p; //Exists!
-                }
+                if (Files.isDirectory(p))
+                    return p; // Exists!
             } catch (SecurityException e) {
-                caughtSecurityEx = true;
+                LOGGER.warn("Could not read potential Steam directory file {}", p.toAbsolutePath(), e);
+                if (caughtEx == null)
+                    caughtEx = e;
             }
         }
         
-        //No suitable path found
-        throw new SteamDirectoryException("No Steam installation directory could be located."
-                + (caughtSecurityEx ? " Additionally, a SecurityException was caught during the process." : ""));
+        //No suitable path found by this point
+        if (caughtEx != null) {
+            throw new SteamDirectoryException("The Steam installation directory could not be found.", caughtEx);
+        } else {
+            throw new SteamDirectoryException("The Steam installation directory could not be found.");
+        }
     }
     
     
