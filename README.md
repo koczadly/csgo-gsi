@@ -18,7 +18,7 @@ This project is hosted on Maven Central. To import this library, add the followi
 <dependency>
     <groupId>uk.oczadly.karl</groupId>
     <artifactId>csgo-gsi</artifactId>
-    <version>1.1.0</version>
+    <version>1.1.1</version>
 </dependency>
 ```
 
