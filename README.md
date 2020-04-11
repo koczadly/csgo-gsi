@@ -40,10 +40,11 @@ GSIConfig config = new GSIConfig("http://127.0.0.1:1337")
                 DataComponent.ROUND);
 
 try {
-    //Locate the CSGO configuration folder
+    // Locate the CSGO configuration folder
     Path configPath = SteamUtils.locateCsgoConfigFolder();
     
     if (configPath != null) {
+        // Create the service config file
         GSIConfig.createConfig(configPath, config, "my_service");
         System.out.println("Config successfully created!");
     } else {
@@ -61,18 +62,18 @@ To listen for new game state information, a GSIServer object must be created and
 implementing GSIObserver must be registered to the server object. The example below demonstrates a basic
 listener which prints the client's logged in Steam ID to the console.
 ```java
-//Create a new observer (anonymous class)
+// Create a new observer (anonymous class)
 GSIObserver observer = new GSIObserver() {
     @Override
     public void update(GameState state, GameState previousState, Map<String, String> authTokens, InetAddress address) {
-        //Access state information with the 'state' object...
+        // Access state information with the 'state' object...
         System.out.println("New state! Client SteamID: " + state.getProvider().getClientSteamId());
     }
 };
 
-GSIServer server = new GSIServer(1337); //Configure on port 1337
-server.registerObserver(observer); //Register observer
-server.start(); //Start the server (on the above specified port)
+GSIServer server = new GSIServer(1337); // Configure on port 1337
+server.registerObserver(observer); // Register observer
+server.startServer(); / Start the server (on the above specified port)
 ```
 
 ## Development
