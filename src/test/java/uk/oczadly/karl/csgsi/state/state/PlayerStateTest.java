@@ -1,10 +1,8 @@
 package uk.oczadly.karl.csgsi.state.state;
 
-import com.google.gson.annotations.SerializedName;
 import org.junit.BeforeClass;
 import org.junit.Test;
 import uk.oczadly.karl.csgsi.state.GameState;
-import uk.oczadly.karl.csgsi.state.MapState;
 import uk.oczadly.karl.csgsi.state.PlayerState;
 import uk.oczadly.karl.csgsi.state.components.Coordinate;
 import uk.oczadly.karl.csgsi.state.components.Team;
