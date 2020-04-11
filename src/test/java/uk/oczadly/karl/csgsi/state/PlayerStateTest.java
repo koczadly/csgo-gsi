@@ -1,11 +1,10 @@
-package uk.oczadly.karl.csgsi.state.state;
+package uk.oczadly.karl.csgsi.state;
 
 import org.junit.BeforeClass;
 import org.junit.Test;
-import uk.oczadly.karl.csgsi.state.GameState;
-import uk.oczadly.karl.csgsi.state.PlayerState;
 import uk.oczadly.karl.csgsi.state.components.Coordinate;
 import uk.oczadly.karl.csgsi.state.components.Team;
+import uk.oczadly.karl.csgsi.state.components.Weapon;
 
 import static org.junit.Assert.*;
 
@@ -144,10 +143,10 @@ public class PlayerStateTest extends GameStateBaseTest {
         PlayerState.WeaponDetails weapon1 = playerState.getWeaponsInventory().get(1);
         assertNotNull(weapon1);
 
-        assertEquals(PlayerState.Weapon.GLOCK, weapon1.getWeapon());
+        assertEquals(Weapon.GLOCK, weapon1.getWeapon());
         assertEquals("weapon_glock", weapon1.getName());
         assertEquals("default", weapon1.getSkin());
-        assertEquals(PlayerState.WeaponType.PISTOL, weapon1.getWeaponType());
+        assertEquals(Weapon.Type.PISTOL, weapon1.getWeaponType());
         assertEquals(20, weapon1.getAmmoClip());
         assertEquals(20, weapon1.getMaxAmmoClip());
         assertEquals(120, weapon1.getAmmoReserve());
@@ -178,26 +177,6 @@ public class PlayerStateTest extends GameStateBaseTest {
     public void testActivityEnum() {
         testEnums(PlayerState.Activity.class,
                 "playing", "textinput", "menu");
-    }
-    
-    @Test
-    public void testWeaponTypeEnum() {
-        testEnums(PlayerState.WeaponType.class,
-                "Pistol", "Rifle", "Knife", "Tablet", "Fists", "StackableItem", "Submachine Gun", "C4", "Melee",
-                "Breach Charge", "Grenade");
-    }
-
-    @Test
-    public void testWeaponEnum() {
-        testEnums(PlayerState.Weapon.class,
-                "weapon_ak47", "weapon_aug", "weapon_awp", "weapon_bizon", "weapon_c4", "weapon_cz75a",
-                "weapon_deagle", "weapon_decoy", "weapon_elite", "weapon_famas", "weapon_fiveseven", "weapon_flashbang",
-                "weapon_g3sg1", "weapon_galilar", "weapon_glock", "weapon_healthshot", "weapon_hegrenade",
-                "weapon_hkp2000", "weapon_incgrenade", "weapon_knife", "weapon_m4a1", "weapon_m4a1_silencer",
-                "weapon_m249", "weapon_mac10", "weapon_mag7", "weapon_molotov", "weapon_mp7", "weapon_mp9",
-                "weapon_negev", "weapon_nova", "weapon_p90", "weapon_p250", "weapon_revolver", "weapon_sawedoff",
-                "weapon_scar20", "weapon_sg556", "weapon_tagrenade", "weapon_smokegrenade", "weapon_ssg08",
-                "weapon_tec9", "weapon_ump45", "weapon_usp_silencer", "weapon_xm1014", "weapon_taser");
     }
     
     @Test

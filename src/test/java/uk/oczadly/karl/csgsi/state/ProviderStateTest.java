@@ -1,8 +1,6 @@
-package uk.oczadly.karl.csgsi.state.state;
+package uk.oczadly.karl.csgsi.state;
 
 import org.junit.Test;
-import uk.oczadly.karl.csgsi.state.GameState;
-import uk.oczadly.karl.csgsi.state.ProviderState;
 
 import static org.junit.Assert.*;
 

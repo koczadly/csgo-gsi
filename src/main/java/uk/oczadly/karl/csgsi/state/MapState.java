@@ -11,7 +11,10 @@ import com.google.gson.reflect.TypeToken;
 import uk.oczadly.karl.csgsi.state.components.Team;
 
 import java.lang.reflect.Type;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+import java.util.TreeMap;
 
 public class MapState {
     
@@ -128,18 +131,15 @@ public class MapState {
     }
     
     
-    private class RoundOutcomeDeserializer implements JsonDeserializer<List<RoundOutcome>> {
+    public static class RoundOutcomeDeserializer implements JsonDeserializer<List<RoundOutcome>> {
         @Override
         public List<RoundOutcome> deserialize(JsonElement json, Type typeOfT, JsonDeserializationContext context) throws JsonParseException {
-            Map<Integer, RoundOutcome> map = context.deserialize(json,
+            TreeMap<Integer, RoundOutcome> map = context.deserialize(json,
                     new TypeToken<TreeMap<Integer, RoundOutcome>>() {}.getType());
             
-            List<RoundOutcome> list = new ArrayList<>(map.size());
-            
-            if (map != null)
-                list.addAll(map.values());
-            
-            return Collections.unmodifiableList(list);
+            return map != null
+                    ? Collections.unmodifiableList(new ArrayList<>(map.values()))
+                    : Collections.emptyList();
         }
     }
     

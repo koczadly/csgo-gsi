@@ -1,13 +1,10 @@
-package uk.oczadly.karl.csgsi.state.state;
+package uk.oczadly.karl.csgsi.state;
 
 import org.junit.BeforeClass;
 import org.junit.Test;
-import uk.oczadly.karl.csgsi.state.GameState;
-import uk.oczadly.karl.csgsi.state.MapState;
-import uk.oczadly.karl.csgsi.state.RoundState;
-import uk.oczadly.karl.csgsi.state.components.Team;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
 
 public class MapStateTest extends GameStateBaseTest {
     

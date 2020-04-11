@@ -1,10 +1,6 @@
-package uk.oczadly.karl.csgsi.state.state;
+package uk.oczadly.karl.csgsi.state;
 
-import org.junit.BeforeClass;
 import org.junit.Test;
-import uk.oczadly.karl.csgsi.state.BombState;
-import uk.oczadly.karl.csgsi.state.GameState;
-import uk.oczadly.karl.csgsi.state.components.Coordinate;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;

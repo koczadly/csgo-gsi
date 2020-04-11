@@ -10,9 +10,12 @@ import com.google.gson.annotations.SerializedName;
 import com.google.gson.reflect.TypeToken;
 import uk.oczadly.karl.csgsi.state.components.Coordinate;
 import uk.oczadly.karl.csgsi.state.components.Team;
+import uk.oczadly.karl.csgsi.state.components.Weapon;
 
-import java.lang.reflect.Type;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+import java.util.TreeMap;
 
 public class PlayerState {
 
@@ -50,7 +53,7 @@ public class PlayerState {
     
     @Expose
     @SerializedName("weapons")
-    @JsonAdapter(WeaponDeserializer.class)
+    @JsonAdapter(WeaponsListDeserializer.class)
     private List<WeaponDetails> weapons;
     
     @Expose
@@ -151,9 +154,9 @@ public class PlayerState {
     }
     
     
-    private static class WeaponDeserializer implements JsonDeserializer<List<WeaponDetails>> {
+    private static class WeaponsListDeserializer implements JsonDeserializer<List<WeaponDetails>> {
         @Override
-        public List<WeaponDetails> deserialize(JsonElement json, Type typeOfT, JsonDeserializationContext context) throws JsonParseException {
+        public List<WeaponDetails> deserialize(JsonElement json, java.lang.reflect.Type typeOfT, JsonDeserializationContext context) throws JsonParseException {
             TreeMap<String, WeaponDetails> map = context.deserialize(json,
                     new TypeToken<TreeMap<String, WeaponDetails>>() {}.getType());
             
@@ -333,7 +336,7 @@ public class PlayerState {
         
         @Expose
         @SerializedName("type")
-        private WeaponType weaponType;
+        private Weapon.Type weaponType;
         
         @Expose
         @SerializedName("ammo_clip")
@@ -368,7 +371,7 @@ public class PlayerState {
             return skin;
         }
         
-        public WeaponType getWeaponType() {
+        public Weapon.Type getWeaponType() {
             return weaponType;
         }
         
@@ -386,140 +389,6 @@ public class PlayerState {
         
         public WeaponState getState() {
             return state;
-        }
-        
-    }
-    
-    public enum WeaponType {
-        @SerializedName("Pistol")
-        PISTOL,
-        @SerializedName("Rifle")
-        RIFLE,
-        @SerializedName("Knife")
-        KNIFE,
-        @SerializedName("Tablet")
-        TABLET,
-        @SerializedName("Fists")
-        FISTS,
-        @SerializedName("StackableItem")
-        STACKABLE_ITEM,
-        @SerializedName("Submachine Gun")
-        SUBMACHINE_GUN,
-        @SerializedName("C4")
-        BOMB,
-        @SerializedName("Melee")
-        MELEE,
-        @SerializedName("Breach Charge")
-        BREACH_CHARGE,
-        @SerializedName("Grenade")
-        GRENADE
-    }
-
-    public enum Weapon {
-        @SerializedName("weapon_ak47")
-        AK47("weapon_ak47"),
-        @SerializedName("weapon_aug")
-        AUG("weapon_aug"),
-        @SerializedName("weapon_awp")
-        AWP("weapon_awp"),
-        @SerializedName("weapon_bizon")
-        BIZON("weapon_bizon"),
-        @SerializedName("weapon_c4")
-        C4("weapon_c4"),
-        @SerializedName("weapon_cz75a")
-        CZ75A("weapon_cz75a"),
-        @SerializedName("weapon_deagle")
-        DEAGLE("weapon_deagle"),
-        @SerializedName("weapon_decoy")
-        DECOY("weapon_decoy"),
-        @SerializedName("weapon_elite")
-        ELITE("weapon_elite"),
-        @SerializedName("weapon_famas")
-        FAMAS("weapon_famas"),
-        @SerializedName("weapon_fiveseven")
-        FIVE_SEVEN("weapon_fiveseven"),
-        @SerializedName("weapon_flashbang")
-        FLASH_BANG("weapon_flashbang"),
-        @SerializedName("weapon_g3sg1")
-        G3SG1("weapon_g3sg1"),
-        @SerializedName("weapon_galilar")
-        GALIL_AR("weapon_galilar"),
-        @SerializedName("weapon_glock")
-        GLOCK("weapon_glock"),
-        @SerializedName("weapon_healthshot")
-        HEALTH_SHOT("weapon_healthshot"),
-        @SerializedName("weapon_hegrenade")
-        HE_GRENADE("weapon_hegrenade"),
-        @SerializedName("weapon_hkp2000")
-        HKP2000("weapon_hkp2000"),
-        @SerializedName("weapon_incgrenade")
-        INC_GRENADE("weapon_incgrenade"),
-        @SerializedName("weapon_knife")
-        KNIFE("weapon_knife"),
-        @SerializedName("weapon_m4a1")
-        M4A1("weapon_m4a1"),
-        @SerializedName("weapon_m4a1_silencer")
-        M4A1_SILENCER("weapon_m4a1_silencer"),
-        @SerializedName("weapon_m249")
-        M249("weapon_m249"),
-        @SerializedName("weapon_mac10")
-        MAC10("weapon_mac10"),
-        @SerializedName("weapon_mag7")
-        MAG7("weapon_mag7"),
-        @SerializedName("weapon_molotov")
-        MOLOTOV("weapon_molotov"),
-        @SerializedName("weapon_mp7")
-        MP7("weapon_mp7"),
-        @SerializedName("weapon_mp9")
-        MP9("weapon_mp9"),
-        @SerializedName("weapon_negev")
-        NEGEV("weapon_negev"),
-        @SerializedName("weapon_nova")
-        NOVA("weapon_nova"),
-        @SerializedName("weapon_p90")
-        P90("weapon_p90"),
-        @SerializedName("weapon_p250")
-        P250("weapon_p250"),
-        @SerializedName("weapon_revolver")
-        REVOLVER("weapon_revolver"),
-        @SerializedName("weapon_sawedoff")
-        SAWEDOFF("weapon_sawedoff"),
-        @SerializedName("weapon_scar20")
-        SCAR20("weapon_scar20"),
-        @SerializedName("weapon_sg556")
-        SG556("weapon_sg556"),
-        @SerializedName("weapon_tagrenade")
-        TA_GRENADE("weapon_tagrenade"),
-        @SerializedName("weapon_smokegrenade")
-        SMOKE_GRENADE("weapon_smokegrenade"),
-        @SerializedName("weapon_ssg08")
-        SSG08("weapon_ssg08"),
-        @SerializedName("weapon_tec9")
-        TEC9("weapon_tec9"),
-        @SerializedName("weapon_ump45")
-        UMP45("weapon_ump45"),
-        @SerializedName("weapon_usp_silencer")
-        USP_SILENCER("weapon_usp_silencer"),
-        @SerializedName("weapon_xm1014")
-        XM1014("weapon_xm1014"),
-        @SerializedName("weapon_taser")
-        TASER("weapon_taser");
-
-        
-        String name;
-
-        Weapon(String name) {
-            this.name = name;
-        }
-        
-
-        public String getName() {
-            return name;
-        }
-    
-        @Override
-        public String toString() {
-            return getName();
         }
         
     }

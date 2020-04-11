@@ -1,8 +1,7 @@
-package uk.oczadly.karl.csgsi.state.state;
+package uk.oczadly.karl.csgsi.state;
 
 import org.junit.Test;
 import static org.junit.Assert.*;
-import uk.oczadly.karl.csgsi.state.GameState;
 
 public class GameStateTest extends GameStateBaseTest {
     

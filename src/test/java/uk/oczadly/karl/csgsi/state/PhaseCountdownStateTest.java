@@ -1,10 +1,8 @@
-package uk.oczadly.karl.csgsi.state.state;
+package uk.oczadly.karl.csgsi.state;
 
 import org.junit.BeforeClass;
 import org.junit.Test;
-import uk.oczadly.karl.csgsi.state.GameState;
 import uk.oczadly.karl.csgsi.state.MapState;
-import uk.oczadly.karl.csgsi.state.PhaseCountdownState;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;

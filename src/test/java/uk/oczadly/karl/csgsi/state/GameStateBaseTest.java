@@ -1,4 +1,4 @@
-package uk.oczadly.karl.csgsi.state.state;
+package uk.oczadly.karl.csgsi.state;
 
 import com.google.gson.Gson;
 import org.junit.Test;
