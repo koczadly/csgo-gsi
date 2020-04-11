@@ -151,18 +151,15 @@ public class PlayerState {
     }
     
     
-    private class WeaponDeserializer implements JsonDeserializer<List<WeaponDetails>> {
+    private static class WeaponDeserializer implements JsonDeserializer<List<WeaponDetails>> {
         @Override
         public List<WeaponDetails> deserialize(JsonElement json, Type typeOfT, JsonDeserializationContext context) throws JsonParseException {
-            Map<String, WeaponDetails> map = context.deserialize(json,
+            TreeMap<String, WeaponDetails> map = context.deserialize(json,
                     new TypeToken<TreeMap<String, WeaponDetails>>() {}.getType());
             
-            List<WeaponDetails> list = new ArrayList<>(map.size());
-            
-            if (map != null)
-                list.addAll(map.values());
-            
-            return Collections.unmodifiableList(list);
+            return map != null
+                    ? Collections.unmodifiableList(new ArrayList<>(map.values()))
+                    : Collections.emptyList();
         }
     }
     
@@ -355,8 +352,14 @@ public class PlayerState {
         private WeaponState state;
 
 
-        public Weapon getWeapon() { return weapon; }
-
+        public Weapon getWeapon() {
+            return weapon;
+        }
+    
+        /**
+         * @deprecated use of {@link #getWeapon()} preferred
+         */
+        @Deprecated
         public String getName() {
             return weapon.getName();
         }
@@ -502,15 +505,23 @@ public class PlayerState {
         @SerializedName("weapon_taser")
         TASER("weapon_taser");
 
+        
         String name;
 
         Weapon(String name) {
             this.name = name;
         }
+        
 
         public String getName() {
             return name;
         }
+    
+        @Override
+        public String toString() {
+            return getName();
+        }
+        
     }
     
     public enum WeaponState {
