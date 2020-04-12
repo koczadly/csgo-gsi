@@ -73,7 +73,7 @@ GSIObserver observer = new GSIObserver() {
 
 GSIServer server = new GSIServer(1337); // Configure on port 1337
 server.registerObserver(observer); // Register observer
-server.startServer(); / Start the server (on the above specified port)
+server.startServer(); // Start the server in a new thread (on the above specified port)
 ```
 
 ## Development
