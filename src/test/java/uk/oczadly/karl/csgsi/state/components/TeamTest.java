@@ -2,12 +2,12 @@ package uk.oczadly.karl.csgsi.state.components;
 
 import com.google.gson.Gson;
 import org.junit.Test;
-import uk.oczadly.karl.csgsi.GSIUtil;
+import uk.oczadly.karl.csgsi.internal.Util;
 import static org.junit.Assert.*;
 
 public class TeamTest {
     
-    Gson gson = GSIUtil.createGsonObject().create();
+    Gson gson = Util.createGsonObject().create();
     
     
     @Test
