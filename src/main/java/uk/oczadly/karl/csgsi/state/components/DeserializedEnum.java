@@ -1,6 +1,8 @@
 package uk.oczadly.karl.csgsi.state.components;
 
-import com.google.gson.*;
+import com.google.gson.Gson;
+import com.google.gson.TypeAdapter;
+import com.google.gson.TypeAdapterFactory;
 import com.google.gson.annotations.JsonAdapter;
 import com.google.gson.reflect.TypeToken;
 import com.google.gson.stream.JsonReader;
@@ -10,7 +12,6 @@ import java.io.IOException;
 import java.io.StringReader;
 import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
-import java.util.Arrays;
 import java.util.Objects;
 
 @JsonAdapter(DeserializedEnum.DeserializerFactory.class)
@@ -100,18 +101,6 @@ public class DeserializedEnum<E extends Enum<E>> {
         public void write(JsonWriter out, DeserializedEnum<E> value) throws IOException {
             throw new UnsupportedOperationException();
         }
-    }
-    
-    
-    public static void main(String[] args) {
-        Gson gson = new Gson();
-        Test t = gson.fromJson("{\"weapon\":\"weapon_slugs\"}", Test.class);
-        System.out.println(t.weapon.getEnum() != null ? t.weapon.getEnum().name() : "null");
-        System.out.println(t.weapon.getRawString());
-    }
-    
-    static class Test {
-        DeserializedEnum<Weapon> weapon;
     }
 
 }
