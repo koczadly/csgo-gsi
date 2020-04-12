@@ -6,6 +6,7 @@ import com.google.gson.JsonParser;
 import com.google.gson.reflect.TypeToken;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import uk.oczadly.karl.csgsi.internal.Util;
 import uk.oczadly.karl.csgsi.internal.httpserver.HTTPConnectionHandler;
 import uk.oczadly.karl.csgsi.internal.httpserver.HTTPServer;
 import uk.oczadly.karl.csgsi.state.GameState;
@@ -40,7 +41,7 @@ public class GSIServer {
     
     private final Map<String, String> requiredAuthTokens;
     
-    private final Gson gson = GSIUtil.createGsonObject().create();
+    private final Gson gson = Util.createGsonObject().create();
     
     private volatile GameState latestGameState;
     
@@ -198,7 +199,7 @@ public class GSIServer {
      * Handles a new JSON state and notifies the appropriate observers.
      */
     void handleStateUpdate(String json, InetAddress address) {
-        JsonObject jsonObject = new JsonParser().parse(json).getAsJsonObject();
+        JsonObject jsonObject = JsonParser.parseString(json).getAsJsonObject();
         
         //Parse auth tokens
         Map<String, String> authTokens = gson.fromJson(jsonObject.getAsJsonObject("auth"),
