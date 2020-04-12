@@ -1,16 +1,13 @@
 package uk.oczadly.karl.csgsi.state;
 
 import com.google.gson.Gson;
-import org.junit.Test;
-import uk.oczadly.karl.csgsi.GSIUtil;
-import uk.oczadly.karl.csgsi.state.GameState;
-import uk.oczadly.karl.csgsi.state.RoundState;
+import uk.oczadly.karl.csgsi.internal.Util;
 
 import static org.junit.Assert.*;
 
 public class GameStateBaseTest {
     
-    public final static Gson GSON = GSIUtil.createGsonObject().create();
+    public final static Gson GSON = Util.createGsonObject().create();
     
     
     public static GameState deserilizeState(String json) {
