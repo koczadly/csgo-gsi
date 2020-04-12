@@ -7,7 +7,7 @@ import static org.junit.Assert.*;
 
 public class TeamTest {
     
-    Gson gson = Util.createGsonObject().create();
+    Gson gson = Util.createGsonObject();
     
     
     @Test

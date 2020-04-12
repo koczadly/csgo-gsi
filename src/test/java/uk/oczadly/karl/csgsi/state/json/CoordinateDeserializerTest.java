@@ -1,15 +1,14 @@
 package uk.oczadly.karl.csgsi.state.json;
 
 import com.google.gson.Gson;
-import com.google.gson.GsonBuilder;
 import org.junit.Test;
 import uk.oczadly.karl.csgsi.state.components.Coordinate;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
 
 public class CoordinateDeserializerTest {
     
-    public Gson gson = new GsonBuilder().registerTypeAdapter(Coordinate.class, new CoordinateDeserializer()).create();
+    public Gson gson = new Gson();
     
     class Container {
         Coordinate val;

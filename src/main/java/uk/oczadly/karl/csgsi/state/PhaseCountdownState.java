@@ -2,12 +2,13 @@ package uk.oczadly.karl.csgsi.state;
 
 import com.google.gson.annotations.Expose;
 import com.google.gson.annotations.SerializedName;
+import uk.oczadly.karl.csgsi.state.components.DeserializedEnum;
 
 public class PhaseCountdownState {
     
     @Expose
     @SerializedName("phase")
-    private Phase phase;
+    private DeserializedEnum<Phase> phase;
     
     @Expose
     @SerializedName("phase_ends_in")
@@ -17,7 +18,7 @@ public class PhaseCountdownState {
     /**
      * @return the currently ongoing countdown phase
      */
-    public Phase getPhase() {
+    public DeserializedEnum<Phase> getPhase() {
         return phase;
     }
     

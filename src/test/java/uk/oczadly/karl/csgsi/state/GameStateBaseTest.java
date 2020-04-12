@@ -7,7 +7,7 @@ import static org.junit.Assert.*;
 
 public class GameStateBaseTest {
     
-    public final static Gson GSON = Util.createGsonObject().create();
+    public final static Gson GSON = Util.createGsonObject();
     
     
     public static GameState deserilizeState(String json) {

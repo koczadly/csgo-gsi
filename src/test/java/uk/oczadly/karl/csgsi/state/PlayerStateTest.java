@@ -99,12 +99,12 @@ public class PlayerStateTest extends GameStateBaseTest {
     
     @Test
     public void testTeam() {
-        assertEquals(Team.TERRORIST, playerState.getTeam());
+        assertEquals(Team.TERRORIST, playerState.getTeam().getEnum());
     }
     
     @Test
     public void testActivity() {
-        assertEquals(PlayerState.Activity.PLAYING, playerState.getActivity());
+        assertEquals(PlayerState.Activity.PLAYING, playerState.getActivity().getEnum());
     }
     
     @Test
@@ -143,14 +143,15 @@ public class PlayerStateTest extends GameStateBaseTest {
         PlayerState.WeaponDetails weapon1 = playerState.getWeaponsInventory().get(1);
         assertNotNull(weapon1);
 
-        assertEquals(Weapon.GLOCK, weapon1.getWeapon());
+        assertEquals(Weapon.GLOCK, weapon1.getWeapon().getEnum());
         assertEquals("weapon_glock", weapon1.getName());
         assertEquals("default", weapon1.getSkin());
-        assertEquals(Weapon.Type.PISTOL, weapon1.getWeaponType());
+        assertTrue(weapon1.isDefaultSkin());
+        assertEquals(Weapon.Type.PISTOL, weapon1.getWeaponType().getEnum());
         assertEquals(20, weapon1.getAmmoClip());
         assertEquals(20, weapon1.getMaxAmmoClip());
         assertEquals(120, weapon1.getAmmoReserve());
-        assertEquals(PlayerState.WeaponState.HOLSTERED, weapon1.getState());
+        assertEquals(PlayerState.WeaponState.HOLSTERED, weapon1.getState().getEnum());
     }
     
     @Test

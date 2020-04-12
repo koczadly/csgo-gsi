@@ -3,6 +3,7 @@ package uk.oczadly.karl.csgsi.state;
 import com.google.gson.annotations.Expose;
 import com.google.gson.annotations.SerializedName;
 import uk.oczadly.karl.csgsi.state.components.Coordinate;
+import uk.oczadly.karl.csgsi.state.components.DeserializedEnum;
 
 public class GrenadeState {
     
@@ -24,7 +25,7 @@ public class GrenadeState {
     
     @Expose
     @SerializedName("type")
-    private Type type;
+    private DeserializedEnum<Type> type;
     
     @Expose
     @SerializedName("effecttime")
@@ -62,7 +63,7 @@ public class GrenadeState {
     /**
      * @return the type of grenade
      */
-    public Type getType() {
+    public DeserializedEnum<Type> getType() {
         return type;
     }
     

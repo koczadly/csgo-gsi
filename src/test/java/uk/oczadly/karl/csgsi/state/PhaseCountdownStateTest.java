@@ -28,7 +28,7 @@ public class PhaseCountdownStateTest extends GameStateBaseTest {
     
     @Test
     public void testPhase() {
-        assertEquals(PhaseCountdownState.Phase.FREEZE_TIME, phaseState.getPhase());
+        assertEquals(PhaseCountdownState.Phase.FREEZE_TIME, phaseState.getPhase().getEnum());
     }
     
     @Test

@@ -8,6 +8,7 @@ import com.google.gson.annotations.Expose;
 import com.google.gson.annotations.JsonAdapter;
 import com.google.gson.annotations.SerializedName;
 import com.google.gson.reflect.TypeToken;
+import uk.oczadly.karl.csgsi.state.components.DeserializedEnum;
 import uk.oczadly.karl.csgsi.state.components.Coordinate;
 import uk.oczadly.karl.csgsi.state.components.Team;
 import uk.oczadly.karl.csgsi.state.components.Weapon;
@@ -37,11 +38,11 @@ public class PlayerState {
     
     @Expose
     @SerializedName("team")
-    private Team team;
+    private DeserializedEnum<Team> team;
     
     @Expose
     @SerializedName("activity")
-    private Activity activity;
+    private DeserializedEnum<Activity> activity;
     
     @Expose
     @SerializedName("match_stats")
@@ -100,14 +101,14 @@ public class PlayerState {
     /**
      * @return which team this player is on (terrorist or counter-terrorist)
      */
-    public Team getTeam() {
+    public DeserializedEnum<Team> getTeam() {
         return team;
     }
     
     /**
      * @return this player's activity, or null if not the client
      */
-    public Activity getActivity() {
+    public DeserializedEnum<Activity> getActivity() {
         return activity;
     }
     
@@ -325,10 +326,10 @@ public class PlayerState {
     }
     
     public static class WeaponDetails {
-
+        
         @Expose
         @SerializedName("name")
-        private Weapon weapon;
+        private DeserializedEnum<Weapon> weapon;
         
         @Expose
         @SerializedName("paintkit")
@@ -336,7 +337,7 @@ public class PlayerState {
         
         @Expose
         @SerializedName("type")
-        private Weapon.Type weaponType;
+        private DeserializedEnum<Weapon.Type> weaponType;
         
         @Expose
         @SerializedName("ammo_clip")
@@ -352,26 +353,31 @@ public class PlayerState {
         
         @Expose
         @SerializedName("state")
-        private WeaponState state;
-
-
-        public Weapon getWeapon() {
+        private DeserializedEnum<WeaponState> state;
+        
+        
+        public DeserializedEnum<Weapon> getWeapon() {
             return weapon;
         }
-    
+        
         /**
-         * @deprecated use of {@link #getWeapon()} preferred
+         * @return the internal name of the weapon
+         * @deprecated use {@link #getWeapon()} to retrieve the raw name or enum value
          */
-        @Deprecated
+        @Deprecated(forRemoval = true)
         public String getName() {
-            return weapon.getName();
+            return weapon.getRawString();
         }
         
         public String getSkin() {
             return skin;
         }
         
-        public Weapon.Type getWeaponType() {
+        public boolean isDefaultSkin() {
+            return skin == null || skin.equalsIgnoreCase("default");
+        }
+        
+        public DeserializedEnum<Weapon.Type> getWeaponType() {
             return weaponType;
         }
         
@@ -387,7 +393,7 @@ public class PlayerState {
             return ammoReserve;
         }
         
-        public WeaponState getState() {
+        public DeserializedEnum<WeaponState> getState() {
             return state;
         }
         

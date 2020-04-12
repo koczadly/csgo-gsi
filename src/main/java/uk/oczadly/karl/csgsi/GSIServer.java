@@ -41,7 +41,7 @@ public class GSIServer {
     
     private final Map<String, String> requiredAuthTokens;
     
-    private final Gson gson = Util.createGsonObject().create();
+    private final Gson gson = Util.createGsonObject();
     
     private volatile GameState latestGameState;
     

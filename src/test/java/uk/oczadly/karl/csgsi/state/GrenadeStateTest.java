@@ -31,7 +31,7 @@ public class GrenadeStateTest extends GameStateBaseTest {
         assertEquals(new Coordinate(2499.41, 49.75, 1616.00), grenade.getPosition());
         assertEquals(new Coordinate(1d, 2d, 3d), grenade.getVelocity());
         assertEquals(6.9, grenade.getLifetime(), 1e-9);
-        assertEquals(GrenadeState.Type.SMOKE, grenade.getType());
+        assertEquals(GrenadeState.Type.SMOKE, grenade.getType().getEnum());
         assertEquals(5d, grenade.getEffectTime(), 1e-9);
     }
     

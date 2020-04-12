@@ -8,6 +8,7 @@ import com.google.gson.annotations.Expose;
 import com.google.gson.annotations.JsonAdapter;
 import com.google.gson.annotations.SerializedName;
 import com.google.gson.reflect.TypeToken;
+import uk.oczadly.karl.csgsi.state.components.DeserializedEnum;
 import uk.oczadly.karl.csgsi.state.components.Team;
 
 import java.lang.reflect.Type;
@@ -21,11 +22,11 @@ public class MapState {
     @Expose
     @SerializedName("round_wins")
     @JsonAdapter(RoundOutcomeDeserializer.class)
-    private List<RoundOutcome> rounds = Collections.emptyList();
+    private List<DeserializedEnum<RoundOutcome>> rounds = Collections.emptyList();
     
     @Expose
     @SerializedName("mode")
-    private GameMode mode;
+    private DeserializedEnum<GameMode> mode;
     
     @Expose
     @SerializedName("name")
@@ -33,7 +34,7 @@ public class MapState {
     
     @Expose
     @SerializedName("phase")
-    private GamePhase phase;
+    private DeserializedEnum<GamePhase> phase;
     
     @Expose
     @SerializedName("round")
@@ -63,14 +64,14 @@ public class MapState {
     /**
      * @return an ordered list of round outcomes
      */
-    public List<RoundOutcome> getRoundResults() {
+    public List<DeserializedEnum<RoundOutcome>> getRoundResults() {
         return rounds;
     }
     
     /**
      * @return the current game mode being played
      */
-    public GameMode getMode() {
+    public DeserializedEnum<GameMode> getMode() {
         return mode;
     }
     
@@ -84,7 +85,7 @@ public class MapState {
     /**
      * @return the current phase of the match
      */
-    public GamePhase getPhase() {
+    public DeserializedEnum<GamePhase> getPhase() {
         return phase;
     }
     
@@ -131,11 +132,12 @@ public class MapState {
     }
     
     
-    public static class RoundOutcomeDeserializer implements JsonDeserializer<List<RoundOutcome>> {
+    public static class RoundOutcomeDeserializer implements JsonDeserializer<List<DeserializedEnum<RoundOutcome>>> {
         @Override
-        public List<RoundOutcome> deserialize(JsonElement json, Type typeOfT, JsonDeserializationContext context) throws JsonParseException {
-            TreeMap<Integer, RoundOutcome> map = context.deserialize(json,
-                    new TypeToken<TreeMap<Integer, RoundOutcome>>() {}.getType());
+        public List<DeserializedEnum<RoundOutcome>> deserialize(JsonElement json, Type typeOfT,
+                                                                JsonDeserializationContext context) throws JsonParseException {
+            TreeMap<Integer, DeserializedEnum<RoundOutcome>> map = context.deserialize(json,
+                    new TypeToken<TreeMap<Integer, DeserializedEnum<RoundOutcome>>>() {}.getType());
             
             return map != null
                     ? Collections.unmodifiableList(new ArrayList<>(map.values()))

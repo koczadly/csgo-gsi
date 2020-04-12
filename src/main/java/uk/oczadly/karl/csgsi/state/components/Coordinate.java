@@ -1,5 +1,14 @@
 package uk.oczadly.karl.csgsi.state.components;
 
+import com.google.gson.JsonDeserializationContext;
+import com.google.gson.JsonDeserializer;
+import com.google.gson.JsonElement;
+import com.google.gson.JsonParseException;
+import com.google.gson.annotations.JsonAdapter;
+
+import java.lang.reflect.Type;
+
+@JsonAdapter(Coordinate.Deserializer.class)
 public class Coordinate {
     
     private final double x, y, z;
@@ -51,6 +60,19 @@ public class Coordinate {
                 .append(z)
                 .append("}")
                 .toString();
+    }
+    
+    
+    
+    static class Deserializer implements JsonDeserializer<Coordinate> {
+        @Override
+        public Coordinate deserialize(JsonElement json, Type typeOfT, JsonDeserializationContext context) throws JsonParseException {
+            String[] val = json.getAsString().split(",");
+            return new Coordinate(
+                    Double.parseDouble(val[0].trim()),
+                    Double.parseDouble(val[1].trim()),
+                    Double.parseDouble(val[2].trim()));
+        }
     }
     
 }

@@ -52,16 +52,16 @@ public class MapStateTest extends GameStateBaseTest {
     public void testRoundResults() {
         assertNotNull(mapState.getRoundResults());
         assertEquals(4, mapState.getRoundResults().size());
-        assertEquals(MapState.RoundOutcome.T_BOMB_EXPLODE, mapState.getRoundResults().get(0));
-        assertEquals(MapState.RoundOutcome.T_ELIMINATION, mapState.getRoundResults().get(1));
-        assertEquals(MapState.RoundOutcome.T_TIME, mapState.getRoundResults().get(2));
-        assertEquals(MapState.RoundOutcome.CT_ELIMINATION, mapState.getRoundResults().get(3));
+        assertEquals(MapState.RoundOutcome.T_BOMB_EXPLODE, mapState.getRoundResults().get(0).getEnum());
+        assertEquals(MapState.RoundOutcome.T_ELIMINATION, mapState.getRoundResults().get(1).getEnum());
+        assertEquals(MapState.RoundOutcome.T_TIME, mapState.getRoundResults().get(2).getEnum());
+        assertEquals(MapState.RoundOutcome.CT_ELIMINATION, mapState.getRoundResults().get(3).getEnum());
     }
     
     @Test
     public void testGameMode() {
         assertNotNull(mapState.getMode());
-        assertEquals(MapState.GameMode.COMPETITIVE, mapState.getMode());
+        assertEquals(MapState.GameMode.COMPETITIVE, mapState.getMode().getEnum());
     }
     
     @Test
@@ -73,7 +73,7 @@ public class MapStateTest extends GameStateBaseTest {
     @Test
     public void testPhase() {
         assertNotNull(mapState.getPhase());
-        assertEquals(MapState.GamePhase.LIVE, mapState.getPhase());
+        assertEquals(MapState.GamePhase.LIVE, mapState.getPhase().getEnum());
     }
     
     @Test
