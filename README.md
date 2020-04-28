@@ -64,16 +64,13 @@ To listen for new game state information, a GSIServer object must be created and
 implementing GSIObserver must be registered to the server object. The example below demonstrates a basic
 listener which prints the client's logged in Steam ID to the console.
 ```java
-// Create a new observer (anonymous class)
-GSIObserver observer = new GSIObserver() {
-    @Override
-    public void update(GameState gameState, GameStateContext context) {
-        // Access state information with the 'state' object...
-        System.out.println("New state received from game client at address " + context.getAddress().getHostAddress());
-        System.out.println("  Client SteamID: " + gameState.getProviderDetails().getClientSteamId());
-        if (gameState.getMapState() != null) {
-            System.out.println("  Current map: " + gameState.getMapState().getName());
-        }
+// Create a new observer (in this case, using lambda)
+GSIObserver observer = (gameState, context) -> {
+    // Access state information with the 'state' object...
+    System.out.println("New state received from game client at address " + context.getAddress().getHostAddress());
+    System.out.println("  Client SteamID: " + gameState.getProviderDetails().getClientSteamId());
+    if (gameState.getMapState() != null) {
+        System.out.println("  Current map: " + gameState.getMapState().getName());
     }
 };
 
