@@ -34,10 +34,10 @@ public class GSIServerTest {
         server.getObserverExecutorService().shutdown();
         server.getObserverExecutorService().awaitTermination(TIMEOUT_SECONDS, TimeUnit.SECONDS);
         
-        assertNotNull(observer.authTokens);
-        assertEquals(2, observer.authTokens.size());
-        assertEquals("abc123", observer.authTokens.get("token1"));
-        assertEquals("def456", observer.authTokens.get("token2"));
+        assertNotNull(observer.context.getAuthTokens());
+        assertEquals(2, observer.context.getAuthTokens().size());
+        assertEquals("abc123", observer.context.getAuthTokens().get("token1"));
+        assertEquals("def456", observer.context.getAuthTokens().get("token2"));
     }
     
     @Test
@@ -45,13 +45,15 @@ public class GSIServerTest {
         Map<String, String> expectedTokens = new HashMap<>();
         expectedTokens.put("token1", "abc123"); //Valid
         expectedTokens.put("token2", "def456"); //Valid
+        
         assertTrue("Observer wasn't notified despite valid auth", checkAuthValidation(expectedTokens));
     }
     
     @Test
-    public void testAuthTokenValidationSomeValid() throws Exception {
+    public void testAuthTokenValidationOnlyRequiredValid() throws Exception {
         Map<String, String> expectedTokens = new HashMap<>();
         expectedTokens.put("token1", "abc123"); //Valid
+        
         assertTrue("Observer wasn't notified despite valid auth", checkAuthValidation(expectedTokens));
     }
     
@@ -60,14 +62,16 @@ public class GSIServerTest {
         Map<String, String> expectedTokens = new HashMap<>();
         expectedTokens.put("token1", "abc123"); //Valid
         expectedTokens.put("token2", "slugs"); //Invalid (wrong value)
+        
         assertFalse("Observer was notified despite invalid auth", checkAuthValidation(expectedTokens));
     }
     
     @Test
-    public void testAuthTokenValidationInvalidKey() throws Exception {
+    public void testAuthTokenValidationUnspecifiedKey() throws Exception {
         Map<String, String> expectedTokens = new HashMap<>();
         expectedTokens.put("token1", "abc123"); //Valid
         expectedTokens.put("token42", "def456"); //Invalid (key unspecified)
+        
         assertFalse("Observer was notified despite invalid auth", checkAuthValidation(expectedTokens));
     }
     
@@ -87,9 +91,10 @@ public class GSIServerTest {
         GameState state = new GameState(), previous = new GameState();
         Map<String, String> authTokens = new HashMap<>();
         InetAddress address = InetAddress.getLoopbackAddress();
+        GameStateContext context = new GameStateContext(server, previous, address, authTokens);
         
         //Notify observing object
-        server.notifyObservers(state, previous, authTokens, address);
+        server.notifyObservers(state, context);
         
         //Await observer notification...
         server.getObserverExecutorService().shutdown();
@@ -98,12 +103,14 @@ public class GSIServerTest {
         //Verify objects match
         assertSame(state, observer1.state);
         assertSame(state, observer2.state);
-        assertSame(previous, observer1.previous);
-        assertSame(previous, observer2.previous);
-        assertSame(authTokens, observer1.authTokens);
-        assertSame(authTokens, observer2.authTokens);
-        assertSame(address, observer1.address);
-        assertSame(address, observer2.address);
+        assertSame(previous, observer1.context.getPreviousState());
+        assertSame(previous, observer2.context.getPreviousState());
+        assertEquals(authTokens, observer1.context.getAuthTokens());
+        assertEquals(authTokens, observer2.context.getAuthTokens());
+        assertSame(address, observer1.context.getAddress());
+        assertSame(address, observer2.context.getAddress());
+        assertSame(server, observer1.context.getGsiServer());
+        assertSame(server, observer2.context.getGsiServer());
     }
     
     
@@ -119,21 +126,19 @@ public class GSIServerTest {
         server.getObserverExecutorService().shutdown();
         server.getObserverExecutorService().awaitTermination(TIMEOUT_SECONDS, TimeUnit.SECONDS);
         
-        return observer.authTokens != null;
+        return observer.called;
     }
     
     private class TestObserver implements GSIObserver {
+        boolean called = false;
         GameState state;
-        GameState previous;
-        Map<String, String> authTokens;
-        InetAddress address;
+        GameStateContext context;
         
         @Override
-        public void update(GameState state, GameState previous, Map<String, String> authTokens, InetAddress address) {
+        public void update(GameState state, GameStateContext context) {
+            this.called = true;
             this.state = state;
-            this.previous = previous;
-            this.authTokens = authTokens;
-            this.address = address;
+            this.context = context;
         }
     }
 
