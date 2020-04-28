@@ -79,6 +79,10 @@ GSIObserver observer = new GSIObserver() {
 GSIServer server = new GSIServer(1337, Map.of("password", "Q79v5tcxVQ8u"));
 server.registerObserver(observer); // Register our observer object
 server.startServer(); // Start the server in a new thread (on the above specified port)
+
+System.out.println("Server started. Listening for state data...");
+
+Thread.currentThread().join(); // Prevent application exit by waiting for thread interrupt
 ```
 
 ## Development
