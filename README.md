@@ -34,6 +34,7 @@ these utilities:
 ```java
 // Build the configuration for our service
 GSIConfig config = new GSIConfig(1337)
+        .setDescription("Test service for CSGO-GSI") // Not necessary, but adds a useful comment to the file
         .setTimeoutPeriod(1.0)
         .setBufferPeriod(0.5)
         .setAuthToken("password", "Q79v5tcxVQ8u")
@@ -62,12 +63,13 @@ try {
 ### Listening for state information
 To listen for new game state information, a GSIServer object must be created and an instance of a class
 implementing GSIObserver must be registered to the server object. The example below demonstrates a basic
-listener which prints the client's logged in Steam ID to the console.
+listener which prints the client's Steam ID and current map name (if in a game) to the console.
 ```java
-// Create a new observer (in this case, using lambda)
+// Create a new observer (for this example, using a lambda)
 GSIObserver observer = (gameState, context) -> {
-    // Access state information with the 'state' object...
+    // Access state information with the 'gameState' object...
     System.out.println("New state received from game client at address " + context.getAddress().getHostAddress());
+    
     System.out.println("  Client SteamID: " + gameState.getProviderDetails().getClientSteamId());
     if (gameState.getMapState() != null) {
         System.out.println("  Current map: " + gameState.getMapState().getName());

@@ -6,7 +6,6 @@ import org.slf4j.LoggerFactory;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.PrintWriter;
-import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.NotDirectoryException;
@@ -53,6 +52,7 @@ public class GSIConfig {
      * @param port the port of the server
      */
     public GSIConfig(int port) {
+        this();
         setURI(port);
     }
     
@@ -64,7 +64,16 @@ public class GSIConfig {
      * @throws NullPointerException if the provided {@code uri} argument is null
      */
     public GSIConfig(String uri) {
+        this();
         setURI(uri);
+    }
+    
+    /**
+     * Constructs a new GSI configuration object. Refer to class documentation and setter methods for configuring
+     * properties.
+     */
+    public GSIConfig() {
+        this.description = "Created using https://github.com/koczadly/csgo-gsi";
     }
     
     
