@@ -47,6 +47,16 @@ public class GSIConfig {
     
     
     /**
+     * Constructs a new GSI configuration object with the URI as localhost on the specified port. Refer to class
+     * documentation and setter methods for configuring other properties.
+     *
+     * @param port the port of the server
+     */
+    public GSIConfig(int port) {
+        setURI(port);
+    }
+    
+    /**
      * Constructs a new GSI configuration object with the specified URI. Refer to class documentation and setter methods
      * for configuring other properties.
      *
@@ -59,14 +69,29 @@ public class GSIConfig {
     
     
     /**
-     * @param uri the URI of the server to send state data to
+     * Sets the URI of the server to localhost on the specified port.
+     *
+     * @param port the port of the server to send state data to
+     * @return this current object
+     *
+     * @throws NullPointerException if the provided {@code uri} argument is null
+     */
+    public GSIConfig setURI(int port) {
+        if (port < 1 || port > 65535)
+            throw new NullPointerException("Port value is outside the allowable range.");
+        setURI("http://127.0.0.1:" + port);
+        return this;
+    }
+    
+    /**
+     * @param uri the URI (including protocol) of the server to send state data to
      * @return this current object
      *
      * @throws NullPointerException if the provided {@code uri} argument is null
      */
     public GSIConfig setURI(String uri) {
         if (uri == null)
-            throw new NullPointerException("URI argument cannot be null");
+            throw new NullPointerException("URI argument cannot be null.");
         
         this.uri = uri;
         return this;

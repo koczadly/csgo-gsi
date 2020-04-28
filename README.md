@@ -3,13 +3,14 @@
 A Java library for retrieving real-time game information and statistics from Counter-Strike: Global Offensive using
 its built-in *game state integration* service.
 
-This project is in active development, although has already been tested and should provide full functionality.
+This project is in active development, and will receive updates as changes are made to the underlying game state
+ schema supplied by the game.
 
 ## Features
-This library provides 3 main features:
-- Automated location of the Steam and game directories
-- The creation of game state service configurations
-- A server which listens for updates and parses the state details
+This library provides simple access to 3 main features:
+- Automated location of the Steam and game directories (even on externally configured drives)
+- The creation and deletion of game state service configurations
+- A server which listens for updates and parses the game state data
 
 ## Usage
 ### Maven
@@ -31,13 +32,14 @@ which can be used to automatically locate the CSGO game directory. The example b
 these utilities:
 
 ```java
-GSIConfig config = new GSIConfig("http://127.0.0.1:1337")
+// Build the configuration for our service
+GSIConfig config = new GSIConfig(1337)
         .setTimeoutPeriod(1.0)
         .setBufferPeriod(0.5)
         .setAuthToken("password", "Q79v5tcxVQ8u")
         .setDataComponents(
                 DataComponent.PROVIDER,
-                DataComponent.ROUND);
+                DataComponent.MAP); // Alternatively, you can call setAllDataComponents()
 
 try {
     // Locate the CSGO configuration folder
@@ -45,7 +47,7 @@ try {
     
     if (configPath != null) {
         // Create the service config file
-        GSIConfig.createConfig(configPath, config, "my_service");
+        GSIConfig.createConfig(configPath, config, "my_service_name");
         System.out.println("Config successfully created!");
     } else {
         System.out.println("Couldn't locate CS:GO directory");
@@ -65,14 +67,17 @@ listener which prints the client's logged in Steam ID to the console.
 // Create a new observer (anonymous class)
 GSIObserver observer = new GSIObserver() {
     @Override
-    public void update(GameState state, GameState previousState, Map<String, String> authTokens, InetAddress address) {
+    public void update(GameState gameState, GameStateContext context) {
         // Access state information with the 'state' object...
-        System.out.println("New state! Client SteamID: " + state.getProvider().getClientSteamId());
+        System.out.println("New state received from game client at address " + context.getAddress().getHostAddress());
+        System.out.println("  Client SteamID: " + gameState.getProviderDetails().getClientSteamId());
+        System.out.println("  Current map: " + gameState.getMapState().getName());
     }
 };
 
-GSIServer server = new GSIServer(1337); // Configure on port 1337
-server.registerObserver(observer); // Register observer
+// Configure server on port 1337, requiring the specified "password" auth token
+GSIServer server = new GSIServer(1337, Map.of("password", "Q79v5tcxVQ8u"));
+server.registerObserver(observer); // Register our observer object
 server.startServer(); // Start the server in a new thread (on the above specified port)
 ```
 

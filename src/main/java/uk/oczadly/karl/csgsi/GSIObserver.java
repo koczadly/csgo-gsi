@@ -2,9 +2,6 @@ package uk.oczadly.karl.csgsi;
 
 import uk.oczadly.karl.csgsi.state.GameState;
 
-import java.net.InetAddress;
-import java.util.Map;
-
 /**
  * This interface must be implemented by classes that wish to subscribe to game state updates. Objects should be
  * registered to a {@link GSIServer} instance through the {@link GSIServer#registerObserver(GSIObserver)} method.
@@ -14,11 +11,9 @@ public interface GSIObserver {
     /**
      * Called when a new updated state is received from the game client.
      *
-     * @param state      the new game state
-     * @param previous   the previous game state object, or null if this is the first update
-     * @param authTokens the authentication tokens sent by the client
-     * @param address    the network address of the game client which sent the update
+     * @param gameState the new game state
+     * @param context   additional information about the game state and client
      */
-    void update(GameState state, GameState previous, Map<String, String> authTokens, InetAddress address);
+    void update(GameState gameState, GameStateContext context);
     
 }

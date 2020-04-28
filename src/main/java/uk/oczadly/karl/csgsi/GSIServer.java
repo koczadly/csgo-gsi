@@ -28,7 +28,7 @@ import java.util.concurrent.Executors;
  * #startServer()} method. Observers can be registered through the {@link #registerObserver(GSIObserver)} method, which
  * subscribes the object to new game state information as it is received.
  */
-public class GSIServer {
+public final class GSIServer {
     
     private static final Logger LOGGER = LoggerFactory.getLogger(GSIServer.class);
     
@@ -58,15 +58,17 @@ public class GSIServer {
             throw new IllegalArgumentException("Port out of range");
         
         //Validate auth tokens
-        if (requiredAuthTokens == null)
-            requiredAuthTokens = new HashMap<>();
-        for (Map.Entry<String, String> key : requiredAuthTokens.entrySet()) {
-            if (key.getKey() == null || key.getValue() == null)
-                throw new IllegalArgumentException("Auth token key or value cannot be null");
+        if (requiredAuthTokens != null) {
+            for (Map.Entry<String, String> key : requiredAuthTokens.entrySet()) {
+                if (key.getKey() == null || key.getValue() == null)
+                    throw new IllegalArgumentException("Auth token key or value cannot be null");
+            }
+            this.requiredAuthTokens = new HashMap<>(requiredAuthTokens);
+        } else {
+            this.requiredAuthTokens = new HashMap<>();
         }
         
         this.server = new HTTPServer(port, 1, handler);
-        this.requiredAuthTokens = requiredAuthTokens;
     }
     
     /**
@@ -76,7 +78,7 @@ public class GSIServer {
      * @param requiredAuthToken the authentication key value "token" required to accept state reports
      */
     public GSIServer(int port, String requiredAuthToken) {
-        this(port, createTokenMap(requiredAuthToken));
+        this(port, Map.of("token", requiredAuthToken));
     }
     
     /**
@@ -127,16 +129,14 @@ public class GSIServer {
      * Notifies the registered observers of an updated state.
      *
      * @param state         the new game state information
-     * @param previousState the previous game state information
-     * @param authTokens    the authentication tokens sent by the client
-     * @param addr          the network address of the client
+     * @param context       the game state and request context
      */
-    protected void notifyObservers(GameState state, GameState previousState, Map<String, String> authTokens, InetAddress addr) {
+    protected void notifyObservers(GameState state, GameStateContext context) {
         LOGGER.debug("Notifying {} observers of new GSI state from server on port {}", observers.size(), server.getPort());
         
         for (GSIObserver observer : observers) {
             observerExecutor.submit(
-                    new LoggableTask(() -> observer.update(state, previousState, authTokens, addr)));
+                    new LoggableTask(() -> observer.update(state, context)));
         }
     }
     
@@ -187,15 +187,6 @@ public class GSIServer {
     
     
     /**
-     * Helper method for constructor
-     */
-    private static Map<String, String> createTokenMap(String token) {
-        Map<String, String> map = new HashMap<>();
-        map.put("token", token);
-        return map;
-    }
-    
-    /**
      * Handles a new JSON state and notifies the appropriate observers.
      */
     void handleStateUpdate(String json, InetAddress address) {
@@ -204,23 +195,22 @@ public class GSIServer {
         //Parse auth tokens
         Map<String, String> authTokens = gson.fromJson(jsonObject.getAsJsonObject("auth"),
                 new TypeToken<Map<String, String>>() {}.getType());
-        
-        authTokens = authTokens == null
-                ? Collections.emptyMap()
-                : Collections.unmodifiableMap(authTokens);
+        authTokens = (authTokens != null) ? authTokens : Collections.emptyMap();
         
         //Verify auth tokens
         for (Map.Entry<String, String> token : requiredAuthTokens.entrySet()) {
             String val = authTokens.get(token.getKey());
             if (!token.getValue().equals(val)) {
-                LOGGER.debug("GSI state update rejected due to auth token mismatch (key '{}': expected '{}',"
+                LOGGER.debug("GSI state update rejected due to auth token mismatch (key '{}': expected '{}', "
                         + "got '{}')", token.getKey(), token.getValue(), val);
                 return; //Invalid auth token(s), ignore
             }
         }
-        
+    
+        GameStateContext context = new GameStateContext(this, latestGameState, address, authTokens);
         GameState state = gson.fromJson(jsonObject, GameState.class); //Parse game state
-        notifyObservers(state, latestGameState, authTokens, address); //Notify observers
+        
+        notifyObservers(state, context); //Notify observers
         
         latestGameState = state; //Update latest state
     }
