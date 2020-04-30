@@ -20,7 +20,7 @@ public class HTTPServer {
     
     private int port;
     private ExecutorService executorService;
-    private HTTPConnectionHandler handler;
+    private HTTPRequestHandler handler;
     
     private Thread thread;
     private ServerSocket socket;
@@ -31,7 +31,7 @@ public class HTTPServer {
      * @param executorService the ExecutorService used to handle HTTP requests
      * @param handler         the handling class to receive HTTP requests
      */
-    public HTTPServer(int port, ExecutorService executorService, HTTPConnectionHandler handler) {
+    public HTTPServer(int port, ExecutorService executorService, HTTPRequestHandler handler) {
         this.port = port;
         this.executorService = executorService;
         this.handler = handler;
@@ -42,7 +42,7 @@ public class HTTPServer {
      * @param maxConnections the maximum number of connections to be processed at one time
      * @param handler        the handling class to receive HTTP requests
      */
-    public HTTPServer(int port, int maxConnections, HTTPConnectionHandler handler) {
+    public HTTPServer(int port, int maxConnections, HTTPRequestHandler handler) {
         this(port, Executors.newFixedThreadPool(maxConnections), handler);
     }
     

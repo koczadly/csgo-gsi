@@ -17,9 +17,9 @@ class HTTPConnection implements Runnable {
     private static final Logger LOGGER = LoggerFactory.getLogger(HTTPConnection.class);
     
     private Socket socket;
-    private HTTPConnectionHandler handler;
+    private HTTPRequestHandler handler;
     
-    public HTTPConnection(Socket socket, HTTPConnectionHandler handler) {
+    public HTTPConnection(Socket socket, HTTPRequestHandler handler) {
         this.socket = socket;
         this.handler = handler;
     }

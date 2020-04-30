@@ -7,7 +7,7 @@ import com.google.gson.reflect.TypeToken;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import uk.oczadly.karl.csgsi.internal.Util;
-import uk.oczadly.karl.csgsi.internal.httpserver.HTTPConnectionHandler;
+import uk.oczadly.karl.csgsi.internal.httpserver.HTTPRequestHandler;
 import uk.oczadly.karl.csgsi.internal.httpserver.HTTPServer;
 import uk.oczadly.karl.csgsi.state.GameState;
 
@@ -34,7 +34,6 @@ public final class GSIServer {
     
     
     private final HTTPServer server;
-    private final HTTPConnectionHandler handler = new Handler();
     
     private final Set<GSIObserver> observers = new CopyOnWriteArraySet<>();
     private final ExecutorService observerExecutor = Executors.newCachedThreadPool();
@@ -67,8 +66,8 @@ public final class GSIServer {
         } else {
             this.requiredAuthTokens = new HashMap<>();
         }
-        
-        this.server = new HTTPServer(port, 1, handler);
+    
+        this.server = new HTTPServer(port, 1, new HttpHandler());
     }
     
     /**
@@ -219,7 +218,7 @@ public final class GSIServer {
     /**
      * Handles HTTP connection requests
      */
-    private class Handler implements HTTPConnectionHandler {
+    private class HttpHandler implements HTTPRequestHandler {
         @Override
         public void handle(InetAddress address, String path, String method, Map<String, String> headers, String body) {
             handleStateUpdate(body.trim(), address);
@@ -231,7 +230,6 @@ public final class GSIServer {
      */
     private static class LoggableTask implements Runnable {
         Runnable task;
-        
         LoggableTask(Runnable task) {
             this.task = task;
         }
@@ -241,7 +239,7 @@ public final class GSIServer {
             try {
                 task.run();
             } catch (Exception e) {
-                LOGGER.warn("Uncaught exception in GSIServer observer notification", e);
+                LOGGER.error("Uncaught exception in GSIServer observer notification", e);
             }
         }
     }
