@@ -1,5 +1,6 @@
 package uk.oczadly.karl.csgsi;
 
+import com.google.gson.JsonObject;
 import org.junit.Before;
 import org.junit.Test;
 import uk.oczadly.karl.csgsi.state.GameState;
@@ -91,7 +92,8 @@ public class GSIServerTest {
         GameState state = new GameState(), previous = new GameState();
         Map<String, String> authTokens = new HashMap<>();
         InetAddress address = InetAddress.getLoopbackAddress();
-        GameStateContext context = new GameStateContext(server, previous, address, authTokens);
+        JsonObject jsonObject = new JsonObject();
+        GameStateContext context = new GameStateContext(server, previous, address, authTokens, jsonObject);
         
         //Notify observing object
         server.notifyObservers(state, context);
@@ -111,6 +113,8 @@ public class GSIServerTest {
         assertSame(address, observer2.context.getAddress());
         assertSame(server, observer1.context.getGsiServer());
         assertSame(server, observer2.context.getGsiServer());
+        assertSame(jsonObject, observer1.context.getRawJsonObject());
+        assertSame(jsonObject, observer2.context.getRawJsonObject());
     }
     
     
