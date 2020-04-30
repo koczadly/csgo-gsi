@@ -207,7 +207,7 @@ public final class GSIServer {
             }
         }
     
-        GameStateContext context = new GameStateContext(this, latestGameState, address, authTokens);
+        GameStateContext context = new GameStateContext(this, latestGameState, address, authTokens, jsonObject);
         GameState state = gson.fromJson(jsonObject, GameState.class); //Parse game state
         
         notifyObservers(state, context); //Notify observers

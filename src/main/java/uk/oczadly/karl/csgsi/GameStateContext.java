@@ -1,24 +1,27 @@
 package uk.oczadly.karl.csgsi;
 
+import com.google.gson.JsonObject;
 import uk.oczadly.karl.csgsi.state.GameState;
 
 import java.net.InetAddress;
 import java.util.Collections;
 import java.util.Map;
 
-public class GameStateContext {
+public final class GameStateContext {
     
     private final GSIServer server;
     private final GameState previousState;
     private final InetAddress address;
     private final Map<String, String> authTokens;
+    private final JsonObject rawJson;
     
     public GameStateContext(GSIServer server, GameState previousState, InetAddress address,
-                            Map<String, String> authTokens) {
+                            Map<String, String> authTokens, JsonObject rawJson) {
         this.server = server;
         this.previousState = previousState;
         this.address = address;
         this.authTokens = Collections.unmodifiableMap(authTokens);
+        this.rawJson = rawJson;
     }
     
     
@@ -48,6 +51,13 @@ public class GameStateContext {
      */
     public Map<String, String> getAuthTokens() {
         return authTokens;
+    }
+    
+    /**
+     * @return the raw JSON data (as a Gson {@link JsonObject} object) sent from the game client
+     */
+    public JsonObject getRawJsonObject() {
+        return rawJson;
     }
     
 }
