@@ -69,6 +69,8 @@ public class PlayerState {
     @SerializedName("forward")
     private Coordinate facing;
     
+    private volatile WeaponDetails selectedWeapon;
+    
     
     /**
      * @return the Steam ID of the player, or null if not the client
@@ -131,6 +133,25 @@ public class PlayerState {
      */
     public List<WeaponDetails> getWeaponsInventory() {
         return weapons;
+    }
+    
+    /**
+     * @return the active weapon that the player currently has selected
+     */
+    public WeaponDetails getSelectedWeapon() {
+        if (selectedWeapon == null && getWeaponsInventory() != null) {
+            synchronized (this) { // Double-checked locking
+                if (selectedWeapon == null) {
+                    for (WeaponDetails w : getWeaponsInventory()) {
+                        if (w.getState().getEnum() != WeaponState.HOLSTERED) {
+                            selectedWeapon = w;
+                            break;
+                        }
+                    }
+                }
+            }
+        }
+        return selectedWeapon;
     }
     
     /**

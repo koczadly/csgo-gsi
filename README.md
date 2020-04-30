@@ -19,7 +19,7 @@ This project is hosted on Maven Central. To import this library, add the followi
 <dependency>
     <groupId>uk.oczadly.karl</groupId>
     <artifactId>csgo-gsi</artifactId>
-    <version>1.3.0</version>
+    <version>1.3.1</version>
 </dependency>
 ```
 
@@ -83,7 +83,7 @@ server.startServer(); // Start the server in a new thread (on the above specifie
 
 System.out.println("Server started. Listening for state data...");
 
-Thread.currentThread().join(); // Prevent application exit by waiting for thread interrupt
+Thread.currentThread().join(); // Prevent application exit by waiting for thread interrupt (for testing only)
 ```
 
 ## Development

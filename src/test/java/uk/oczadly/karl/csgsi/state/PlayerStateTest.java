@@ -144,7 +144,7 @@ public class PlayerStateTest extends GameStateBaseTest {
         assertNotNull(weapon1);
 
         assertEquals(Weapon.GLOCK, weapon1.getWeapon().getEnum());
-        assertEquals("weapon_glock", weapon1.getName());
+        assertEquals("weapon_glock", weapon1.getWeapon().getRawString());
         assertEquals("default", weapon1.getSkin());
         assertTrue(weapon1.isDefaultSkin());
         assertEquals(Weapon.Type.PISTOL, weapon1.getWeaponType().getEnum());
@@ -152,6 +152,8 @@ public class PlayerStateTest extends GameStateBaseTest {
         assertEquals(20, weapon1.getMaxAmmoClip());
         assertEquals(120, weapon1.getAmmoReserve());
         assertEquals(PlayerState.WeaponState.HOLSTERED, weapon1.getState().getEnum());
+    
+        assertEquals(Weapon.Type.BOMB, playerState.getSelectedWeapon().getWeaponType().getEnum());
     }
     
     @Test
