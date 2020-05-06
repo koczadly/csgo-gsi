@@ -11,9 +11,9 @@ public interface GSIObserver {
     /**
      * Called when a new updated state is received from the game client.
      *
-     * @param gameState the new game state
-     * @param context   additional information about the game state and client
+     * @param state   an object containing the latest game state data
+     * @param context additional information about the game state and {@link GSIServer}
      */
-    void update(GameState gameState, GameStateContext context);
+    void update(GameState state, GameStateContext context);
     
 }
