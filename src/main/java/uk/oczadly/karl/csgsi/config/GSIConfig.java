@@ -42,6 +42,7 @@ public class GSIConfig {
     private String uri, description;
     private Map<String, String> authData = new HashMap<>();
     private Double timeout, buffer, throttle, heartbeat;
+    private Integer precisionTime, precisionPosition, precisionVector;
     private Set<DataComponent> dataComponents = EnumSet.noneOf(DataComponent.class);
     
     
@@ -296,6 +297,72 @@ public class GSIConfig {
         return heartbeat;
     }
     
+
+    /**
+     * @return the number of decimal places for time units, or null for default
+     * @see #setPrecisionTime(Integer)
+     */
+    public Integer getPrecisionTime() {
+        return precisionTime;
+    }
+    
+    /**
+     * Sets the number of decimal places to be sent for values containing a measurement of time. Use a value of null
+     * if you wish to use the default client value.
+     *
+     * @return this current object
+     *
+     * @see <a href="https://developer.valvesoftware.com/wiki/Counter-Strike:_Global_Offensive_Game_State_Integration">
+     * Valve Developer Community</a>
+     */
+    public GSIConfig setPrecisionTime(Integer precisionTime) {
+        this.precisionTime = precisionTime;
+        return this;
+    }
+    
+    /**
+     * @return the number of decimal places for positional units, or null for default
+     * @see #setPrecisionPosition(Integer)
+     */
+    public Integer getPrecisionPosition() {
+        return precisionPosition;
+    }
+    
+    /**
+     * Sets the number of decimal places to be sent for values containing a units of position (coordinates). Use a value
+     * of null if you wish to use the default client value.
+     *
+     * @return this current object
+     *
+     * @see <a href="https://developer.valvesoftware.com/wiki/Counter-Strike:_Global_Offensive_Game_State_Integration">
+     * Valve Developer Community</a>
+     */
+    public GSIConfig setPrecisionPosition(Integer precisionPosition) {
+        this.precisionPosition = precisionPosition;
+        return this;
+    }
+    
+    /**
+     * @return the number of decimal places for vector units, or null for default
+     * @see #setPrecisionVector(Integer)
+     */
+    public Integer getPrecisionVector() {
+        return precisionVector;
+    }
+    
+    /**
+     * Sets the number of decimal places to be sent for values containing a vector. Use a value of null if you wish to
+     * use the default client value.
+     *
+     * @return this current object
+     *
+     * @see <a href="https://developer.valvesoftware.com/wiki/Counter-Strike:_Global_Offensive_Game_State_Integration">
+     * Valve Developer Community</a>
+     */
+    public GSIConfig setPrecisionVector(Integer precisionVector) {
+        this.precisionVector = precisionVector;
+        return this;
+    }
     
     /**
      * Sets the which data values will be sent by the client. The set will be copied when calling this method, so future
@@ -373,7 +440,7 @@ public class GSIConfig {
         appendParameter(writer, "throttle", this.getThrottlePeriod());
         appendParameter(writer, "heartbeat", this.getHeartbeatPeriod());
         
-        //Authentication tokens
+        // Authentication tokens
         if (!this.getAuthTokens().isEmpty()) {
             writer.println("\"auth\" {");
             for (Map.Entry<String, String> token : this.getAuthTokens().entrySet()) {
@@ -382,7 +449,14 @@ public class GSIConfig {
             writer.println("}");
         }
         
-        //Data components to retrieve
+        // Output precision
+        writer.println("\"output\" {");
+        appendParameter(writer, "precision_time", this.precisionTime);
+        appendParameter(writer, "precision_position", this.precisionPosition);
+        appendParameter(writer, "precision_vector", this.precisionVector);
+        writer.println("}");
+        
+        // Data components to retrieve
         writer.println("\"data\" {");
         for (DataComponent type : DataComponent.values()) {
             appendParameter(writer, type.getConfigName(),

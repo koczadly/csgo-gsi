@@ -19,20 +19,29 @@ public class GSIConfigTest {
         profile.setURI("http://1.2.3.4:56");
         assertEquals("http://1.2.3.4:56", profile.getURI());
     
-        profile.setAuthToken("token", "val");
-        assertEquals(profile.getAuthTokens().get("token"), "val");
+        profile.setAuthToken("token", "auth_val");
+        assertEquals("auth_val", profile.getAuthTokens().get("token"));
     
         profile.setBufferPeriod(1d);
-        assertEquals(profile.getBufferPeriod(), 1d, 0.001d);
+        assertEquals(1d, profile.getBufferPeriod(), 0.001d);
     
-        profile.setTimeoutPeriod(1d);
-        assertEquals(profile.getTimeoutPeriod(), 1d, 0.001d);
+        profile.setTimeoutPeriod(2d);
+        assertEquals(2d, profile.getTimeoutPeriod(), 0.001d);
     
-        profile.setHeartbeatPeriod(1d);
-        assertEquals(profile.getHeartbeatPeriod(), 1d, 0.001d);
+        profile.setHeartbeatPeriod(3d);
+        assertEquals(3d, profile.getHeartbeatPeriod(), 0.001d);
     
-        profile.setThrottlePeriod(1d);
-        assertEquals(profile.getThrottlePeriod(), 1d, 0.001d);
+        profile.setThrottlePeriod(4d);
+        assertEquals( 4d, profile.getThrottlePeriod(), 0.001d);
+    
+        profile.setPrecisionPosition(421);
+        assertEquals((Integer)421, profile.getPrecisionPosition());
+    
+        profile.setPrecisionTime(422);
+        assertEquals((Integer)422, profile.getPrecisionTime());
+    
+        profile.setPrecisionVector(423);
+        assertEquals((Integer)423, profile.getPrecisionVector());
     
         profile.addDataComponent(DataComponent.BOMB);
         assertEquals(1, profile.getDataComponents().size());
@@ -53,7 +62,10 @@ public class GSIConfigTest {
                 .setTimeoutPeriod(30d)
                 .setHeartbeatPeriod(40d)
                 .setThrottlePeriod(50d)
-                .setDescription("Desc");
+                .setDescription("Desc")
+                .setPrecisionPosition(421)
+                .setPrecisionTime(422)
+                .setPrecisionVector(423);
         
         //Generate string
         String config = genConfig(profile);
@@ -67,10 +79,13 @@ public class GSIConfigTest {
         testSet(config, "throttle", 50d);
         testSet(config, DataComponent.BOMB.getConfigName(), "1");
         testSet(config, DataComponent.MAP.getConfigName(), "0");
+        testSet(config, "precision_position", 421);
+        testSet(config, "precision_time", 422);
+        testSet(config, "precision_vector", 423);
     }
     
     
-    
+    //TODO: doesn't test for nested values correctly, only that the key-value pair is in the object
     private static void testSet(String conf, String key, Object expectedValue) {
         assertTrue("Key \"" + key + "\" and value \"" + expectedValue.toString() + "\" not apparent in exported configuration",
                 conf.contains("\"" + key + "\" \"" + expectedValue.toString() + "\""));
