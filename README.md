@@ -19,7 +19,7 @@ This project is hosted on Maven Central. To import this library, add the followi
 <dependency>
     <groupId>uk.oczadly.karl</groupId>
     <artifactId>csgo-gsi</artifactId>
-    <version>1.3.2</version>
+    <version>1.3.3</version>
 </dependency>
 ```
 
@@ -66,13 +66,13 @@ implementing GSIObserver must be registered to the server object. The example be
 listener which prints the client's Steam ID and current map name (if in a game) to the console.
 ```java
 // Create a new observer (for this example, using a lambda)
-GSIObserver observer = (gameState, context) -> {
-    // Access state information with the 'gameState' object...
+GSIObserver observer = (state, context) -> {
+    // Access state information with the 'state' object...
     System.out.println("New state received from game client at address " + context.getAddress().getHostAddress());
     
-    System.out.println("  Client SteamID: " + gameState.getProviderDetails().getClientSteamId());
-    if (gameState.getMapState() != null) {
-        System.out.println("  Current map: " + gameState.getMapState().getName());
+    System.out.println("  Client SteamID: " + state.getProviderDetails().getClientSteamId());
+    if (state.getMapState() != null) {
+        System.out.println("  Current map: " + state.getMapState().getName());
     }
 };
 
