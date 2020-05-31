@@ -79,11 +79,9 @@ GSIObserver observer = (state, context) -> {
 // Configure server on port 1337, requiring the specified "password" auth token
 GSIServer server = new GSIServer(1337, Map.of("password", "Q79v5tcxVQ8u"));
 server.registerObserver(observer); // Register our observer object
-server.startServer(); // Start the server in a new thread (on the above specified port)
+server.startServer(); // Start the server (runs in a separate thread)
 
 System.out.println("Server started. Listening for state data...");
-
-Thread.currentThread().join(); // Prevent application exit by waiting for thread interrupt (for testing only)
 ```
 
 ## Development
