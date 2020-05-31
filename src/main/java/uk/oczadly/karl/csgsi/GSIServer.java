@@ -36,8 +36,10 @@ public final class GSIServer {
     private final Set<GSIObserver> observers = new CopyOnWriteArraySet<>();
     private final ExecutorService observerExecutor = Executors.newFixedThreadPool(50);
     private final Map<String, String> requiredAuthTokens;
+    private volatile boolean discardOlderStates = true;
     
     private volatile GameState latestGameState;
+    private volatile int latestTimestamp = 0;
     
     
     /**
@@ -204,6 +206,22 @@ public final class GSIServer {
         return requiredAuthTokens;
     }
     
+    /**
+     * @return whether game states with an older timestamp will be discarded
+     */
+    public boolean getDiscardOlderStates() {
+        return discardOlderStates;
+    }
+    
+    /**
+     * @param discardOlderStates whether game states with an older timestamp will be discarded
+     * @return this instance
+     */
+    public GSIServer setDiscardOlderStates(boolean discardOlderStates) {
+        this.discardOlderStates = discardOlderStates;
+        return this;
+    }
+    
     
     /**
      * Used for unit tests
@@ -234,14 +252,24 @@ public final class GSIServer {
             }
         }
         
-        GameStateContext context = new GameStateContext(this, latestGameState, address, authTokens, jsonObject);
         GameState state = GSON.fromJson(jsonObject, GameState.class); //Parse game state
-        
-        notifyObservers(state, context); //Notify observers
-        
-        latestGameState = state; //Update latest state
-    }
+        GameStateContext context = new GameStateContext(this, latestGameState, address, authTokens, jsonObject);
     
+        // Discard old game states
+        if (state.getProviderDetails() == null
+                || state.getProviderDetails().getTimeStamp() <= 0
+                || state.getProviderDetails().getTimeStamp() >= latestTimestamp) {
+            // Update latest state
+            latestGameState = state;
+            latestTimestamp = state.getProviderDetails() != null ? state.getProviderDetails().getTimeStamp() : 0;
+            
+            notifyObservers(state, context); // Notify observers
+        } else {
+            // Discard the state (and log)
+            if (LOGGER.isDebugEnabled())
+                LOGGER.debug("Discarding received game state due to outdated timestamp.");
+        }
+    }
     
     
     /**
