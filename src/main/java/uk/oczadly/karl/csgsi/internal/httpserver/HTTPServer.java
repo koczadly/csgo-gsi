@@ -4,6 +4,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
+import java.net.InetAddress;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.util.concurrent.ExecutorService;
@@ -19,6 +20,7 @@ public class HTTPServer {
     
     
     private int port;
+    private InetAddress bindAddr;
     private ExecutorService executorService;
     private HTTPRequestHandler handler;
     
@@ -31,8 +33,9 @@ public class HTTPServer {
      * @param executorService the ExecutorService used to handle HTTP requests
      * @param handler         the handling class to receive HTTP requests
      */
-    public HTTPServer(int port, ExecutorService executorService, HTTPRequestHandler handler) {
+    public HTTPServer(int port, InetAddress bindAddr, ExecutorService executorService, HTTPRequestHandler handler) {
         this.port = port;
+        this.bindAddr = bindAddr;
         this.executorService = executorService;
         this.handler = handler;
     }
@@ -42,8 +45,8 @@ public class HTTPServer {
      * @param maxConnections the maximum number of connections to be processed at one time
      * @param handler        the handling class to receive HTTP requests
      */
-    public HTTPServer(int port, int maxConnections, HTTPRequestHandler handler) {
-        this(port, Executors.newFixedThreadPool(maxConnections), handler);
+    public HTTPServer(int port, InetAddress bindAddr, int maxConnections, HTTPRequestHandler handler) {
+        this(port, bindAddr, Executors.newFixedThreadPool(maxConnections), handler);
     }
     
     
@@ -52,6 +55,10 @@ public class HTTPServer {
      */
     public int getPort() {
         return port;
+    }
+    
+    public InetAddress getBindAddress() {
+        return bindAddr;
     }
     
     /**
@@ -76,7 +83,7 @@ public class HTTPServer {
             LOGGER.info("Starting HTTP server on port {}...", port);
         
         
-        socket = new ServerSocket(port);
+        socket = new ServerSocket(port, 50, bindAddr);
         thread = new Thread(new ConnectionAcceptor());
         thread.start();
     }
@@ -102,19 +109,17 @@ public class HTTPServer {
     
     
     private class ConnectionAcceptor implements Runnable {
-        
         @Override
         public void run() {
             while (!Thread.currentThread().isInterrupted()) {
                 try {
                     Socket conn = socket.accept();
                     executorService.submit(new HTTPConnection(conn, handler));
-                } catch (IOException e) {
+                } catch (Exception e) {
                     LOGGER.warn("Exception occured while handling HTTP connection", e);
                 }
             }
         }
-        
     }
     
 }

@@ -7,7 +7,6 @@ import com.google.gson.reflect.TypeToken;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import uk.oczadly.karl.csgsi.internal.Util;
-import uk.oczadly.karl.csgsi.internal.httpserver.HTTPRequestHandler;
 import uk.oczadly.karl.csgsi.internal.httpserver.HTTPServer;
 import uk.oczadly.karl.csgsi.state.GameState;
 
@@ -31,16 +30,12 @@ import java.util.concurrent.Executors;
 public final class GSIServer {
     
     private static final Logger LOGGER = LoggerFactory.getLogger(GSIServer.class);
-    
+    private static final Gson GSON = Util.createGsonObject();
     
     private final HTTPServer server;
-    
     private final Set<GSIObserver> observers = new CopyOnWriteArraySet<>();
-    private final ExecutorService observerExecutor = Executors.newCachedThreadPool();
-    
+    private final ExecutorService observerExecutor = Executors.newFixedThreadPool(50);
     private final Map<String, String> requiredAuthTokens;
-    
-    private final Gson gson = Util.createGsonObject();
     
     private volatile GameState latestGameState;
     
@@ -49,12 +44,13 @@ public final class GSIServer {
      * Constructs a new GSIServer object with pre-processed client authentication.
      *
      * @param port               the network port for the server to listen on
+     * @param bindAddr           the local address to bind to
      * @param requiredAuthTokens the authentication tokens required to accept state reports
      */
-    public GSIServer(int port, Map<String, String> requiredAuthTokens) {
+    public GSIServer(int port, InetAddress bindAddr, Map<String, String> requiredAuthTokens) {
         //Validate port
         if (port <= 0 || port > 65535)
-            throw new IllegalArgumentException("Port out of range");
+            throw new IllegalArgumentException("Port number out of range");
         
         //Validate auth tokens
         if (requiredAuthTokens != null) {
@@ -62,22 +58,33 @@ public final class GSIServer {
                 if (key.getKey() == null || key.getValue() == null)
                     throw new IllegalArgumentException("Auth token key or value cannot be null");
             }
-            this.requiredAuthTokens = new HashMap<>(requiredAuthTokens);
+            this.requiredAuthTokens = Collections.unmodifiableMap(new HashMap<>(requiredAuthTokens));
         } else {
-            this.requiredAuthTokens = new HashMap<>();
+            this.requiredAuthTokens = Collections.unmodifiableMap(new HashMap<>());
         }
-    
-        this.server = new HTTPServer(port, 1, new HttpHandler());
+        
+        this.server = new HTTPServer(port, bindAddr, 1,
+                (address, path, method, headers, body) -> handleStateUpdate(body.trim(), address));
     }
     
     /**
      * Constructs a new GSIServer object with pre-processed client authentication.
      *
-     * @param port              the network port for the server to listen on
-     * @param requiredAuthToken the authentication key value "token" required to accept state reports
+     * @param port               the network port for the server to listen on
+     * @param requiredAuthTokens the authentication tokens required to accept state reports
      */
-    public GSIServer(int port, String requiredAuthToken) {
-        this(port, Map.of("token", requiredAuthToken));
+    public GSIServer(int port, Map<String, String> requiredAuthTokens) {
+        this(port, null, requiredAuthTokens);
+    }
+    
+    /**
+     * Constructs a new GSIServer object with no pre-processed client authentication.
+     *
+     * @param port     the network port for the server to listen on
+     * @param bindAddr the local address to bind to
+     */
+    public GSIServer(int port, InetAddress bindAddr) {
+        this(port, bindAddr, new HashMap<>());
     }
     
     /**
@@ -86,7 +93,7 @@ public final class GSIServer {
      * @param port the network port for the server to listen on
      */
     public GSIServer(int port) {
-        this(port, new HashMap<>());
+        this(port, (InetAddress)null);
     }
     
     
@@ -176,6 +183,27 @@ public final class GSIServer {
         return server.isRunning();
     }
     
+    /**
+     * @return the port which the server will listen on
+     */
+    public int getServerPort() {
+        return server.getPort();
+    }
+    
+    /**
+     * @return the address which the server will bind to, or null if it will bind to all local addresses
+     */
+    public InetAddress getServerBindingAddress() {
+        return server.getBindAddress();
+    }
+    
+    /**
+     * @return an immutable map of required authentication tokens
+     */
+    public Map<String, String> getRequiredAuthTokens() {
+        return requiredAuthTokens;
+    }
+    
     
     /**
      * Used for unit tests
@@ -192,7 +220,7 @@ public final class GSIServer {
         JsonObject jsonObject = JsonParser.parseString(json).getAsJsonObject();
         
         //Parse auth tokens
-        Map<String, String> authTokens = gson.fromJson(jsonObject.getAsJsonObject("auth"),
+        Map<String, String> authTokens = GSON.fromJson(jsonObject.getAsJsonObject("auth"),
                 new TypeToken<Map<String, String>>() {}.getType());
         authTokens = (authTokens != null) ? authTokens : Collections.emptyMap();
         
@@ -205,9 +233,9 @@ public final class GSIServer {
                 return; //Invalid auth token(s), ignore
             }
         }
-    
+        
         GameStateContext context = new GameStateContext(this, latestGameState, address, authTokens, jsonObject);
-        GameState state = gson.fromJson(jsonObject, GameState.class); //Parse game state
+        GameState state = GSON.fromJson(jsonObject, GameState.class); //Parse game state
         
         notifyObservers(state, context); //Notify observers
         
@@ -215,15 +243,6 @@ public final class GSIServer {
     }
     
     
-    /**
-     * Handles HTTP connection requests
-     */
-    private class HttpHandler implements HTTPRequestHandler {
-        @Override
-        public void handle(InetAddress address, String path, String method, Map<String, String> headers, String body) {
-            handleStateUpdate(body.trim(), address);
-        }
-    }
     
     /**
      * Used for notifying observers and logging exceptions
