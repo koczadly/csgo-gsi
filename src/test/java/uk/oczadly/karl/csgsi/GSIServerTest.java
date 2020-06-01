@@ -21,6 +21,7 @@ public class GSIServerTest {
             "    \"token2\": \"def456\"\n" +
             "  }\n" +
             "}";
+    private static final InetAddress ADDRESS = InetAddress.getLoopbackAddress();
     
     
     @Test
@@ -29,7 +30,7 @@ public class GSIServerTest {
         GSIServer server = new GSIServer(1337);
         server.registerObserver(observer);
         
-        server.handleStateUpdate(AUTH_TOKEN_JSON, null);
+        server.handleStateUpdate(AUTH_TOKEN_JSON, ADDRESS);
         
         //Wait for observer
         server.getObserverExecutorService().shutdown();
@@ -78,7 +79,7 @@ public class GSIServerTest {
     
     @Test
     public void testEmptyState() { //Ensure no exception
-        new GSIServer(1337).handleStateUpdate("{}", null);
+        new GSIServer(1337).handleStateUpdate("{}", ADDRESS);
     }
     
     @Test
@@ -124,7 +125,7 @@ public class GSIServerTest {
         GSIServer server = new GSIServer(1337, expectedTokens);
         server.registerObserver(observer);
         
-        server.handleStateUpdate(AUTH_TOKEN_JSON, null);
+        server.handleStateUpdate(AUTH_TOKEN_JSON, ADDRESS);
         
         //Wait for observer
         server.getObserverExecutorService().shutdown();
