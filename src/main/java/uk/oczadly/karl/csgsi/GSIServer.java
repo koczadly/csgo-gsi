@@ -16,6 +16,7 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.CopyOnWriteArraySet;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -39,7 +40,7 @@ public final class GSIServer {
     private volatile boolean discardOlderStates = true;
     
     private volatile GameState latestGameState;
-    private volatile int latestTimestamp = 0;
+    private final Map<InetAddress, Integer> latestTimestamps = new ConcurrentHashMap<>();
     
     
     /**
@@ -161,7 +162,8 @@ public final class GSIServer {
         
         if (server.isRunning())
             throw new IllegalStateException("The GSI server is already running.");
-        
+    
+        latestTimestamps.clear();
         latestGameState = null;
         server.start();
         LOGGER.info("GSI server on port {} successfully started", server.getPort());
@@ -254,16 +256,19 @@ public final class GSIServer {
         
         GameState state = GSON.fromJson(jsonObject, GameState.class); //Parse game state
         GameStateContext context = new GameStateContext(this, latestGameState, address, authTokens, jsonObject);
-    
+        
         // Discard old game states
-        if (state.getProviderDetails() == null
+        if (!discardOlderStates
+                || state.getProviderDetails() == null
                 || state.getProviderDetails().getTimeStamp() <= 0
-                || state.getProviderDetails().getTimeStamp() >= latestTimestamp) {
-            // Update latest state
+                || state.getProviderDetails().getTimeStamp() >= latestTimestamps.getOrDefault(address, 0)) {
+            // Update latest state and timestamps
             latestGameState = state;
-            latestTimestamp = state.getProviderDetails() != null ? state.getProviderDetails().getTimeStamp() : 0;
-            
-            notifyObservers(state, context); // Notify observers
+            latestTimestamps.put(address,
+                    state.getProviderDetails() != null ? state.getProviderDetails().getTimeStamp() : 0);
+    
+            // Notify observers
+            notifyObservers(state, context);
         } else {
             // Discard the state (and log)
             if (LOGGER.isDebugEnabled())
