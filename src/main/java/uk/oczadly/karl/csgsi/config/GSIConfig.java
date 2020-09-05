@@ -505,9 +505,9 @@ public class GSIConfig {
      */
     public void createConfigFile(Path dir, String serviceName) throws IOException {
         if (!Files.exists(dir))
-            throw new FileNotFoundException("Path argument is not an existing directory");
+            throw new FileNotFoundException("Path argument is not an existing directory.");
         if (!Files.isDirectory(dir))
-            throw new NotDirectoryException("Path must be a directory");
+            throw new NotDirectoryException("Path must be a directory.");
     
         Path file = dir.resolve(generateConfigName(serviceName));
     
@@ -599,9 +599,9 @@ public class GSIConfig {
      */
     public static boolean removeConfig(Path dir, String serviceName) throws IOException {
         if (!Files.exists(dir))
-            throw new FileNotFoundException("Path argument is not an existing directory");
+            throw new FileNotFoundException("Path argument is not an existing directory.");
         if (!Files.isDirectory(dir))
-            throw new NotDirectoryException("Path must be a directory");
+            throw new NotDirectoryException("Path must be a directory.");
         
         Path file = dir.resolve(generateConfigName(serviceName));
         
