@@ -430,36 +430,37 @@ public class GSIConfig {
      * @param writer the {@link PrintWriter} to write the configuration to
      */
     public void generate(PrintWriter writer) {
-        writer.println("\""
-                + (this.getDescription() != null ? this.getDescription().replace("\"", "\\\"") : "") //Escape quotes
-                + "\" {");
+        writer.print("\"");
+        writer.print(this.getDescription() != null ?
+                this.getDescription().replace("\"", "\\\"") : ""); //Escape quotes
+        writer.println("\" {");
         
-        appendParameter(writer, "uri", this.getURI());
-        appendParameter(writer, "timeout", this.getTimeoutPeriod());
-        appendParameter(writer, "buffer", this.getBufferPeriod());
-        appendParameter(writer, "throttle", this.getThrottlePeriod());
-        appendParameter(writer, "heartbeat", this.getHeartbeatPeriod());
+        appendParam(writer, "uri", this.getURI());
+        appendParam(writer, "timeout", this.getTimeoutPeriod());
+        appendParam(writer, "buffer", this.getBufferPeriod());
+        appendParam(writer, "throttle", this.getThrottlePeriod());
+        appendParam(writer, "heartbeat", this.getHeartbeatPeriod());
         
         // Authentication tokens
         if (!this.getAuthTokens().isEmpty()) {
             writer.println("\"auth\" {");
             for (Map.Entry<String, String> token : this.getAuthTokens().entrySet()) {
-                appendParameter(writer, token.getKey(), token.getValue());
+                appendParam(writer, token.getKey(), token.getValue());
             }
             writer.println("}");
         }
         
         // Output precision
         writer.println("\"output\" {");
-        appendParameter(writer, "precision_time", this.precisionTime);
-        appendParameter(writer, "precision_position", this.precisionPosition);
-        appendParameter(writer, "precision_vector", this.precisionVector);
+        appendParam(writer, "precision_time", this.precisionTime);
+        appendParam(writer, "precision_position", this.precisionPosition);
+        appendParam(writer, "precision_vector", this.precisionVector);
         writer.println("}");
         
         // Data components to retrieve
         writer.println("\"data\" {");
         for (DataComponent type : DataComponent.values()) {
-            appendParameter(writer, type.getConfigName(),
+            appendParam(writer, type.getConfigName(),
                     this.getDataComponents().contains(type) ? "1" : "0");
         }
         writer.println("}}");
@@ -524,7 +525,7 @@ public class GSIConfig {
     /**
      * Helper method for {@link #generate(PrintWriter)}
      */
-    private static void appendParameter(PrintWriter writer, String name, Object value) {
+    private static void appendParam(PrintWriter writer, String name, Object value) {
         if (value == null) return; //Dont write empty values
         
         writer.print("\"");
