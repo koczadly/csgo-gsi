@@ -198,7 +198,6 @@ public class SteamUtils {
      *
      * @throws SteamDirectoryException if no Steam installation or library directories are located
      * @throws SecurityException       if the current security manager disallows access to the directory
-     * @see GSIConfig#createConfig(Path, GSIConfig, String)
      */
     public static Path locateCsgoConfigFolder() throws SteamDirectoryException {
         Path gameDir = findApplicationDirectoryByName(CSGO_DIR_NAME);

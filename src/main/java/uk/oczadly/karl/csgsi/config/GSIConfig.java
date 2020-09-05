@@ -31,8 +31,8 @@ import java.util.*;
  *                 DataComponent.PROVIDER,
  *                 DataComponent.ROUND);
  * </pre>
- * <p>Profiles can then be created and written to the system using the {@link #createConfig(Path, GSIConfig, String)}
- * static method (refer to method documentation).</p>
+ * <p>Profiles can then be created and written to the system using the {@link #createConfigFile(Path, String)}
+ * method (refer to method documentation).</p>
  */
 public class GSIConfig {
     
@@ -466,6 +466,62 @@ public class GSIConfig {
     }
     
     /**
+     * <p>Creates or replaces a configuration file within the specified directory for the provided {@link GSIConfig}
+     * object. The provided service name should be unique and represent your application or organisation, and must
+     * conform with universal file naming standards (ie. no special characters).</p>
+     *
+     * <p>The {@code dir} parameter can be passed the value returned from {@link SteamUtils#locateCsgoConfigFolder()},
+     * which will automatically locate this folder on the current system for you. Be aware that the utility method can
+     * return null if no CS:GO directory is found, and throw a {@link SteamDirectoryException} if no valid Steam
+     * installation can be found on the system. The following example demonstrates how to create and write a
+     * configuration file to the system:</p>
+     * <pre>
+     *  GSIConfig profile = ... //Create profile here
+     *
+     *  try {
+     *      Path configPath = SteamUtils.locateCsgoConfigFolder();
+     *
+     *      if (configPath != null) {
+     *          profile.createConfigFile(configPath, "myservice");
+     *          System.out.println("Profile successfully created!");
+     *      } else {
+     *          System.out.println("Couldn't locate CS:GO directory");
+     *      }
+     *  } catch (SteamDirectoryException e) {
+     *      System.out.println("Couldn't locate Steam installation directory");
+     *  } catch (IOException e) {
+     *      System.out.println("Couldn't write configuration file");
+     *  }
+     * </pre>
+     *
+     * @param dir         the directory in which the file is created
+     * @param serviceName the name of the service
+     *
+     * @throws IOException           if the file cannot be written to
+     * @throws FileNotFoundException if the given path argument is not an existing directory
+     * @throws NotDirectoryException if the given path argument is not a directory
+     *
+     * @see SteamUtils#locateCsgoConfigFolder()
+     */
+    public void createConfigFile(Path dir, String serviceName) throws IOException {
+        if (!Files.exists(dir))
+            throw new FileNotFoundException("Path argument is not an existing directory");
+        if (!Files.isDirectory(dir))
+            throw new NotDirectoryException("Path must be a directory");
+    
+        Path file = dir.resolve(generateConfigName(serviceName));
+    
+        if (LOGGER.isDebugEnabled())
+            LOGGER.debug("Attempting to create config file {}...", file.toString());
+    
+        try (PrintWriter writer = new PrintWriter(Files.newBufferedWriter(file, StandardCharsets.UTF_8))) {
+            generate(writer);
+        }
+    }
+    
+    
+    
+    /**
      * Helper method for {@link #generate(PrintWriter)}
      */
     private static void appendParameter(PrintWriter writer, String name, Object value) {
@@ -511,25 +567,18 @@ public class GSIConfig {
      * @param dir         the directory in which the file is created
      * @param config      the profile configuration object
      * @param serviceName the name of the service
+     *
      * @throws IOException           if the file cannot be written to
      * @throws FileNotFoundException if the given path argument is not an existing directory
      * @throws NotDirectoryException if the given path argument is not a directory
+     *
      * @see SteamUtils#locateCsgoConfigFolder()
+     *
+     * @deprecated Use of instance method {@link #createConfigFile(Path, String)} is recommended.
      */
+    @Deprecated
     public static void createConfig(Path dir, GSIConfig config, String serviceName) throws IOException {
-        if (!Files.exists(dir))
-            throw new FileNotFoundException("Path argument is not an existing directory");
-        if (!Files.isDirectory(dir))
-            throw new NotDirectoryException("Path must be a directory");
-        
-        Path file = dir.resolve(generateConfigName(serviceName));
-        
-        if (LOGGER.isDebugEnabled())
-            LOGGER.debug("Attempting to create config file {}...", file.toString());
-        
-        try (PrintWriter writer = new PrintWriter(Files.newBufferedWriter(file, StandardCharsets.UTF_8))) {
-            config.generate(writer);
-        }
+        config.createConfigFile(dir, serviceName);
     }
     
     /**
