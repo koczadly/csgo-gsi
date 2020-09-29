@@ -25,6 +25,7 @@ public class SteamUtils {
     
     private static final Pattern STEAM_VDF_PATTERN = Pattern.compile("\\s+\\\"(?:\\d+)\\\"\\s+\\\"(.+)\\\"");
     private static final Pattern STEAM_ACF_PATTERN = Pattern.compile("\\s+\\\"installdir\\\"\\s+\\\"(.+)\\\"");
+    private static final Pattern REG_PATTERN = Pattern.compile("[ ]{4}([^\\s]+)[ ]{4}[^\\s]+[ ]{4}(.*+)");
     
     
     /**
@@ -68,7 +69,7 @@ public class SteamUtils {
                 candidatePaths.add(Paths.get(homePath, ".steam"));
             } else if (os.contains("win")) { // Windows
                 //Attempt to read from registry
-                String regVal = readWinRegValue("HKEY_CURRENT_USER\\Software\\Valve\\Steam", "SteamPath");
+                String regVal = readWinRegValue("HKCU\\Software\\Valve\\Steam", "SteamPath");
                 if (regVal != null) {
                     if (LOGGER.isDebugEnabled())
                         LOGGER.debug("Obtained Steam installation dir from registry ({})", regVal);
@@ -232,18 +233,20 @@ public class SteamUtils {
     /**
      * Helper method to read Windows registry keys
      */
-    private static String readWinRegValue(String path, String key) {
+    public static String readWinRegValue(String path, String key) {
         try {
             Process proc = Runtime.getRuntime().exec("reg query \"" + path + "\" /v \"" + key + "\"");
             BufferedReader reader = new BufferedReader(new InputStreamReader(proc.getInputStream()));
             
             String line;
-            while ((line = reader.readLine()) != null && !line.startsWith("    ")) ; //Loop until line with delimiter
+            while ((line = reader.readLine()) != null) {
+                Matcher matcher = REG_PATTERN.matcher(line);
+                if (matcher.matches() && matcher.group(1).equalsIgnoreCase(key)) {
+                    return matcher.group(2);
+                }
+            }
             reader.close();
             proc.destroy();
-            
-            if (line != null)
-                return line.substring(line.indexOf("REG_SZ") + 10);
         } catch (IOException | IndexOutOfBoundsException e) {
             LOGGER.warn("Failed to read registry key {} at path {}", key, path, e);
         }
