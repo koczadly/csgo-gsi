@@ -4,38 +4,46 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.BufferedReader;
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.nio.file.Files;
 import java.nio.file.InvalidPathException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.HashSet;
-import java.util.LinkedHashSet;
-import java.util.Set;
+import java.util.*;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
+/**
+ * This class contains a set of static constant fields and methods to facilitate in the automated location of Steam and
+ * game directories on the system.
+ */
 public class SteamUtils {
     
     private static final Logger LOGGER = LoggerFactory.getLogger(SteamUtils.class);
     
+    private static final Pattern STEAM_VDF_PATTERN = Pattern.compile("\\s+\\\"(?:\\d+)\\\"\\s+\\\"(.+)\\\"");
+    private static final Pattern STEAM_ACF_PATTERN = Pattern.compile("\\s+\\\"installdir\\\"\\s+\\\"(.+)\\\"");
+    
     
     /**
-     * Installation folder name
+     * The CS:GO Steam app ID number.
      */
-    public static final String CSGO_DIR_NAME = "Counter-Strike Global Offensive";
-    /**
-     * Config path relative to game dir
-     */
+    public static final int CSGO_STEAM_ID = 730;
+    
+    /** The name of the CS:GO configuration folder, relative to the game dir. */
     public static final String CSGO_CONFIG_PATH = "csgo/cfg";
     
-    /**
-     * Relative folder for list of game library dirs
-     */
-    public static final String STEAM_LIBRARY_FOLDERS = "steamapps/libraryfolders.vdf";
-    /**
-     * Relative folder for game install dirs
-     */
-    public static final String STEAM_APPS_FOLDER = "steamapps/common";
+    
+    /** The relative Steam folder for game metadata. */
+    public static final String STEAM_APPS_DIR = "steamapps";
+    
+    /** The relative Steam folder for game install directories. */
+    public static final String STEAM_GAME_INSTALL_DIR = STEAM_APPS_DIR + "/common";
+    
+    /** The relative Steam file path for the {@code .vfd} containing a list of game library dirs. */
+    public static final String STEAM_LIBRARY_FOLDERS = STEAM_APPS_DIR + "/libraryfolders.vdf";
     
     
     /**
@@ -43,47 +51,44 @@ public class SteamUtils {
      * <p>Currently this method is only supported on Windows, Linux and Macintosh operating systems due to
      * complications
      * between the various different file systems. If an unsupported OS is detected, the method will throw a {@link
-     * SteamDirectoryException} with an appropriate message.</p>
+     * GameNotFoundException} with an appropriate message.</p>
      *
      * @return the Steam installation directory
      *
-     * @throws SteamDirectoryException if a Steam installation couldn't be found or there was an error in the process
+     * @throws SteamNotFoundException if a Steam installation couldn't be found or there was an error in the process
      */
-    public static Path getSteamInstallDirectory() throws SteamDirectoryException {
+    public static Path getSteamInstallDirectory() throws SteamNotFoundException {
         String os = System.getProperty("os.name").toLowerCase(); //Obtain current OS name
         String homePath = System.getProperty("user.home");
         
         Set<Path> candidatePaths = new LinkedHashSet<>(); //Ordered set of potential installation dirs
         try {
-            if (os.contains("linux")) { //Linux-based, TODO untested
+            if (os.contains("linux")) { // Linux, TODO: untested
                 candidatePaths.add(Paths.get(homePath, ".local/share/Steam"));
                 candidatePaths.add(Paths.get(homePath, ".steam"));
-            } else if (os.contains("win")) { //Windows
+            } else if (os.contains("win")) { // Windows
                 //Attempt to read from registry
                 String regVal = readWinRegValue("HKEY_CURRENT_USER\\Software\\Valve\\Steam", "SteamPath");
                 if (regVal != null) {
-                    if (LOGGER.isDebugEnabled()) {
+                    if (LOGGER.isDebugEnabled())
                         LOGGER.debug("Obtained Steam installation dir from registry ({})", regVal);
-                    }
-                    
                     candidatePaths.add(Paths.get(regVal));
                 }
                 
                 //Common installation directories
                 candidatePaths.add(Paths.get("C:\\Program Files (x86)\\Steam")); //64 bit
                 candidatePaths.add(Paths.get("C:\\Program Files\\Steam")); //32 bit
-            } else if (os.contains("mac")) { //Mac TODO untested
+            } else if (os.contains("mac")) { // Mac TODO: untested
                 candidatePaths.add(Paths.get(homePath, "Library/Application Support/Steam"));
             } else { //Unknown OS type
-                throw new SteamDirectoryException("Unknown or unsupported operating system.");
+                throw new SteamNotFoundException("Unknown or unsupported operating system.");
             }
         } catch (InvalidPathException e) {
-            throw new SteamDirectoryException("Expected Steam path was rejected by the filesystem.", e);
+            throw new SteamNotFoundException("Expected Steam path was rejected by the filesystem.", e);
         }
         
-        if (LOGGER.isDebugEnabled()) {
+        if (LOGGER.isDebugEnabled())
             LOGGER.debug("Located a total of {} possible Steam installation candidates", candidatePaths.size());
-        }
         
         // Search for valid path
         SecurityException caughtEx = null;
@@ -100,9 +105,9 @@ public class SteamUtils {
         
         //No suitable path found by this point
         if (caughtEx != null) {
-            throw new SteamDirectoryException("The Steam installation directory could not be found.", caughtEx);
+            throw new SteamNotFoundException("The Steam installation directory could not be found.", caughtEx);
         } else {
-            throw new SteamDirectoryException("The Steam installation directory could not be found.");
+            throw new SteamNotFoundException("The Steam installation directory could not be found.");
         }
     }
     
@@ -110,14 +115,15 @@ public class SteamUtils {
     /**
      * <p>Obtains a list of Steam game installation directories configured within the client. This includes library
      * directories on differing drives from the Steam installation or operating system.</p>
+     *
      * <p>The returned directories are only the root folder; to access raw game files you will need to enter the
-     * {@value #STEAM_APPS_FOLDER} relative subdirectories.</p>
+     * {@value #STEAM_APPS_DIR} relative subdirectories.</p>
      *
      * @return a list of Steam library directories
      *
-     * @throws SteamDirectoryException if no Steam installation or library directories are located
+     * @throws SteamNotFoundException if no Steam installation or library directories are located
      */
-    public static Set<Path> getSteamLibraries() throws SteamDirectoryException {
+    public static Set<Path> getSteamLibraries() throws SteamNotFoundException {
         Path steamDir = getSteamInstallDirectory();
         Path libFile = steamDir.resolve(STEAM_LIBRARY_FOLDERS);
         
@@ -126,85 +132,100 @@ public class SteamUtils {
         
         try {
             if (Files.exists(libFile)) {
-                try (BufferedReader reader = Files.newBufferedReader(libFile)) {
-                    String line;
-                    while ((line = reader.readLine()) != null) {
-                        if (line.startsWith("\t")) {
-                        /* Values follow the format: [tab]"id"[tab][tab]"value"
-                           ID is index 1 and value is index 3 */
-                            
-                            String[] vals = line.split("\t");
-                            if (vals.length == 4) {
-                                try {
-                                    /* Verify first value is an integer - if not, ignore property in file
-                                       Substring is to remove surrounding quotes */
-                                    Integer.parseInt(vals[1].substring(1, vals[1].length() - 1));
-                                    
-                                    Path path = Paths.get(vals[3].substring(1, vals[3].length() - 1));
-                                    try {
-                                        if (Files.isDirectory(path)) {
-                                            paths.add(path);
-                                        }
-                                    } catch (SecurityException e) {
-                                        LOGGER.warn("SecurityException occured while checking Steam library path \""
-                                                + path.toString() + "\"", e);
-                                    }
-                                } catch (NumberFormatException ignored) {
-                                }
-                            }
+                try {
+                    List<Matcher> matchers = matchSteamFile(libFile, STEAM_VDF_PATTERN);
+                    for (Matcher matcher : matchers) {
+                        Path path = Paths.get(matcher.group(1));
+                        try {
+                            if (Files.isDirectory(path))
+                                paths.add(path);
+                        } catch (SecurityException e) {
+                            LOGGER.warn("SecurityException occured while checking Steam library path \""
+                                    + path.toString() + "\"", e);
                         }
                     }
-                    reader.close();
-                    
                     return paths;
                 } catch (IOException e) {
-                    throw new SteamDirectoryException("Failed to read the Steam library configuration file.", e);
+                    throw new SteamNotFoundException("Failed to read the Steam library configuration file.", e);
                 }
             } else {
-                throw new SteamDirectoryException("Failed to locate the Steam library configuration file.");
+                throw new SteamNotFoundException("Failed to locate the Steam library configuration file.");
             }
         } catch (SecurityException e) {
-            throw new SteamDirectoryException("Unable to read the Steam library configuration file.", e);
+            throw new SteamNotFoundException("Unable to read the Steam library configuration file.", e);
         }
     }
     
     
     /**
-     * <p>Attempts to locate the installation directory for the specified application/game title. The title must match
-     * the installation directory name (within the {@value #STEAM_APPS_FOLDER} subdirectory), which is not necessarily
-     * the title displayed on the Steam platform or client.</p>
+     * Attempts to locate the installation directory for the specified application/game title.
+     *
+     * <p>The title must match the installation directory name (within the {@value #STEAM_GAME_INSTALL_DIR} subdirectory),
+     * which is not necessarily the title displayed on the Steam platform or client.</p>
      *
      * @param name the installation name of the application
-     * @return the path of the found directory, or null if the application can't be found
+     * @return the path of the found application directory
      *
-     * @throws SteamDirectoryException if no Steam installation or library directories are located
-     * @throws SecurityException       if the current security manager disallows access to the directory
+     * @throws SteamNotFoundException if the specified Steam installation could not be located
+     * @throws GameNotFoundException  if the specified game installation could not be located
+     * @throws SecurityException      if the security manager disallows access to the directory
+     *
+     * @deprecated Use of {@link #findGameDirectoryById(int)} is preferred for consistency.
      */
-    public static Path findApplicationDirectoryByName(String name) throws SteamDirectoryException {
+    public static Path findGameDirectoryByName(String name) throws GameNotFoundException {
         for (Path p : getSteamLibraries()) {
-            Path gamePath = p.resolve(STEAM_APPS_FOLDER).resolve(name);
+            Path gamePath = p.resolve(STEAM_GAME_INSTALL_DIR).resolve(name);
             if (Files.isDirectory(gamePath)) {
                 return gamePath; //File exists as valid directory, return
             }
         }
-        return null; //No dir found, return null
+        throw new GameNotFoundException("Could not locate game directory with name \"" + name + "\".");
+    }
+    
+    /**
+     * Attempts to locate the installation directory for the specified application/game title.
+     *
+     * <p>The title must match the installation directory name (within the {@value #STEAM_GAME_INSTALL_DIR} subdirectory),
+     * which is not necessarily the title displayed on the Steam platform or client.</p>
+     *
+     * @param id the official Steam ID number of the application
+     * @return the path of the found application directory
+     *
+     * @throws SteamNotFoundException if the specified Steam installation could not be located
+     * @throws GameNotFoundException  if the specified game installation could not be located
+     * @throws SecurityException      if the security manager disallows access to the directory
+     */
+    public static Path findGameDirectoryById(int id) throws GameNotFoundException {
+        try {
+            for (Path p : getSteamLibraries()) {
+                Path manifest = p.resolve(STEAM_APPS_DIR).resolve("appmanifest_" + id + ".acf");
+                if (Files.isRegularFile(manifest)) {
+                    List<Matcher> matchers = matchSteamFile(manifest, STEAM_ACF_PATTERN);
+                    if (matchers.size() == 1) {
+                        String gameDirName = matchers.get(0).group(1);
+                        Path gameDir = p.resolve(STEAM_GAME_INSTALL_DIR).resolve(gameDirName);
+                        if (Files.isDirectory(gameDir))
+                            return gameDir;
+                    }
+                }
+            }
+        } catch (IOException e) {
+            throw new GameNotFoundException("Could not read game manifest with ID \"" + id + "\".", e);
+        }
+        throw new GameNotFoundException("Could not locate game directory with ID \"" + id + "\".");
     }
     
     
     /**
      * Attempts to locate the CS:GO configuration folder installed on this computer.
      *
-     * @return the CS:GO configuration folder, or null if the game can't be found
+     * @return the CS:GO configuration folder
      *
-     * @throws SteamDirectoryException if no Steam installation or library directories are located
-     * @throws SecurityException       if the current security manager disallows access to the directory
+     * @throws GameNotFoundException if the CSGO or Steam installations could not be located
+     * @throws SecurityException      if the security manager disallows access to the directory
      */
-    public static Path locateCsgoConfigFolder() throws SteamDirectoryException {
-        Path gameDir = findApplicationDirectoryByName(CSGO_DIR_NAME);
-        if (gameDir != null) {
-            return gameDir.resolve(CSGO_CONFIG_PATH);
-        }
-        return null; //Game not found
+    public static Path locateCsgoConfigFolder() throws GameNotFoundException {
+        return findGameDirectoryById(CSGO_STEAM_ID).resolve(CSGO_CONFIG_PATH);
     }
     
     
@@ -227,6 +248,22 @@ public class SteamUtils {
             LOGGER.warn("Failed to read registry key {} at path {}", key, path, e);
         }
         return null;
+    }
+    
+    private static List<Matcher> matchSteamFile(Path filePath, Pattern pattern) throws IOException {
+        if (!Files.isRegularFile(filePath))
+            throw new FileNotFoundException();
+        
+        List<Matcher> matchers = new ArrayList<>();
+        try (BufferedReader reader = Files.newBufferedReader(filePath)) {
+            String line;
+            while ((line = reader.readLine()) != null) {
+                Matcher matcher = pattern.matcher(line);
+                if (matcher.matches())
+                    matchers.add(matcher);
+            }
+        }
+        return matchers;
     }
     
 }

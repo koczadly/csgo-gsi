@@ -4,17 +4,17 @@ package uk.oczadly.karl.csgsi.config;
  * This exception is thrown when the Steam installation directory cannot be found, or if an error occurs while
  * attempting to find the Steam directory.
  */
-public class SteamDirectoryException extends Exception {
+public class SteamNotFoundException extends GameNotFoundException {
     
-    public SteamDirectoryException() {
+    public SteamNotFoundException() {
         super();
     }
     
-    public SteamDirectoryException(String msg) {
+    public SteamNotFoundException(String msg) {
         super(msg);
     }
     
-    public SteamDirectoryException(String msg, Throwable cause) {
+    public SteamNotFoundException(String msg, Throwable cause) {
         super(msg, cause);
     }
     

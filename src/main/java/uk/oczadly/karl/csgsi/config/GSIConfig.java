@@ -7,6 +7,7 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.nio.charset.StandardCharsets;
+import java.nio.file.FileAlreadyExistsException;
 import java.nio.file.Files;
 import java.nio.file.NotDirectoryException;
 import java.nio.file.Path;
@@ -31,8 +32,9 @@ import java.util.*;
  *                 DataComponent.PROVIDER,
  *                 DataComponent.ROUND);
  * </pre>
- * <p>Profiles can then be created and written to the system using the {@link #createConfigFile(Path, String)}
- * method (refer to method documentation).</p>
+ *
+ * <p>Profiles can then be created and written to the system using the {@link #writeConfig(String)} method (refer to
+ * method documentation).</p>
  */
 public class GSIConfig {
     
@@ -424,7 +426,7 @@ public class GSIConfig {
     
     
     /**
-     * Generates a valid profile configuration from the current set parameter values and outputs it to the provided
+     * Generates a valid profile configuration from the current set parameter values and writes it to the provided
      * {@link PrintWriter} object.
      *
      * @param writer the {@link PrintWriter} to write the configuration to
@@ -435,45 +437,88 @@ public class GSIConfig {
                 this.getDescription().replace("\"", "\\\"") : ""); //Escape quotes
         writer.println("\" {");
         
-        appendParam(writer, "uri", this.getURI());
-        appendParam(writer, "timeout", this.getTimeoutPeriod());
-        appendParam(writer, "buffer", this.getBufferPeriod());
-        appendParam(writer, "throttle", this.getThrottlePeriod());
-        appendParam(writer, "heartbeat", this.getHeartbeatPeriod());
+        appendParam(writer, 1, "uri", this.getURI());
+        appendParam(writer, 1, "timeout", this.getTimeoutPeriod());
+        appendParam(writer, 1, "buffer", this.getBufferPeriod());
+        appendParam(writer, 1, "throttle", this.getThrottlePeriod());
+        appendParam(writer, 1, "heartbeat", this.getHeartbeatPeriod());
         
         // Authentication tokens
-        if (!this.getAuthTokens().isEmpty()) {
-            writer.println("\"auth\" {");
+        if (this.getAuthTokens() != null && !this.getAuthTokens().isEmpty()) {
+            writer.println("\t\"auth\" {");
             for (Map.Entry<String, String> token : this.getAuthTokens().entrySet()) {
-                appendParam(writer, token.getKey(), token.getValue());
+                appendParam(writer, 2, token.getKey(), token.getValue());
             }
-            writer.println("}");
+            writer.println("\t}");
         }
         
         // Output precision
-        writer.println("\"output\" {");
-        appendParam(writer, "precision_time", this.precisionTime);
-        appendParam(writer, "precision_position", this.precisionPosition);
-        appendParam(writer, "precision_vector", this.precisionVector);
-        writer.println("}");
+        if (this.precisionTime != null || this.precisionPosition != null || this.precisionVector != null) {
+            writer.println("\t\"output\" {");
+            appendParam(writer, 2, "precision_time", this.precisionTime);
+            appendParam(writer, 2, "precision_position", this.precisionPosition);
+            appendParam(writer, 2, "precision_vector", this.precisionVector);
+            writer.println("\t}");
+        }
         
         // Data components to retrieve
-        writer.println("\"data\" {");
+        writer.println("\t\"data\" {");
         for (DataComponent type : DataComponent.values()) {
-            appendParam(writer, type.getConfigName(),
+            appendParam(writer, 2, type.getConfigName(),
                     this.getDataComponents().contains(type) ? "1" : "0");
         }
-        writer.println("}}");
+        writer.println("\t}");
+        writer.print("}");
+    }
+    
+    
+    /**
+     * Creates or replaces an existing configuration file within the located game directory.
+     *
+     * <p>This method automatically locates the game directory using the {@link SteamUtils#locateCsgoConfigFolder()}
+     * utility method. If neither the Steam or game directory can be identified, then a
+     * {@link GameNotFoundException} will be raised.</p>
+     *
+     * <p>The provided service name should be unique and represent your application or organisation, and must  conform
+     * with universal file naming standards (ie. no special characters). This value will have no impact on the API,
+     * but allows you to update or remove the configuration file at a later date.</p>
+     *
+     * <pre>
+     *  GSIConfig profile = ... //Create profile here
+     *
+     *  try {
+     *      profile.writeConfig("MyService");
+     *      System.out.println("Profile successfully created!");
+     *  } catch (GameNotFoundException e) {
+     *      System.out.println("Couldn't locate CSGO or Steam installation directory");
+     *  } catch (IOException e) {
+     *      System.out.println("Couldn't write configuration file");
+     *  }
+     * </pre>
+     *
+     * @param serviceName the name of your application/service
+     *
+     * @throws IOException             if the file cannot be written to
+     * @throws GameNotFoundException if the Steam or CSGO directories could not be located
+     * @throws FileNotFoundException   if the given path argument is not an existing directory
+     * @throws NotDirectoryException   if the given path argument is not a directory
+     *
+     * @see SteamUtils#locateCsgoConfigFolder()
+     */
+    public void writeConfig(String serviceName) throws GameNotFoundException, IOException {
+        writeConfig(serviceName, SteamUtils.locateCsgoConfigFolder());
     }
     
     /**
-     * <p>Creates or replaces a configuration file within the specified directory for the provided {@link GSIConfig}
-     * object. The provided service name should be unique and represent your application or organisation, and must
-     * conform with universal file naming standards (ie. no special characters).</p>
+     * Creates or replaces an existing configuration file within the specified game directory.
+     *
+     * <p>The provided service name should be unique and represent your application or organisation, and must  conform
+     * with universal file naming standards (ie. no special characters). This value will have no impact on the API,
+     * but allows you to update or remove the configuration file at a later date.</p>
      *
      * <p>The {@code dir} parameter can be passed the value returned from {@link SteamUtils#locateCsgoConfigFolder()},
      * which will automatically locate this folder on the current system for you. Be aware that the utility method can
-     * return null if no CS:GO directory is found, and throw a {@link SteamDirectoryException} if no valid Steam
+     * return null if no CS:GO directory is found, and throw a {@link GameNotFoundException} if no valid Steam
      * installation can be found on the system. The following example demonstrates how to create and write a
      * configuration file to the system:</p>
      * <pre>
@@ -483,38 +528,51 @@ public class GSIConfig {
      *      Path configPath = SteamUtils.locateCsgoConfigFolder();
      *
      *      if (configPath != null) {
-     *          profile.createConfigFile(configPath, "myservice");
+     *          profile.writeConfig("MyService", configPath);
      *          System.out.println("Profile successfully created!");
      *      } else {
      *          System.out.println("Couldn't locate CS:GO directory");
      *      }
-     *  } catch (SteamDirectoryException e) {
+     *  } catch (GameNotFoundException e) {
      *      System.out.println("Couldn't locate Steam installation directory");
      *  } catch (IOException e) {
      *      System.out.println("Couldn't write configuration file");
      *  }
      * </pre>
      *
+     * @param serviceName the name of your application/service
      * @param dir         the directory in which the file is created
-     * @param serviceName the name of the service
      *
      * @throws IOException           if the file cannot be written to
      * @throws FileNotFoundException if the given path argument is not an existing directory
      * @throws NotDirectoryException if the given path argument is not a directory
      *
      * @see SteamUtils#locateCsgoConfigFolder()
+     * @see #writeConfig(String)
      */
-    public void createConfigFile(Path dir, String serviceName) throws IOException {
+    public void writeConfig(String serviceName, Path dir) throws IOException {
         if (!Files.exists(dir))
             throw new FileNotFoundException("Path argument is not an existing directory.");
         if (!Files.isDirectory(dir))
             throw new NotDirectoryException("Path must be a directory.");
+        writeConfig(dir.resolve(generateConfigName(serviceName)));
+    }
     
-        Path file = dir.resolve(generateConfigName(serviceName));
-    
+    /**
+     * Creates or replaces an existing configuration file.
+     *
+     * @param file the configuration file to write to
+     *
+     * @throws IOException                if the file cannot be written to
+     * @throws FileAlreadyExistsException if the given path argument is a directory
+     */
+    public void writeConfig(Path file) throws IOException {
+        if (Files.isDirectory(file))
+            throw new FileAlreadyExistsException("Path must be a directory.");
+        
         if (LOGGER.isDebugEnabled())
             LOGGER.debug("Attempting to create config file {}...", file.toString());
-    
+        
         try (PrintWriter writer = new PrintWriter(Files.newBufferedWriter(file, StandardCharsets.UTF_8))) {
             generate(writer);
         }
@@ -525,72 +583,52 @@ public class GSIConfig {
     /**
      * Helper method for {@link #generate(PrintWriter)}
      */
-    private static void appendParam(PrintWriter writer, String name, Object value) {
+    private static void appendParam(PrintWriter writer, int indent, String name, Object value) {
         if (value == null) return; //Dont write empty values
         
+        for (int i=0; i<indent; i++) writer.print('\t');
         writer.print("\"");
         writer.print(name);
-        writer.print("\" \"");
+        writer.print("\"\t\"");
         writer.print(value.toString());
         writer.println("\"");
     }
     
     
     /**
-     * <p>Creates or replaces a configuration file within the specified directory for the provided {@link GSIConfig}
-     * object. The provided service name should be unique and represent your application or organisation, and must
-     * conform with universal file naming standards (ie. no special characters).</p>
+     * Removes a configuration file in the located game directory, if it exists.
      *
-     * <p>The {@code dir} parameter can be passed the value returned from {@link SteamUtils#locateCsgoConfigFolder()},
-     * which will automatically locate this folder on the current system for you. Be aware that the utility method can
-     * return null if no CS:GO directory is found, and throw a {@link SteamDirectoryException} if no valid Steam
-     * installation can be found on the system. The following example demonstrates how to create and write a
-     * configuration file to the system:</p>
-     * <pre>
-     *  GSIConfig profile = ... //Create profile here
+     * <p>This method automatically locates the game directory using the {@link SteamUtils#locateCsgoConfigFolder()}
+     * utility method. If neither the Steam or game directory can be identified, then a
+     * {@link GameNotFoundException} will be raised.</p>
      *
-     *  try {
-     *      Path configPath = SteamUtils.locateCsgoConfigFolder();
+     * @param serviceName the identifying service name of the profile
+     * @return true if the file was successfully removed, false if it didn't exist
      *
-     *      if (configPath != null) {
-     *          GSIConfig.createConfig(configPath, profile, "myservice");
-     *          System.out.println("Profile successfully created!");
-     *      } else {
-     *          System.out.println("Couldn't locate CS:GO directory");
-     *      }
-     *  } catch (SteamDirectoryException e) {
-     *      System.out.println("Couldn't locate Steam installation directory");
-     *  } catch (IOException e) {
-     *      System.out.println("Couldn't write configuration file");
-     *  }
-     * </pre>
-     *
-     * @param dir         the directory in which the file is created
-     * @param config      the profile configuration object
-     * @param serviceName the name of the service
-     *
-     * @throws IOException           if the file cannot be written to
+     * @throws IOException           if the file could not be removed
+     * @throws SecurityException     if the security manager disallows access to the file
      * @throws FileNotFoundException if the given path argument is not an existing directory
-     * @throws NotDirectoryException if the given path argument is not a directory
-     *
      * @see SteamUtils#locateCsgoConfigFolder()
-     *
-     * @deprecated Use of instance method {@link #createConfigFile(Path, String)} is recommended.
      */
-    @Deprecated
-    public static void createConfig(Path dir, GSIConfig config, String serviceName) throws IOException {
-        config.createConfigFile(dir, serviceName);
+    public static boolean removeConfig(String serviceName) throws GameNotFoundException, IOException {
+        Path configDir = SteamUtils.locateCsgoConfigFolder();
+        Path file = configDir.resolve(generateConfigName(serviceName));
+    
+        if (LOGGER.isDebugEnabled())
+            LOGGER.debug("Attempting to remove config file {}...", file.toString());
+    
+        return Files.deleteIfExists(file);
     }
     
     /**
-     * <p>Removes a configuration file in the provided directory, if it exists.</p>
+     * Removes a configuration file in the provided directory, if it exists.
      *
      * <p>The directory parameter can be passed the result from the {@link SteamUtils#locateCsgoConfigFolder()} method,
      * which will attempt to automatically locate the directory for you.</p>
      *
      * @param dir         the directory of the profile configuration
      * @param serviceName the identifying service name of the profile
-     * @return true if the file was successfully removed
+     * @return true if the file was successfully removed, false if it didn't exist
      *
      * @throws IOException           if the file could not be removed
      * @throws SecurityException     if the security manager disallows access to the file
