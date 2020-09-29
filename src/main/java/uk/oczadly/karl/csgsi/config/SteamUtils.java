@@ -233,7 +233,7 @@ public class SteamUtils {
     /**
      * Helper method to read Windows registry keys
      */
-    public static String readWinRegValue(String path, String key) {
+    private static String readWinRegValue(String path, String key) {
         try {
             Process proc = Runtime.getRuntime().exec("reg query \"" + path + "\" /v \"" + key + "\"");
             BufferedReader reader = new BufferedReader(new InputStreamReader(proc.getInputStream()));
