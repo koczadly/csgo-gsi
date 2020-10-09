@@ -1,9 +1,6 @@
 package uk.oczadly.karl.csgsi.state;
 
-import com.google.gson.JsonDeserializationContext;
-import com.google.gson.JsonDeserializer;
-import com.google.gson.JsonElement;
-import com.google.gson.JsonParseException;
+import com.google.gson.*;
 import com.google.gson.annotations.Expose;
 import com.google.gson.annotations.JsonAdapter;
 import com.google.gson.annotations.SerializedName;
@@ -223,6 +220,10 @@ public class PlayerState {
         private boolean helmet;
         
         @Expose
+        @SerializedName("defusekit")
+        private boolean defuseKit;
+        
+        @Expose
         @SerializedName("flashed")
         private int flashed;
         
@@ -266,7 +267,11 @@ public class PlayerState {
         public boolean hasHelmet() {
             return helmet;
         }
-        
+    
+        public boolean hasDefuseKit() {
+            return defuseKit;
+        }
+    
         public int getFlashed() {
             return flashed;
         }
