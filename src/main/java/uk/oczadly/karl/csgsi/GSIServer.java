@@ -255,7 +255,7 @@ public final class GSIServer {
         }
         
         GameState state = GSON.fromJson(jsonObject, GameState.class); //Parse game state
-        GameStateContext context = new GameStateContext(this, latestGameState, address, authTokens, jsonObject);
+        GameStateContext context = new GameStateContext(this, latestGameState, address, authTokens, jsonObject, json);
         
         // Discard old game states
         if (!discardOlderStates

@@ -14,14 +14,16 @@ public final class GameStateContext {
     private final InetAddress address;
     private final Map<String, String> authTokens;
     private final JsonObject rawJson;
+    private final String rawJsonString;
     
     public GameStateContext(GSIServer server, GameState previousState, InetAddress address,
-                            Map<String, String> authTokens, JsonObject rawJson) {
+                            Map<String, String> authTokens, JsonObject rawJson, String rawJsonString) {
         this.server = server;
         this.previousState = previousState;
         this.address = address;
         this.authTokens = Collections.unmodifiableMap(authTokens);
         this.rawJson = rawJson;
+        this.rawJsonString = rawJsonString;
     }
     
     
@@ -54,10 +56,19 @@ public final class GameStateContext {
     }
     
     /**
-     * @return the raw JSON data (as a Gson {@link JsonObject} object) sent from the game client
+     * Returns the raw JSON data (as a Gson {@link JsonObject}) received from the game client.
+     * @return the raw JSON data
      */
     public JsonObject getRawJsonObject() {
         return rawJson;
+    }
+    
+    /**
+     * Returns the raw JSON data (in String form) received from the game client.
+     * @return the raw JSON data
+     */
+    public String getRawJsonString() {
+        return rawJsonString;
     }
     
 }

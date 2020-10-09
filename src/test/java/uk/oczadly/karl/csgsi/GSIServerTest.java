@@ -94,7 +94,8 @@ public class GSIServerTest {
         Map<String, String> authTokens = new HashMap<>();
         InetAddress address = InetAddress.getLoopbackAddress();
         JsonObject jsonObject = new JsonObject();
-        GameStateContext context = new GameStateContext(server, previous, address, authTokens, jsonObject);
+        String jsonString = "{}";
+        GameStateContext context = new GameStateContext(server, previous, address, authTokens, jsonObject, jsonString);
         
         //Notify observing object
         server.notifyObservers(state, context);
@@ -116,6 +117,8 @@ public class GSIServerTest {
         assertSame(server, observer2.context.getGsiServer());
         assertSame(jsonObject, observer1.context.getRawJsonObject());
         assertSame(jsonObject, observer2.context.getRawJsonObject());
+        assertSame(jsonString, observer1.context.getRawJsonString());
+        assertSame(jsonString, observer2.context.getRawJsonString());
     }
     
     
