@@ -172,6 +172,11 @@ public class PlayerState {
         return facing;
     }
     
+    @Override
+    public String toString() {
+        return getName();
+    }
+    
     
     private static class WeaponsListDeserializer implements JsonDeserializer<List<WeaponDetails>> {
         @Override
@@ -348,7 +353,18 @@ public class PlayerState {
         public int getScore() {
             return score;
         }
-        
+    
+    
+        @Override
+        public String toString() {
+            return "PlayerMatchStats{" +
+                    "kills=" + kills +
+                    ", assists=" + assists +
+                    ", deaths=" + deaths +
+                    ", mvps=" + mvps +
+                    ", score=" + score +
+                    '}';
+        }
     }
     
     public static class WeaponDetails {
@@ -422,7 +438,16 @@ public class PlayerState {
         public DeserializedEnum<WeaponState> getState() {
             return state;
         }
-        
+    
+        @Override
+        public String toString() {
+            return "WeaponDetails{" +
+                    "weapon=" + getName() +
+                    ", skin='" + getSkin() + '\'' +
+                    ", ammoClip=" + getAmmoClip() +
+                    ", state=" + getState().getRawString() +
+                    '}';
+        }
     }
     
     public enum WeaponState {
