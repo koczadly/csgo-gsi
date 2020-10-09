@@ -17,19 +17,22 @@ import java.util.Objects;
 /**
  * This class is a wrapper for {@code Enum} values, allowing for cases where the corresponding enum constant cannot be
  * parsed while still maintaining the original information.
+ *
  * In most implementations, the {@link #getEnum()} method can be used to retrieve the enum value as normal. For cases
  * where the originally returned value could not be parsed as an enum constant (resulting in a null enum value), the
  * {@link #getRawString()} value will return the raw serialized value received from the game client.
+ *
  * @param <E> the enum class
+ *
  * @see #getEnum()
  */
-@JsonAdapter(DeserializedEnum.DeserializerFactory.class)
-public class DeserializedEnum<E extends Enum<E>> {
+@JsonAdapter(EnumValue.DeserializerFactory.class)
+public class EnumValue<E extends Enum<E>> {
     
     private final E enumVal;
     private final String rawVal;
     
-    public DeserializedEnum(E enumVal, String rawVal) {
+    public EnumValue(E enumVal, String rawVal) {
         this.enumVal = enumVal;
         this.rawVal = rawVal;
     }
@@ -39,10 +42,20 @@ public class DeserializedEnum<E extends Enum<E>> {
      * Returns the parsed enum value, or null in cases where the corresponding enum constant could not be parsed. If
      * the game client did not send a null value, and the value returned from this method is null, then the
      * {@link #getRawString()} method will return the serialized string value.
+     *
      * @return the parsed enum value, or null if not found
      */
     public E getEnum() {
         return enumVal;
+    }
+    
+    /**
+     * Returns whether the enum value was resolved or not. When this value is true, {@link #getEnum()} won't return a
+     * null value.
+     * @return true if the value is resolved
+     */
+    public boolean isResolved() {
+        return enumVal != null;
     }
     
     /**
@@ -57,10 +70,7 @@ public class DeserializedEnum<E extends Enum<E>> {
     
     @Override
     public String toString() {
-        return "DeserializedEnum{" +
-                "enumVal=" + enumVal +
-                ", rawVal='" + rawVal + '\'' +
-                '}';
+        return getRawString();
     }
     
     
@@ -68,7 +78,7 @@ public class DeserializedEnum<E extends Enum<E>> {
     public boolean equals(Object o) {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
-        DeserializedEnum<?> that = (DeserializedEnum<?>)o;
+        EnumValue<?> that = (EnumValue<?>)o;
         return enumVal == that.enumVal &&
                 Objects.equals(rawVal, that.rawVal);
     }
@@ -84,7 +94,7 @@ public class DeserializedEnum<E extends Enum<E>> {
         public <T> TypeAdapter<T> create(Gson gson, TypeToken<T> type) {
             Class<? super T> rawType = type.getRawType();
             
-            if (rawType.isAssignableFrom(DeserializedEnum.class)) {
+            if (rawType.isAssignableFrom(EnumValue.class)) {
                 Type enumType = ((ParameterizedType)type.getType()).getActualTypeArguments()[0];
                 TypeAdapter<?> enumAdapter = gson.getAdapter(TypeToken.get(enumType));
                 
@@ -96,7 +106,7 @@ public class DeserializedEnum<E extends Enum<E>> {
         }
     }
     
-    static class Deserializer<E extends Enum<E>> extends TypeAdapter<DeserializedEnum<E>> {
+    static class Deserializer<E extends Enum<E>> extends TypeAdapter<EnumValue<E>> {
         TypeAdapter<E> enumAdapter;
         
         Deserializer(TypeAdapter<E> enumAdapter) {
@@ -105,15 +115,14 @@ public class DeserializedEnum<E extends Enum<E>> {
         
         
         @Override
-        public DeserializedEnum<E> read(JsonReader in) throws IOException {
+        public EnumValue<E> read(JsonReader in) throws IOException {
             String val = in.nextString();
-            
             E enumVal = enumAdapter.read(new JsonReader(new StringReader("\"" + val + "\"")));
-            return new DeserializedEnum<>(enumVal, val);
+            return new EnumValue<>(enumVal, val);
         }
         
         @Override
-        public void write(JsonWriter out, DeserializedEnum<E> value) throws IOException {
+        public void write(JsonWriter out, EnumValue<E> value) throws IOException {
             enumAdapter.write(out, value.getEnum());
         }
     }

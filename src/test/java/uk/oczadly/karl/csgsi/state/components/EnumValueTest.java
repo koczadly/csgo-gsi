@@ -10,7 +10,7 @@ import java.util.List;
 
 import static org.junit.Assert.*;
 
-public class DeserializedEnumTest {
+public class EnumValueTest {
 
     private static final Gson gson = new Gson();
     
@@ -40,11 +40,11 @@ public class DeserializedEnumTest {
     
     
     static class TestContainer {
-        DeserializedEnum<Enum> standard;
-        DeserializedEnum<EnumWithNames> named;
-        DeserializedEnum<EnumWithDeserializer> deserializer;
-        DeserializedEnum<Enum> notFound;
-        List<DeserializedEnum<Enum>> list;
+        EnumValue<Enum> standard;
+        EnumValue<EnumWithNames> named;
+        EnumValue<EnumWithDeserializer> deserializer;
+        EnumValue<Enum> notFound;
+        List<EnumValue<Enum>> list;
     }
     
     

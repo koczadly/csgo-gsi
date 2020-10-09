@@ -3,13 +3,13 @@ package uk.oczadly.karl.csgsi.state;
 import com.google.gson.annotations.Expose;
 import com.google.gson.annotations.SerializedName;
 import uk.oczadly.karl.csgsi.state.components.Coordinate;
-import uk.oczadly.karl.csgsi.state.components.DeserializedEnum;
+import uk.oczadly.karl.csgsi.state.components.EnumValue;
 
 public class BombState {
     
     @Expose
     @SerializedName("state")
-    private DeserializedEnum<BombStatus> phase;
+    private EnumValue<BombStatus> phase;
     
     @Expose
     @SerializedName("position")
@@ -27,7 +27,7 @@ public class BombState {
     /**
      * @return the phase of the bomb
      */
-    public DeserializedEnum<BombStatus> getPhase() {
+    public EnumValue<BombStatus> getPhase() {
         return phase;
     }
     
