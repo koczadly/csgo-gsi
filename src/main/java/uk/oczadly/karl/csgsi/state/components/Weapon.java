@@ -12,64 +12,83 @@ import java.util.Map;
 
 @JsonAdapter(Weapon.WeaponDeserializer.class)
 public enum Weapon {
-    AK_47           ("ak47",          Type.RIFLE),
-    AUG             ("aug",           Type.RIFLE),
-    AWP             ("awp",           Type.SNIPER_RIFLE),
-    BIZON           ("bizon",         Type.SUBMACHINE_GUN),
-    C4              ("c4",            Type.BOMB),
-    CZ75_A          ("cz75a",         Type.PISTOL),
-    DESERT_EAGLE    ("deagle",        Type.PISTOL),
-    DECOY           ("decoy",         Type.GRENADE),
-    DUAL_BERETTAS   ("elite",         Type.PISTOL),
-    FAMAS           ("famas",         Type.RIFLE),
-    FIVE_SEVEN      ("fiveseven",     Type.PISTOL),
-    FLASH_BANG      ("flashbang",     Type.GRENADE),
-    G3SG1           ("g3sg1",         Type.SNIPER_RIFLE),
-    GALIL_AR        ("galilar",       Type.RIFLE),
-    GLOCK           ("glock",         Type.PISTOL),
-    HEALTH_SHOT     ("healthshot",    Type.STACKABLE_ITEM),
-    HE_GRENADE      ("hegrenade",     Type.GRENADE),
-    P2000           ("hkp2000",       Type.PISTOL),
-    INC_GRENADE     ("incgrenade",    Type.GRENADE),
-    KNIFE_T         ("knife_t",       Type.KNIFE),
-    KNIFE_CT        ("knife",         Type.KNIFE),
-    M4A4            ("m4a1",          Type.RIFLE),
-    M4A1_S          ("m4a1_silencer", Type.RIFLE),
-    M249            ("m249",          Type.MACHINE_GUN),
-    MAC_10          ("mac10",         Type.SUBMACHINE_GUN),
-    MAG_7           ("mag7",          Type.SHOTGUN),
-    MOLOTOV         ("molotov",       Type.GRENADE),
-    MP7             ("mp7",           Type.SUBMACHINE_GUN),
-    MP9             ("mp9",           Type.SUBMACHINE_GUN),
-    NEGEV           ("negev",         Type.MACHINE_GUN),
-    NOVA            ("nova",          Type.SHOTGUN),
-    P90             ("p90",           Type.SUBMACHINE_GUN),
-    P250            ("p250",          Type.PISTOL),
-    REVOLVER        ("revolver",      Type.PISTOL),
-    SAWED_OFF       ("sawedoff",      Type.SHOTGUN),
-    SCAR_20         ("scar20",        Type.SNIPER_RIFLE),
-    SG_553          ("sg556",         Type.RIFLE),
-    TA_GRENADE      ("tagrenade",     Type.GRENADE),
-    SMOKE_GRENADE   ("smokegrenade",  Type.GRENADE),
-    SSG_08          ("ssg08",         Type.SNIPER_RIFLE),
-    TEC_9           ("tec9",          Type.PISTOL),
-    UMP_45          ("ump45",         Type.SUBMACHINE_GUN),
-    USP_SILENCER    ("usp_silencer",  Type.PISTOL),
-    XM1014          ("xm1014",        Type.SHOTGUN),
-    TASER           ("taser",         null),
-    FISTS           ("fists",         Type.FISTS),
-    AXE             ("axe",           Type.MELEE),
-    BREACH_CHARGE   ("breachcharge",  Type.BREACH_CHARGE),
-    BUMP_MINE       ("bumpmine",      Type.BUMP_MINE),
-    DIVERSION       ("diversion",     Type.GRENADE),
-    MP5_SD          ("mp5sd",         Type.SUBMACHINE_GUN),
-    HAMMER          ("hammer",        Type.MELEE),
-    SHIELD          ("shield",        null),
-    SNOWBALL        ("snowball",      Type.GRENADE),
-    SPANNER         ("spanner",       Type.MELEE),
-    TABLET          ("tablet",        Type.TABLET),
-    KNIFE_GHOST     ("knife_ghost",   Type.KNIFE),
-    ZONE_REPULSOR   ("zone_repulsor", null);
+    AK_47                ("ak47",                  Type.RIFLE,          "AK47"),
+    AUG                  ("aug",                   Type.RIFLE,          "AUG"),
+    AWP                  ("awp",                   Type.SNIPER_RIFLE,   "AWP"),
+    BIZON                ("bizon",                 Type.SUBMACHINE_GUN, "PP-Bizon"),
+    C4                   ("c4",                    Type.BOMB,           "C4 Explosive"),
+    CZ75_A               ("cz75a",                 Type.PISTOL,         "CZ75-Auto"),
+    DESERT_EAGLE         ("deagle",                Type.PISTOL,         "Desert Eagle"),
+    DECOY                ("decoy",                 Type.GRENADE,        "Decoy Grenade"),
+    DUAL_BERETTAS        ("elite",                 Type.PISTOL,         "Dual Berettas"),
+    FAMAS                ("famas",                 Type.RIFLE,          "FAMAS"),
+    FIVE_SEVEN           ("fiveseven",             Type.PISTOL,         "Five-SeveN"),
+    FLASH_BANG           ("flashbang",             Type.GRENADE,        "Flashbang"),
+    G3SG1                ("g3sg1",                 Type.SNIPER_RIFLE,   "G3SG1"),
+    GALIL_AR             ("galilar",               Type.RIFLE,          "Galil AR"),
+    GLOCK                ("glock",                 Type.PISTOL,         "Glock"),
+    HEALTH_SHOT          ("healthshot",            Type.STACKABLE_ITEM, "Health Shot"),
+    HE_GRENADE           ("hegrenade",             Type.GRENADE,        "HE Grenade"),
+    P2000                ("hkp2000",               Type.PISTOL,         "P2000"),
+    INC_GRENADE          ("incgrenade",            Type.GRENADE,        "Incendiary Grenade"),
+    M4A4                 ("m4a1",                  Type.RIFLE,          "M4A4"),
+    M4A1_S               ("m4a1_silencer",         Type.RIFLE,          "M4A1-S"),
+    M249                 ("m249",                  Type.MACHINE_GUN,    "M249"),
+    MAC_10               ("mac10",                 Type.SUBMACHINE_GUN, "MAC-10"),
+    MAG_7                ("mag7",                  Type.SHOTGUN,        "MAG-7"),
+    MOLOTOV              ("molotov",               Type.GRENADE,        "Molotov"),
+    MP7                  ("mp7",                   Type.SUBMACHINE_GUN, "MP7"),
+    MP9                  ("mp9",                   Type.SUBMACHINE_GUN, "MP9"),
+    NEGEV                ("negev",                 Type.MACHINE_GUN,    "Negev"),
+    NOVA                 ("nova",                  Type.SHOTGUN,        "Nova"),
+    P90                  ("p90",                   Type.SUBMACHINE_GUN, "P90"),
+    P250                 ("p250",                  Type.PISTOL,         "P250"),
+    REVOLVER             ("revolver",              Type.PISTOL,         "R8 Revolver"),
+    SAWED_OFF            ("sawedoff",              Type.SHOTGUN,        "Sawed-Off"),
+    SCAR_20              ("scar20",                Type.SNIPER_RIFLE,   "SCAR-20"),
+    SG_553               ("sg556",                 Type.RIFLE,          "SG 553"),
+    TA_GRENADE           ("tagrenade",             Type.GRENADE,        "Tactical Awareness Grenade"),
+    SMOKE_GRENADE        ("smokegrenade",          Type.GRENADE,        "Smoke Grenade"),
+    SSG_08               ("ssg08",                 Type.SNIPER_RIFLE,   "SSG 08"),
+    TEC_9                ("tec9",                  Type.PISTOL,         "Tec-9"),
+    UMP_45               ("ump45",                 Type.SUBMACHINE_GUN, "UMP-45"),
+    USP_SILENCER         ("usp_silencer",          Type.PISTOL,         "USP-S"),
+    XM1014               ("xm1014",                Type.SHOTGUN,        "XM1014"),
+    TASER                ("taser",                 null,                "Zeus x27"),
+    FISTS                ("fists",                 Type.FISTS,          "Fists"),
+    AXE                  ("axe",                   Type.MELEE,          "Axe"),
+    BREACH_CHARGE        ("breachcharge",          Type.BREACH_CHARGE,  "Breach Charge"),
+    BUMP_MINE            ("bumpmine",              Type.BUMP_MINE,      "Bump Mine"),
+    DIVERSION            ("diversion",             Type.GRENADE,        "Diversion Grenade"),
+    MP5_SD               ("mp5sd",                 Type.SUBMACHINE_GUN, "MP5-SD"),
+    HAMMER               ("hammer",                Type.MELEE,          "Hammer"),
+    SHIELD               ("shield",                null,                "Shield"),
+    SNOWBALL             ("snowball",              Type.GRENADE,        "Snowball"),
+    SPANNER              ("spanner",               Type.MELEE,          "Spanner"),
+    TABLET               ("tablet",                Type.TABLET,         "Tablet"),
+    ZONE_REPULSOR        ("zone_repulsor",         null,                "Zone Repulsor"),
+    KNIFE_T              ("knife_t",               Type.KNIFE,          "Knife"),
+    KNIFE_CT             ("knife",                 Type.KNIFE,          "Knife"),
+    KNIFE_GHOST          ("knife_ghost",           Type.KNIFE,          "Spectral Shiv"),
+    KNIFE_BAYONET        ("bayonet",               Type.KNIFE,          "Bayonet"),
+    KNIFE_BOWIE          ("knife_survival_bowie",  Type.KNIFE,          "Bowie Knife"),
+    KNIFE_BUTTERFLY      ("knife_butterfly",       Type.KNIFE,          "Butterfly Knife"),
+    KNIFE_FALCHION       ("knife_falchion",        Type.KNIFE,          "Falchion Knife"),
+    KNIFE_FLIP           ("knife_flip",            Type.KNIFE,          "Flip Knife"),
+    KNIFE_GUT            ("knife_gut",             Type.KNIFE,          "Gut Knife"),
+    KNIFE_HUNTSMAN       ("knife_tactical",        Type.KNIFE,          "Huntsman Knife"),
+    KNIFE_KARAMBIT       ("knife_karambit",        Type.KNIFE,          "Karambit"),
+    KNIFE_M9_BAYONET     ("knife_m9_bayonet",      Type.KNIFE,          "M9 Bayonet"),
+    KNIFE_SHADOW_DAGGERS ("knife_push",            Type.KNIFE,          "Shadow Daggers"),
+    KNIFE_NAVAJA         ("knife_gypsy_jackknife", Type.KNIFE,          "Navaja Knife"),
+    KNIFE_STILETTO       ("knife_stiletto",        Type.KNIFE,          "Stiletto Knife"),
+    KNIFE_TALON          ("knife_widowmaker",      Type.KNIFE,          "Talon Knife"),
+    KNIFE_URSUS          ("knife_ursus",           Type.KNIFE,          "Ursus Knife"),
+    KNIFE_CLASSIC        ("knife_css",             Type.KNIFE,          "Classic Knife"),
+    KNIFE_PARACORD       ("knife_cord",            Type.KNIFE,          "Paracord Knife"),
+    KNIFE_SURVIVAL       ("knife_canis",           Type.KNIFE,          "Survival Knife"),
+    KNIFE_NOMAD          ("knife_outdoor",         Type.KNIFE,          "Nomad Knife"),
+    KNIFE_SKELETON       ("knife_skeleton",        Type.KNIFE,          "Skeleton Knife");
     
     
     
@@ -81,22 +100,33 @@ public enum Weapon {
     }
     
     
-    String name;
-    Type type;
+    final String entityName, displayName;
+    final Type type;
     
-    Weapon(String name, Type type) {
-        this.name = "weapon_" + name;
+    Weapon(String name, Type type, String displayName) {
+        this.entityName = "weapon_" + name;
         this.type = type;
+        this.displayName = displayName;
     }
     
     
+    /**
+     * @return the internal name of the weapon
+     */
     public String getName() {
-        return name;
+        return entityName;
+    }
+    
+    /**
+     * @return the display name of the weapon
+     */
+    public String getDisplayName() {
+        return displayName;
     }
     
     @Override
     public String toString() {
-        return getName();
+        return getDisplayName();
     }
     
     public Type getType() {
@@ -148,7 +178,7 @@ public enum Weapon {
         @SerializedName("SniperRifle")
         SNIPER_RIFLE,
         @SerializedName("Bump Mine")
-        BUMP_MINE;
+        BUMP_MINE
     }
     
 }
