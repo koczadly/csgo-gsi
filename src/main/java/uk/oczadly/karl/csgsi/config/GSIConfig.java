@@ -498,10 +498,9 @@ public class GSIConfig {
      *
      * @param serviceName the name of your application/service
      *
-     * @throws IOException             if the file cannot be written to
+     * @throws IOException           if the file cannot be written to
      * @throws GameNotFoundException if the Steam or CSGO directories could not be located
-     * @throws FileNotFoundException   if the given path argument is not an existing directory
-     * @throws NotDirectoryException   if the given path argument is not a directory
+     * @throws SecurityException     if the security manager doesn't permit access to the file
      *
      * @see SteamUtils#locateCsgoConfigFolder()
      */
@@ -544,15 +543,13 @@ public class GSIConfig {
      * @param dir         the directory in which the file is created
      *
      * @throws IOException           if the file cannot be written to
-     * @throws FileNotFoundException if the given path argument is not an existing directory
      * @throws NotDirectoryException if the given path argument is not a directory
+     * @throws SecurityException     if the security manager doesn't permit access to the file
      *
      * @see SteamUtils#locateCsgoConfigFolder()
      * @see #writeConfig(String)
      */
     public void writeConfig(String serviceName, Path dir) throws IOException {
-        if (!Files.exists(dir))
-            throw new FileNotFoundException("Path argument is not an existing directory.");
         if (!Files.isDirectory(dir))
             throw new NotDirectoryException("Path must be a directory.");
         writeConfig(dir.resolve(generateConfigName(serviceName)));
@@ -563,12 +560,12 @@ public class GSIConfig {
      *
      * @param file the configuration file to write to
      *
-     * @throws IOException                if the file cannot be written to
-     * @throws FileAlreadyExistsException if the given path argument is a directory
+     * @throws IOException       if the file cannot be written to
+     * @throws SecurityException if the security manager doesn't permit access to the file
      */
     public void writeConfig(Path file) throws IOException {
         if (Files.isDirectory(file))
-            throw new FileAlreadyExistsException("Path must be a directory.");
+            throw new IllegalArgumentException("Path was an existing directory, and not a file.");
         
         if (LOGGER.isDebugEnabled())
             LOGGER.debug("Attempting to create config file {}...", file.toString());
