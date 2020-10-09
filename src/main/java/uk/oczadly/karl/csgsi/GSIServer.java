@@ -25,7 +25,7 @@ import java.util.concurrent.Executors;
  * This class is used to listen for live game state information as sent by the game client.
  * <p>
  * The listening network port is configured within the class constructor, and the server is started through the {@link
- * #startServer()} method. Observers can be registered through the {@link #registerObserver(GSIObserver)} method, which
+ * #start()} method. Observers can be registered through the {@link #registerObserver(GSIObserver)} method, which
  * subscribes the object to new game state information as it is received.
  */
 public final class GSIServer {
@@ -157,7 +157,7 @@ public final class GSIServer {
      * @throws IllegalStateException if the server is already running
      * @throws IOException           if the configured port cannot be bound to
      */
-    public void startServer() throws IOException {
+    public void start() throws IOException {
         LOGGER.debug("Attempting to start GSI server on port {}...", server.getPort());
         
         if (server.isRunning())
@@ -174,7 +174,7 @@ public final class GSIServer {
      *
      * @throws IllegalStateException if the server is not currently running
      */
-    public void stopServer() {
+    public void stop() {
         LOGGER.debug("Attempting to stop GSI server running on port {}...", server.getPort());
         server.stop();
         LOGGER.info("GSI server on port {} successfully shut down", server.getPort());
@@ -183,21 +183,21 @@ public final class GSIServer {
     /**
      * @return true if the server is currently running and listening
      */
-    public boolean isServerRunning() {
+    public boolean isRunning() {
         return server.isRunning();
     }
     
     /**
      * @return the port which the server will listen on
      */
-    public int getServerPort() {
+    public int getPort() {
         return server.getPort();
     }
     
     /**
      * @return the address which the server will bind to, or null if it will bind to all local addresses
      */
-    public InetAddress getServerBindingAddress() {
+    public InetAddress getBindingAddress() {
         return server.getBindAddress();
     }
     
