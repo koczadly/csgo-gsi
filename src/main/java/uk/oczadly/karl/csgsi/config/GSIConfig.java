@@ -490,13 +490,14 @@ public class GSIConfig {
      *      profile.writeConfig("MyService");
      *      System.out.println("Profile successfully created!");
      *  } catch (GameNotFoundException e) {
-     *      System.out.println("Couldn't locate CSGO or Steam installation directory");
+     *      System.out.println("Couldn't locate CSGO or Steam installation directories.");
      *  } catch (IOException e) {
      *      System.out.println("Couldn't write configuration file");
      *  }
      * </pre>
      *
-     * @param serviceName the name of your application/service
+     * @param serviceName the identifying name of your application/service (no special characters, and excluding
+     *                    {@code .cfg} suffix)
      *
      * @throws IOException           if the file cannot be written to
      * @throws GameNotFoundException if the Steam or CSGO directories could not be located
@@ -533,13 +534,14 @@ public class GSIConfig {
      *          System.out.println("Couldn't locate CS:GO directory");
      *      }
      *  } catch (GameNotFoundException e) {
-     *      System.out.println("Couldn't locate Steam installation directory");
+     *      System.out.println("Couldn't locate CSGO or Steam installation directories.");
      *  } catch (IOException e) {
      *      System.out.println("Couldn't write configuration file");
      *  }
      * </pre>
      *
-     * @param serviceName the name of your application/service
+     * @param serviceName the identifying name of your application/service (no special characters, and excluding
+     *                    {@code .cfg} suffix)
      * @param dir         the directory in which the file is created
      *
      * @throws IOException           if the file cannot be written to
@@ -599,22 +601,18 @@ public class GSIConfig {
      * utility method. If neither the Steam or game directory can be identified, then a
      * {@link GameNotFoundException} will be raised.</p>
      *
-     * @param serviceName the identifying service name of the profile
+     * @param serviceName the identifying name of your application/service (no special characters, and excluding
+     *                    {@code .cfg} suffix)
      * @return true if the file was successfully removed, false if it didn't exist
      *
      * @throws IOException           if the file could not be removed
      * @throws SecurityException     if the security manager disallows access to the file
      * @throws FileNotFoundException if the given path argument is not an existing directory
+     *
      * @see SteamUtils#locateCsgoConfigFolder()
      */
     public static boolean removeConfig(String serviceName) throws GameNotFoundException, IOException {
-        Path configDir = SteamUtils.locateCsgoConfigFolder();
-        Path file = configDir.resolve(generateConfigName(serviceName));
-    
-        if (LOGGER.isDebugEnabled())
-            LOGGER.debug("Attempting to remove config file {}...", file.toString());
-    
-        return Files.deleteIfExists(file);
+        return removeConfig(SteamUtils.locateCsgoConfigFolder(), serviceName);
     }
     
     /**
@@ -623,14 +621,16 @@ public class GSIConfig {
      * <p>The directory parameter can be passed the result from the {@link SteamUtils#locateCsgoConfigFolder()} method,
      * which will attempt to automatically locate the directory for you.</p>
      *
-     * @param dir         the directory of the profile configuration
-     * @param serviceName the identifying service name of the profile
+     * @param dir         the directory which the configuration file resides in
+     * @param serviceName the identifying name of your application/service (no special characters, and excluding
+     *                    {@code .cfg} suffix)
      * @return true if the file was successfully removed, false if it didn't exist
      *
      * @throws IOException           if the file could not be removed
      * @throws SecurityException     if the security manager disallows access to the file
      * @throws FileNotFoundException if the given path argument is not an existing directory
      * @throws NotDirectoryException if the given path argument is not a directory
+     *
      * @see SteamUtils#locateCsgoConfigFolder()
      */
     public static boolean removeConfig(Path dir, String serviceName) throws IOException {
