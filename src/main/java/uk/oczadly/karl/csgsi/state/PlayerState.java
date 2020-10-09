@@ -10,10 +10,8 @@ import uk.oczadly.karl.csgsi.state.components.Coordinate;
 import uk.oczadly.karl.csgsi.state.components.Team;
 import uk.oczadly.karl.csgsi.state.components.Weapon;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-import java.util.TreeMap;
+import java.lang.reflect.Type;
+import java.util.*;
 
 public class PlayerState {
 
@@ -180,13 +178,18 @@ public class PlayerState {
     
     private static class WeaponsListDeserializer implements JsonDeserializer<List<WeaponDetails>> {
         @Override
-        public List<WeaponDetails> deserialize(JsonElement json, java.lang.reflect.Type typeOfT, JsonDeserializationContext context) throws JsonParseException {
-            TreeMap<String, WeaponDetails> map = context.deserialize(json,
-                    new TypeToken<TreeMap<String, WeaponDetails>>() {}.getType());
+        public List<WeaponDetails> deserialize(JsonElement json, Type typeOfT, JsonDeserializationContext context)
+                throws JsonParseException {
+            // Fetch map of weapons
+            Map<String, WeaponDetails> map = context.deserialize(json,
+                    new TypeToken<HashMap<String, WeaponDetails>>() {}.getType());
             
-            return map != null
-                    ? Collections.unmodifiableList(new ArrayList<>(map.values()))
-                    : Collections.emptyList();
+            // Add to list (in order)
+            List<WeaponDetails> list = new ArrayList<>(map.size());
+            for (int i=0; i<map.size(); i++) {
+                list.add(map.get("weapon_" + i));
+            }
+            return Collections.unmodifiableList(list);
         }
     }
     
