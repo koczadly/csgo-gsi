@@ -34,29 +34,19 @@ these utilities:
 ```java
 // Build the configuration for our service
 GSIConfig config = new GSIConfig(1337)
-        .setDescription("Test service for CSGO-GSI") // Not necessary, but adds a useful comment to the file
         .setTimeoutPeriod(1.0)
         .setBufferPeriod(0.5)
         .setAuthToken("password", "Q79v5tcxVQ8u")
-        .setDataComponents(
-                DataComponent.PROVIDER,
-                DataComponent.MAP); // Alternatively, you can call setAllDataComponents()
+        .setAllDataComponents();
 
 try {
-    // Locate the CSGO configuration folder
-    Path configPath = SteamUtils.locateCsgoConfigFolder();
-    
-    if (configPath != null) {
-        // Create the service config file
-        GSIConfig.createConfig(configPath, config, "my_service_name");
-        System.out.println("Config successfully created!");
-    } else {
-        System.out.println("Couldn't locate CS:GO directory");
-    }
-} catch (SteamDirectoryException e) {
-    System.out.println("Couldn't locate Steam installation directory");
+    config.writeConfig("test_service");
+    System.out.println("Config successfully created!");
+} catch (GameNotFoundException e) {
+    // Either CSGO or Steam installation directories could not be located
+    System.out.println("Couldn't locate CSGO directory.");
 } catch (IOException e) {
-    System.out.println("Couldn't write configuration file");
+    System.out.println("Couldn't write configuration file.");
 }
 ```
 
@@ -70,16 +60,18 @@ GSIObserver observer = (state, context) -> {
     // Access state information with the 'state' object...
     System.out.println("New state received from game client at address " + context.getAddress().getHostAddress());
     
-    System.out.println("  Client SteamID: " + state.getProviderDetails().getClientSteamId());
+    if (state.getProviderDetails() != null) {
+        System.out.println("Client SteamID: " + state.getProviderDetails().getClientSteamId());
+    }
     if (state.getMapState() != null) {
-        System.out.println("  Current map: " + state.getMapState().getName());
+        System.out.println("Current map: " + state.getMapState().getName());
     }
 };
 
 // Configure server on port 1337, requiring the specified "password" auth token
 GSIServer server = new GSIServer(1337, Map.of("password", "Q79v5tcxVQ8u"));
 server.registerObserver(observer); // Register our observer object
-server.startServer(); // Start the server (runs in a separate thread)
+server.start(); // Start the server (runs in a separate thread)
 
 System.out.println("Server started. Listening for state data...");
 ```
