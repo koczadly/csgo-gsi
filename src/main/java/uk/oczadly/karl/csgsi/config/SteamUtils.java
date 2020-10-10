@@ -23,8 +23,8 @@ public class SteamUtils {
     
     private static final Logger LOGGER = LoggerFactory.getLogger(SteamUtils.class);
     
-    private static final Pattern STEAM_VDF_PATTERN = Pattern.compile("\\s+\\\"(?:\\d+)\\\"\\s+\\\"(.+)\\\"");
-    private static final Pattern STEAM_ACF_PATTERN = Pattern.compile("\\s+\\\"installdir\\\"\\s+\\\"(.+)\\\"");
+    private static final Pattern STEAM_VDF_PATTERN = Pattern.compile("\\s+\"(?:\\d+)\"\\s+\"(.+)\"");
+    private static final Pattern STEAM_ACF_PATTERN = Pattern.compile("\\s+\"installdir\"\\s+\"(.+)\"");
     private static final Pattern REG_PATTERN = Pattern.compile("[ ]{4}([^\\s]+)[ ]{4}[^\\s]+[ ]{4}(.*+)");
     
     
@@ -173,6 +173,7 @@ public class SteamUtils {
      *
      * @deprecated Use of {@link #findGameDirectoryById(int)} is preferred for consistency.
      */
+    @Deprecated
     public static Path findGameDirectoryByName(String name) throws GameNotFoundException {
         for (Path p : getSteamLibraries()) {
             Path gamePath = p.resolve(STEAM_GAME_INSTALL_DIR).resolve(name);
@@ -213,7 +214,7 @@ public class SteamUtils {
         } catch (IOException e) {
             throw new GameNotFoundException("Could not read game manifest with ID \"" + id + "\".", e);
         }
-        throw new GameNotFoundException("Could not locate game directory with ID \"" + id + "\".");
+        throw new GameNotFoundException("Could not locate directory for game ID \"" + id + "\".");
     }
     
     
@@ -247,9 +248,11 @@ public class SteamUtils {
             }
             reader.close();
             proc.destroy();
-        } catch (IOException | IndexOutOfBoundsException e) {
+        } catch (IOException e) {
             LOGGER.warn("Failed to read registry key {} at path {}", key, path, e);
+            return null;
         }
+        LOGGER.warn("Failed to read registry key {} at path {}", key, path);
         return null;
     }
     
