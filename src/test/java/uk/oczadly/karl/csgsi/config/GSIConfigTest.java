@@ -1,15 +1,18 @@
 package uk.oczadly.karl.csgsi.config;
 
 import org.junit.Test;
-import uk.oczadly.karl.csgsi.config.DataComponent;
-import uk.oczadly.karl.csgsi.config.GSIConfig;
 
 import java.io.PrintWriter;
 import java.io.StringWriter;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import static org.junit.Assert.*;
 
 public class GSIConfigTest {
+    
+    static final Pattern CONF_PATTERN = Pattern.compile(" *\"(\\w+)\" +\"(.+)\"");
+    
     
     @Test
     public void testGettersAndSetters() {
@@ -56,12 +59,12 @@ public class GSIConfigTest {
     public void testProfileCreation() {
         //Profile
         GSIConfig profile = new GSIConfig("http://1.2.3.4:567")
-                .setAuthToken("token", "42")
+                .setAuthToken("token", "42A")
                 .addDataComponent(DataComponent.BOMB)
-                .setBufferPeriod(20d)
-                .setTimeoutPeriod(30d)
-                .setHeartbeatPeriod(40d)
-                .setThrottlePeriod(50d)
+                .setBufferPeriod(20.1)
+                .setTimeoutPeriod(30.2)
+                .setHeartbeatPeriod(40.3)
+                .setThrottlePeriod(50.4)
                 .setDescription("Desc")
                 .setPrecisionPosition(421)
                 .setPrecisionTime(422)
@@ -71,32 +74,38 @@ public class GSIConfigTest {
         String config = genConfig(profile);
         
         //Tests
-        testSet(config, "uri", "http://1.2.3.4:567");
-        testSet(config, "token", "42");
-        testSet(config, "buffer", 20d);
-        testSet(config, "timeout", 30d);
-        testSet(config, "heartbeat", 40d);
-        testSet(config, "throttle", 50d);
-        testSet(config, DataComponent.BOMB.getConfigName(), "1");
-        testSet(config, DataComponent.MAP.getConfigName(), "0");
-        testSet(config, "precision_position", 421);
-        testSet(config, "precision_time", 422);
-        testSet(config, "precision_vector", 423);
+        assertConfigValue(config, "uri", "http://1.2.3.4:567");
+        assertConfigValue(config, "token", "42A");
+        assertConfigValue(config, "buffer", "20.1");
+        assertConfigValue(config, "timeout", "30.2");
+        assertConfigValue(config, "heartbeat", "40.3");
+        assertConfigValue(config, "throttle", "50.4");
+        assertConfigValue(config, DataComponent.BOMB.getConfigName(), "1");
+        assertConfigValue(config, DataComponent.MAP.getConfigName(), "0");
+        assertConfigValue(config, "precision_position", "421");
+        assertConfigValue(config, "precision_time", "422");
+        assertConfigValue(config, "precision_vector", "423");
     }
     
     
-    /*
-    TODO: doesn't test for nested values correctly, only that the key-value pair is in the object.
-    Also relies heavily on the exact formatting of the file (spaces, etc), rather than the structure.
-     */
-    private static void testSet(String conf, String key, Object expectedValue) {
-        assertTrue("Key \"" + key + "\" and value \"" + expectedValue.toString() + "\" not apparent in exported configuration",
-                conf.contains("\"" + key + "\"\t\"" + expectedValue.toString() + "\""));
+    // TODO: doesn't test for nested values correctly, only that the key-value pair is in the object.
+    private static void assertConfigValue(String conf, String key, String expectedValue) {
+        for (String line : conf.split("[\\r\\n]+")) {
+            Matcher matcher = CONF_PATTERN.matcher(line);
+            if (matcher.matches()) {
+                String curKey = matcher.group(1), curVal = matcher.group(2);
+                if (curKey.equals(key)) {
+                    assertEquals(expectedValue, curVal);
+                    return;
+                }
+            }
+        }
+        fail("Key \"" + key + "\" not found in exported config.");
     }
     
     private static String genConfig(GSIConfig profile) {
         StringWriter sw = new StringWriter();
-        profile.generate(new PrintWriter(sw));
+        profile.export(new PrintWriter(sw));
         return sw.toString();
     }
 

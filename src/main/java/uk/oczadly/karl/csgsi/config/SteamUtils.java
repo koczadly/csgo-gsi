@@ -224,7 +224,7 @@ public class SteamUtils {
      * @return the CS:GO configuration folder
      *
      * @throws GameNotFoundException if the CSGO or Steam installations could not be located
-     * @throws SecurityException      if the security manager disallows access to the directory
+     * @throws SecurityException     if the security manager disallows access to the directory
      */
     public static Path locateCsgoConfigFolder() throws GameNotFoundException {
         return findGameDirectoryById(CSGO_STEAM_ID).resolve(CSGO_CONFIG_PATH);

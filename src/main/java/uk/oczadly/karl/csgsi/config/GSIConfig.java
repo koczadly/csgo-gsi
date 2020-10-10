@@ -7,7 +7,6 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.nio.charset.StandardCharsets;
-import java.nio.file.FileAlreadyExistsException;
 import java.nio.file.Files;
 import java.nio.file.NotDirectoryException;
 import java.nio.file.Path;
@@ -33,12 +32,24 @@ import java.util.*;
  *                 DataComponent.ROUND);
  * </pre>
  *
- * <p>Profiles can then be created and written to the system using the {@link #writeConfig(String)} method (refer to
+ * <p>Profiles can then be created and written to the system using the {@link #writeConfigFile(String)} method (refer to
  * method documentation).</p>
  */
 public class GSIConfig {
     
     private static final Logger LOGGER = LoggerFactory.getLogger(GSIConfig.class);
+    
+    private static final String CONF_INDENT = "   ";
+    private static final int CONF_COMP_LEN;
+    
+    static {
+        // Determine max data component string length
+        int maxLen = 0;
+        for (DataComponent component : DataComponent.values()) {
+            maxLen = Math.max(component.getConfigName().length(), maxLen);
+        }
+        CONF_COMP_LEN = maxLen;
+    }
     
     
     private String uri, description;
@@ -431,43 +442,43 @@ public class GSIConfig {
      *
      * @param writer the {@link PrintWriter} to write the configuration to
      */
-    public void generate(PrintWriter writer) {
+    public void export(PrintWriter writer) {
         writer.print("\"");
         writer.print(this.getDescription() != null ?
                 this.getDescription().replace("\"", "\\\"") : ""); //Escape quotes
         writer.println("\" {");
         
-        appendParam(writer, 1, "uri", this.getURI());
-        appendParam(writer, 1, "timeout", this.getTimeoutPeriod());
-        appendParam(writer, 1, "buffer", this.getBufferPeriod());
-        appendParam(writer, 1, "throttle", this.getThrottlePeriod());
-        appendParam(writer, 1, "heartbeat", this.getHeartbeatPeriod());
+        appendParam(writer, 1, 0, "uri", this.getURI());
+        appendParam(writer, 1, 0, "timeout", this.getTimeoutPeriod());
+        appendParam(writer, 1, 0, "buffer", this.getBufferPeriod());
+        appendParam(writer, 1, 0, "throttle", this.getThrottlePeriod());
+        appendParam(writer, 1, 0, "heartbeat", this.getHeartbeatPeriod());
         
         // Authentication tokens
         if (this.getAuthTokens() != null && !this.getAuthTokens().isEmpty()) {
-            writer.println("\t\"auth\" {");
+            writer.println(CONF_INDENT + "\"auth\" {");
             for (Map.Entry<String, String> token : this.getAuthTokens().entrySet()) {
-                appendParam(writer, 2, token.getKey(), token.getValue());
+                appendParam(writer, 2, 0, token.getKey(), token.getValue());
             }
-            writer.println("\t}");
+            writer.println(CONF_INDENT + "}");
         }
         
         // Output precision
         if (this.precisionTime != null || this.precisionPosition != null || this.precisionVector != null) {
-            writer.println("\t\"output\" {");
-            appendParam(writer, 2, "precision_time", this.precisionTime);
-            appendParam(writer, 2, "precision_position", this.precisionPosition);
-            appendParam(writer, 2, "precision_vector", this.precisionVector);
-            writer.println("\t}");
+            writer.println(CONF_INDENT + "\"output\" {");
+            appendParam(writer, 2, 0, "precision_time", this.precisionTime);
+            appendParam(writer, 2, 0, "precision_position", this.precisionPosition);
+            appendParam(writer, 2, 0, "precision_vector", this.precisionVector);
+            writer.println(CONF_INDENT + "}");
         }
         
         // Data components to retrieve
-        writer.println("\t\"data\" {");
+        writer.println(CONF_INDENT +"\"data\" {");
         for (DataComponent type : DataComponent.values()) {
-            appendParam(writer, 2, type.getConfigName(),
+            appendParam(writer, 2, CONF_COMP_LEN, type.getConfigName(),
                     this.getDataComponents().contains(type) ? "1" : "0");
         }
-        writer.println("\t}");
+        writer.println(CONF_INDENT + "}");
         writer.print("}");
     }
     
@@ -505,8 +516,8 @@ public class GSIConfig {
      *
      * @see SteamUtils#locateCsgoConfigFolder()
      */
-    public void writeConfig(String serviceName) throws GameNotFoundException, IOException {
-        writeConfig(serviceName, SteamUtils.locateCsgoConfigFolder());
+    public void writeConfigFile(String serviceName) throws GameNotFoundException, IOException {
+        writeConfigFile(serviceName, SteamUtils.locateCsgoConfigFolder());
     }
     
     /**
@@ -549,12 +560,12 @@ public class GSIConfig {
      * @throws SecurityException     if the security manager doesn't permit access to the file
      *
      * @see SteamUtils#locateCsgoConfigFolder()
-     * @see #writeConfig(String)
+     * @see #writeConfigFile(String)
      */
-    public void writeConfig(String serviceName, Path dir) throws IOException {
+    public void writeConfigFile(String serviceName, Path dir) throws IOException {
         if (!Files.isDirectory(dir))
             throw new NotDirectoryException("Path must be a directory.");
-        writeConfig(dir.resolve(generateConfigName(serviceName)));
+        writeConfigFile(dir.resolve(generateConfigName(serviceName)));
     }
     
     /**
@@ -565,7 +576,7 @@ public class GSIConfig {
      * @throws IOException       if the file cannot be written to
      * @throws SecurityException if the security manager doesn't permit access to the file
      */
-    public void writeConfig(Path file) throws IOException {
+    public void writeConfigFile(Path file) throws IOException {
         if (Files.isDirectory(file))
             throw new IllegalArgumentException("Path was an existing directory, and not a file.");
         
@@ -573,24 +584,23 @@ public class GSIConfig {
             LOGGER.debug("Attempting to create config file {}...", file.toString());
         
         try (PrintWriter writer = new PrintWriter(Files.newBufferedWriter(file, StandardCharsets.UTF_8))) {
-            generate(writer);
+            export(writer);
         }
     }
     
     
     
     /**
-     * Helper method for {@link #generate(PrintWriter)}
+     * Helper method for {@link #export(PrintWriter)}
      */
-    private static void appendParam(PrintWriter writer, int indent, String name, Object value) {
-        if (value == null) return; //Dont write empty values
+    private static void appendParam(PrintWriter writer, int indent, int spaceLen, String key, Object value) {
+        if (value == null) return; // Dont write empty values
         
-        for (int i=0; i<indent; i++) writer.print('\t');
-        writer.print("\"");
-        writer.print(name);
-        writer.print("\"\t\"");
-        writer.print(value.toString());
-        writer.println("\"");
+        for (int i=0; i<indent; i++) writer.print(CONF_INDENT); // Config indent
+        writer.print("\"" + key + "\"");                        // Key
+        int calcSpaceLen = Math.max(0, spaceLen - key.length()) + 1;
+        for (int i=0; i<calcSpaceLen; i++) writer.print(' ');   // K-V spacers
+        writer.print("\"" + value.toString() + "\"\n");         // Value
     }
     
     
