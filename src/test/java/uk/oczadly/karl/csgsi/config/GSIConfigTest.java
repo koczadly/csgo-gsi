@@ -1,7 +1,9 @@
 package uk.oczadly.karl.csgsi.config;
 
+import org.junit.Assert;
 import org.junit.Test;
 
+import java.io.IOException;
 import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.util.regex.Matcher;
@@ -105,7 +107,11 @@ public class GSIConfigTest {
     
     private static String genConfig(GSIConfig profile) {
         StringWriter sw = new StringWriter();
-        profile.export(new PrintWriter(sw));
+        try {
+            profile.export(new PrintWriter(sw));
+        } catch (IOException e) {
+           throw new AssertionError(e);
+        }
         return sw.toString();
     }
 

@@ -3,9 +3,7 @@ package uk.oczadly.karl.csgsi.config;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.io.FileNotFoundException;
-import java.io.IOException;
-import java.io.PrintWriter;
+import java.io.*;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.NotDirectoryException;
@@ -438,48 +436,47 @@ public class GSIConfig {
     
     /**
      * Generates a valid profile configuration from the current set parameter values and writes it to the provided
-     * {@link PrintWriter} object.
+     * {@link Writer} object.
      *
-     * @param writer the {@link PrintWriter} to write the configuration to
+     * @param writer the writer instance to write the configuration data to
+     *
+     * @throws IOException if an I/O error occurs when writing to the writer
      */
-    public void export(PrintWriter writer) {
-        writer.print("\"");
-        writer.print(this.getDescription() != null ?
-                this.getDescription().replace("\"", "\\\"") : ""); //Escape quotes
-        writer.println("\" {");
+    public void export(Writer writer) throws IOException {
+        ValveConfigWriter conf = new ValveConfigWriter(writer, 4, System.lineSeparator());
+        conf.key(this.getDescription()).beginObject();
         
-        appendParam(writer, 1, 0, "uri", this.getURI());
-        appendParam(writer, 1, 0, "timeout", this.getTimeoutPeriod());
-        appendParam(writer, 1, 0, "buffer", this.getBufferPeriod());
-        appendParam(writer, 1, 0, "throttle", this.getThrottlePeriod());
-        appendParam(writer, 1, 0, "heartbeat", this.getHeartbeatPeriod());
-        
-        // Authentication tokens
-        if (this.getAuthTokens() != null && !this.getAuthTokens().isEmpty()) {
-            writer.println(CONF_INDENT + "\"auth\" {");
-            for (Map.Entry<String, String> token : this.getAuthTokens().entrySet()) {
-                appendParam(writer, 2, 0, token.getKey(), token.getValue());
-            }
-            writer.println(CONF_INDENT + "}");
-        }
-        
+        // Values
+        conf.key("uri").value(this.getURI());
+        conf.key("timeout").value(this.getTimeoutPeriod());
+        conf.key("buffer").value(this.getBufferPeriod());
+        conf.key("throttle").value(this.getThrottlePeriod());
+        conf.key("heartbeat").value(this.getHeartbeatPeriod());
+    
         // Output precision
-        if (this.precisionTime != null || this.precisionPosition != null || this.precisionVector != null) {
-            writer.println(CONF_INDENT + "\"output\" {");
-            appendParam(writer, 2, 0, "precision_time", this.precisionTime);
-            appendParam(writer, 2, 0, "precision_position", this.precisionPosition);
-            appendParam(writer, 2, 0, "precision_vector", this.precisionVector);
-            writer.println(CONF_INDENT + "}");
-        }
+        conf.key("output").beginObject();
+        conf.key("precision_time").value(this.getPrecisionTime());
+        conf.key("precision_position").value(this.getPrecisionPosition());
+        conf.key("precision_vector").value(this.getPrecisionVector());
+        conf.endObject();
         
-        // Data components to retrieve
-        writer.println(CONF_INDENT +"\"data\" {");
-        for (DataComponent type : DataComponent.values()) {
-            appendParam(writer, 2, CONF_COMP_LEN, type.getConfigName(),
-                    this.getDataComponents().contains(type) ? "1" : "0");
+        // Auth tokens
+        conf.key("auth").beginObject();
+        for (Map.Entry<String, String> token : this.getAuthTokens().entrySet()) {
+            conf.key(token.getKey()).value(token.getValue());
         }
-        writer.println(CONF_INDENT + "}");
-        writer.print("}");
+        conf.endObject();
+        
+        // Data components
+        conf.key("data").beginObject();
+        for (DataComponent type : DataComponent.values()) {
+            conf.key(type.getConfigName())
+                    .value(this.getDataComponents().contains(type) ? "1" : "0");
+        }
+        conf.endObject();
+        
+        conf.endObject();
+        conf.close();
     }
     
     
@@ -583,24 +580,9 @@ public class GSIConfig {
         if (LOGGER.isDebugEnabled())
             LOGGER.debug("Attempting to create config file {}...", file.toString());
         
-        try (PrintWriter writer = new PrintWriter(Files.newBufferedWriter(file, StandardCharsets.UTF_8))) {
+        try (BufferedWriter writer = Files.newBufferedWriter(file, StandardCharsets.UTF_8)) {
             export(writer);
         }
-    }
-    
-    
-    
-    /**
-     * Helper method for {@link #export(PrintWriter)}
-     */
-    private static void appendParam(PrintWriter writer, int indent, int spaceLen, String key, Object value) {
-        if (value == null) return; // Dont write empty values
-        
-        for (int i=0; i<indent; i++) writer.print(CONF_INDENT); // Config indent
-        writer.print("\"" + key + "\"");                        // Key
-        int calcSpaceLen = Math.max(0, spaceLen - key.length()) + 1;
-        for (int i=0; i<calcSpaceLen; i++) writer.print(' ');   // K-V spacers
-        writer.print("\"" + value.toString() + "\"\n");         // Value
     }
     
     
