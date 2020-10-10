@@ -111,6 +111,13 @@ public final class GSIServer {
         return latestGameState;
     }
     
+    /**
+     * @return true if the server has received at least one valid game state since starting
+     */
+    public boolean hasReceivedState() {
+        return latestGameState != null;
+    }
+    
     
     /**
      * Subscribes a new observer to receive game state information when sent by the game client. New observers can be
