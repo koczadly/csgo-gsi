@@ -19,7 +19,7 @@ This project is hosted on Maven Central. To import this library, add the followi
 <dependency>
     <groupId>uk.oczadly.karl</groupId>
     <artifactId>csgo-gsi</artifactId>
-    <version>1.3.5</version>
+    <version>1.4.0</version>
 </dependency>
 ```
 
@@ -37,14 +37,14 @@ GSIConfig config = new GSIConfig(1337)
         .setTimeoutPeriod(1.0)
         .setBufferPeriod(0.5)
         .setAuthToken("password", "Q79v5tcxVQ8u")
-        .setAllDataComponents();
+        .setAllDataComponents(); // You could also choose which using setDataComponents
 
 try {
-    config.writeConfig("test_service");
+    config.writeConfigFile("test_service");
     System.out.println("Config successfully created!");
 } catch (GameNotFoundException e) {
     // Either CSGO or Steam installation directories could not be located
-    System.out.println("Couldn't locate CSGO directory.");
+    System.out.println("Couldn't locate CSGO directory: " + e.getMessage());
 } catch (IOException e) {
     System.out.println("Couldn't write configuration file.");
 }
