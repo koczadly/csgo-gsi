@@ -46,20 +46,23 @@ public class PlayerInventory {
     
     
     /**
-     * @return a list of all the items, weapons and utilities that the player currently has
+     * Returns a list of all the items, weapons and utilities currently in the players inventory.
+     * @return a list of all the items that the player currently has
      */
     public List<ItemDetails> getItems() {
         return items;
     }
     
     /**
-     * @return the current actively selected weapon
+     * Returns the current actively selected weapon or item.
+     * @return the current active item
      */
     public ItemDetails getActiveItem() {
         return activeWeapon;
     }
     
     /**
+     * Returns the item in the primary weapon (rifle) slot.
      * @return the primary weapon which the player currently has (rifle), or null if they don't have one
      */
     public ItemDetails getPrimarySlot() {
@@ -67,6 +70,7 @@ public class PlayerInventory {
     }
     
     /**
+     * Returns the item in the secondary weapon (pistol) slot.
      * @return the secondary weapon which the player currently has (pistol), or null if they don't have one
      */
     public ItemDetails getSecondarySlot() {
@@ -74,7 +78,12 @@ public class PlayerInventory {
     }
     
     /**
-     * @return the best weapon the player currently has (rifle or pistol), or null if they don't have one
+     * Returns the main (best) weapon which the player has in their inventory.
+     *
+     * <p>This is either the primary weapon (rifle), or the secondary weapon (pistol) if no primary is specified. If
+     * neither are present, this method will return null.</p>
+     *
+     * @return the best weapon the player currently has, or null if they don't have one
      */
     public ItemDetails getMainWeapon() {
         return primaryWeapon != null ? primaryWeapon : secondaryWeapon;
@@ -87,7 +96,7 @@ public class PlayerInventory {
      *
      * @return a collection of utility items the player has
      */
-    public Collection<ItemDetails> getUtilities() {
+    public Collection<ItemDetails> getUtilityItems() {
         return utilities;
     }
     
