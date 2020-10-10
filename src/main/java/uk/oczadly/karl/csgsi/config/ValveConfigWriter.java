@@ -82,8 +82,10 @@ public class ValveConfigWriter implements Closeable, Flushable {
     public void close() throws IOException {
         ObjectState os = peekStack();
         flushObject(os);
-        if (stack.size() > 1 || os.deferredKey != null)
-            throw new IllegalStateException("Incomplete value/object.");
+        if (stack.size() > 1)
+            throw new IllegalStateException("Unclosed object(s).");
+        if (os.deferredKey != null)
+            throw new IllegalStateException("Dangling key not followe by an object or value.");
         stack.empty();
         out.close();
     }
