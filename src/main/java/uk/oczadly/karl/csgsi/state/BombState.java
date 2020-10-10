@@ -7,20 +7,16 @@ import uk.oczadly.karl.csgsi.state.components.EnumValue;
 
 public class BombState {
     
-    @Expose
-    @SerializedName("state")
+    @Expose @SerializedName("state")
     private EnumValue<BombStatus> phase;
     
-    @Expose
-    @SerializedName("position")
+    @Expose @SerializedName("position")
     private Coordinate position;
     
-    @Expose
-    @SerializedName("countdown")
+    @Expose @SerializedName("countdown")
     private Double countdown;
     
-    @Expose
-    @SerializedName("player")
+    @Expose @SerializedName("player")
     private String playerId;
     
     
@@ -57,44 +53,37 @@ public class BombState {
         /**
          * Bomb is dropped on the ground.
          */
-        @SerializedName("dropped")
-        DROPPED,
+        @SerializedName("dropped") DROPPED,
         
         /**
          * Bomb is being carried in a player's inventory.
          */
-        @SerializedName("carried")
-        CARRIED,
+        @SerializedName("carried") CARRIED,
         
         /**
          * Bomb is currently being planted.
          */
-        @SerializedName("planting")
-        PLANTING,
+        @SerializedName("planting") PLANTING,
         
         /**
          * Bomb is planted.
          */
-        @SerializedName("planted")
-        PLANTED,
+        @SerializedName("planted") PLANTED,
         
         /**
          * Bomb is currently being defused.
          */
-        @SerializedName("defusing")
-        DEFUSING,
+        @SerializedName("defusing") DEFUSING,
         
         /**
          * Bomb has been defused and round is resetting.
          */
-        @SerializedName("defused")
-        DEFUSED,
+        @SerializedName("defused") DEFUSED,
         
         /**
          * Bomb has exploded and round is resetting.
          */
-        @SerializedName("exploded")
-        EXPLODED
+        @SerializedName("exploded") EXPLODED
     }
     
 }

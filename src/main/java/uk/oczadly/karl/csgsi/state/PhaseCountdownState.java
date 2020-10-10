@@ -6,12 +6,10 @@ import uk.oczadly.karl.csgsi.state.components.EnumValue;
 
 public class PhaseCountdownState {
     
-    @Expose
-    @SerializedName("phase")
+    @Expose @SerializedName("phase")
     private EnumValue<Phase> phase;
     
-    @Expose
-    @SerializedName("phase_ends_in")
+    @Expose @SerializedName("phase_ends_in")
     private Double timer;
     
     
@@ -34,32 +32,27 @@ public class PhaseCountdownState {
         /**
          * Game currently in progress.
          */
-        @SerializedName("live")
-        LIVE,
+        @SerializedName("live") LIVE,
         
         /**
          * Game in progress and bomb has been planted.
          */
-        @SerializedName("bomb")
-        BOMB,
+        @SerializedName("bomb") BOMB,
         
         /**
          * Bomb is currently being defused.
          */
-        @SerializedName("defuse")
-        DEFUSE,
+        @SerializedName("defuse") DEFUSE,
         
         /**
          * Round is over.
          */
-        @SerializedName("over")
-        OVER,
+        @SerializedName("over") OVER,
         
         /**
          * Round is over.
          */
-        @SerializedName("freezetime")
-        FREEZE_TIME
+        @SerializedName("freezetime") FREEZE_TIME
     }
     
 }

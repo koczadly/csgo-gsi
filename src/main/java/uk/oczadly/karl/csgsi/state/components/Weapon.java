@@ -12,6 +12,7 @@ import java.util.Map;
 
 @JsonAdapter(Weapon.WeaponDeserializer.class)
 public enum Weapon {
+    //Enum                "weapon_xxx"             Type                 Display name
     AK_47                ("ak47",                  Type.RIFLE,          "AK47"),
     AUG                  ("aug",                   Type.RIFLE,          "AUG"),
     AWP                  ("awp",                   Type.SNIPER_RIFLE,   "AWP"),
@@ -141,7 +142,8 @@ public enum Weapon {
     
     static class WeaponDeserializer implements JsonDeserializer<Weapon> {
         @Override
-        public Weapon deserialize(JsonElement json, java.lang.reflect.Type typeOfT, JsonDeserializationContext context) throws JsonParseException {
+        public Weapon deserialize(JsonElement json, java.lang.reflect.Type typeOfT, JsonDeserializationContext context)
+                throws JsonParseException {
             return valueOfFromName(json.getAsString());
         }
     }

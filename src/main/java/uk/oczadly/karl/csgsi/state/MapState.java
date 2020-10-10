@@ -19,45 +19,34 @@ import java.util.TreeMap;
 
 public class MapState {
     
-    @Expose
-    @SerializedName("round_wins")
-    @JsonAdapter(RoundOutcomeDeserializer.class)
+    @Expose @SerializedName("round_wins") @JsonAdapter(RoundOutcomeDeserializer.class)
     private List<EnumValue<RoundOutcome>> rounds = Collections.emptyList();
     
-    @Expose
-    @SerializedName("mode")
+    @Expose @SerializedName("mode")
     private EnumValue<GameMode> mode;
     
-    @Expose
-    @SerializedName("name")
+    @Expose @SerializedName("name")
     private String name;
     
-    @Expose
-    @SerializedName("phase")
+    @Expose @SerializedName("phase")
     private EnumValue<GamePhase> phase;
     
-    @Expose
-    @SerializedName("round")
+    @Expose @SerializedName("round")
     private int roundNum;
     
-    @Expose
-    @SerializedName("team_ct")
+    @Expose @SerializedName("team_ct")
     private TeamStats ctStats;
     
-    @Expose
-    @SerializedName("team_t")
+    @Expose @SerializedName("team_t")
     private TeamStats tStats;
     
-    @Expose
-    @SerializedName("num_matches_to_win_series")
+    @Expose @SerializedName("num_matches_to_win_series")
     private int seriesMatchesToWin;
     
-    @Expose
-    @SerializedName("current_spectators")
+    @Expose @SerializedName("current_spectators")
     private int spectatorCount;
     
-    @Expose
-    @SerializedName("souvenirs_total")
+    @Expose @SerializedName("souvenirs_total")
     private int souvenirDrops;
     
     
@@ -211,84 +200,50 @@ public class MapState {
     }
     
     public enum GameMode {
-        /**
-         * The 5v5 ranked competitive game mode.
-         */
-        @SerializedName("competitive")
-        COMPETITIVE,
+        /** The 5v5 ranked competitive game mode. */
+        @SerializedName("competitive") COMPETITIVE,
         
-        /**
-         * The casual 10v10 game mode.
-         */
-        @SerializedName("casual")
-        CASUAL,
+        /** The casual 10v10 game mode. */
+        @SerializedName("casual") CASUAL,
         
-        /**
-         * The free-for-all game mode.
-         */
-        @SerializedName("deathmatch")
-        DEATHMATCH,
+        /** The free-for-all game mode. */
+        @SerializedName("deathmatch") DEATHMATCH,
         
-        /**
-         * One of the 'war games' modes.
-         */
-        @SerializedName("skirmish")
-        WAR_GAMES,
+        /** One of the 'war games' modes. */
+        @SerializedName("skirmish") WAR_GAMES,
         
-        /**
-         * Battle-royale danger zone mode.
-         */
-        @SerializedName("survival")
-        DANGER_ZONE,
+        /** Battle-royale danger zone mode. */
+        @SerializedName("survival") DANGER_ZONE,
         
-        /**
-         * A 2 vs 2 competitive game.
-         */
-        @SerializedName("scrimcomp2v2")
-        WINGMAN_2v2
+        /** A 2 vs 2 competitive game. */
+        @SerializedName("scrimcomp2v2") WINGMAN_2v2
     }
     
     public enum GamePhase {
-        /**
-         * Represents a currently in-progress game.
-         */
-        @SerializedName("live")
-        LIVE,
+        /** Represents a currently in-progress game. */
+        @SerializedName("live") LIVE,
         
-        /**
-         * Represents a concluded game.
-         */
-        @SerializedName("gameover")
-        GAME_OVER,
+        /** Represents a concluded game. */
+        @SerializedName("gameover") GAME_OVER,
         
-        /**
-         * Represents the pre-game warmup stage.
-         */
-        @SerializedName("warmup")
-        WARMUP,
+        /** Represents the pre-game warmup stage. */
+        @SerializedName("warmup") WARMUP,
         
-        /**
-         * Represents a paused state of the game.
-         */
-        @SerializedName("intermission")
-        INTERMISSION
+        /** Represents a paused state of the game. */
+        @SerializedName("intermission") INTERMISSION
     }
     
     public static class TeamStats {
-        @Expose
-        @SerializedName("score")
+        @Expose @SerializedName("score")
         private int score;
         
-        @Expose
-        @SerializedName("consecutive_round_losses")
+        @Expose @SerializedName("consecutive_round_losses")
         private int consecutiveLosses;
         
-        @Expose
-        @SerializedName("timeouts_remaining")
+        @Expose @SerializedName("timeouts_remaining")
         private int timeoutsRemaining;
         
-        @Expose
-        @SerializedName("matches_won_this_series")
+        @Expose @SerializedName("matches_won_this_series")
         private int seriesMatchesWon;
         
         

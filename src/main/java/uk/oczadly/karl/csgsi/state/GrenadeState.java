@@ -7,28 +7,22 @@ import uk.oczadly.karl.csgsi.state.components.EnumValue;
 
 public class GrenadeState {
     
-    @Expose
-    @SerializedName("owner")
+    @Expose @SerializedName("owner")
     private String ownerId;
     
-    @Expose
-    @SerializedName("position")
+    @Expose @SerializedName("position")
     private Coordinate position;
     
-    @Expose
-    @SerializedName("velocity")
+    @Expose @SerializedName("velocity")
     private Coordinate velocity;
     
-    @Expose
-    @SerializedName("lifetime")
+    @Expose @SerializedName("lifetime")
     private Double lifetime;
     
-    @Expose
-    @SerializedName("type")
+    @Expose @SerializedName("type")
     private EnumValue<Type> type;
     
-    @Expose
-    @SerializedName("effecttime")
+    @Expose @SerializedName("effecttime")
     private Double effectTime;
     
     
@@ -76,18 +70,12 @@ public class GrenadeState {
     
     
     public enum Type {
-        @SerializedName("smoke")
-        SMOKE,
-        @SerializedName("decoy")
-        DECOY,
-        @SerializedName("inferno")
-        INCENDIARY,
-        @SerializedName("firebomb")
-        MOLOTOV,
-        @SerializedName("flashbang")
-        FLASHBANG,
-        @SerializedName("frag")
-        FRAG
+        @SerializedName("smoke") SMOKE,
+        @SerializedName("decoy") DECOY,
+        @SerializedName("inferno") INCENDIARY,
+        @SerializedName("firebomb") MOLOTOV,
+        @SerializedName("flashbang") FLASHBANG,
+        @SerializedName("frag") FRAG
     }
     
 }

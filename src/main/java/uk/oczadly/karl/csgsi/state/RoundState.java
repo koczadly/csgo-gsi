@@ -7,16 +7,13 @@ import uk.oczadly.karl.csgsi.state.components.Team;
 
 public class RoundState {
     
-    @Expose
-    @SerializedName("phase")
+    @Expose @SerializedName("phase")
     private EnumValue<RoundPhase> phase;
     
-    @Expose
-    @SerializedName("win_team")
+    @Expose @SerializedName("win_team")
     private EnumValue<Team> winningTeam;
     
-    @Expose
-    @SerializedName("bomb")
+    @Expose @SerializedName("bomb")
     private EnumValue<BombPhase> bomb;
     
     
@@ -46,40 +43,34 @@ public class RoundState {
         /**
          * Round has ended.
          */
-        @SerializedName("over")
-        OVER,
+        @SerializedName("over") OVER,
         
         /**
          * Round is currently in freeze time.
          */
-        @SerializedName("freezetime")
-        FREEZE_TIME,
+        @SerializedName("freezetime") FREEZE_TIME,
         
         /**
          * Round is currently in progress.
          */
-        @SerializedName("live")
-        LIVE
+        @SerializedName("live") LIVE
     }
     
     public enum BombPhase {
         /**
          * Bomb has exploded.
          */
-        @SerializedName("exploded")
-        EXPLODED,
+        @SerializedName("exploded") EXPLODED,
         
         /**
          * Bomb has been planted.
          */
-        @SerializedName("planted")
-        PLANTED,
+        @SerializedName("planted") PLANTED,
         
         /**
          * Bomb has been defused.
          */
-        @SerializedName("defused")
-        DEFUSED
+        @SerializedName("defused") DEFUSED
     }
     
 }

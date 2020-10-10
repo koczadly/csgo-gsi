@@ -7,36 +7,28 @@ import java.util.Map;
 
 public class GameState {
     
-    @Expose
-    @SerializedName("provider")
+    @Expose @SerializedName("provider")
     private ProviderState providerDetails;
     
-    @Expose
-    @SerializedName("map")
+    @Expose @SerializedName("map")
     private MapState mapState;
     
-    @Expose
-    @SerializedName("player")
+    @Expose @SerializedName("player")
     private PlayerState playerState;
     
-    @Expose
-    @SerializedName("round")
+    @Expose @SerializedName("round")
     private RoundState roundState;
     
-    @Expose
-    @SerializedName("grenades")
+    @Expose @SerializedName("grenades")
     private Map<Integer, GrenadeState> grenadeStates;
     
-    @Expose
-    @SerializedName("allplayers")
+    @Expose @SerializedName("allplayers")
     private Map<String, PlayerState> playerStates;
     
-    @Expose
-    @SerializedName("bomb")
+    @Expose @SerializedName("bomb")
     private BombState bombState;
     
-    @Expose
-    @SerializedName("phase_countdowns")
+    @Expose @SerializedName("phase_countdowns")
     private PhaseCountdownState phaseCountdownState;
     
     

@@ -16,7 +16,7 @@ import java.util.Objects;
 
 /**
  * This class is a wrapper for {@code Enum} values, allowing for cases where the corresponding enum constant cannot be
- * parsed while still maintaining the original information.
+ * parsed, while still retaining the original serialized string information.
  *
  * In most implementations, the {@link #val()} method can be used to retrieve the enum value as normal. For cases
  * where the originally returned value could not be parsed as an enum constant (resulting in a null enum value), the

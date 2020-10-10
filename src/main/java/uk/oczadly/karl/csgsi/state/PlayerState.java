@@ -9,52 +9,40 @@ import uk.oczadly.karl.csgsi.state.components.Team;
 
 public class PlayerState {
 
-    @Expose
-    @SerializedName("steamid")
+    @Expose @SerializedName("steamid")
     private String steamId;
     
-    @Expose
-    @SerializedName("name")
+    @Expose @SerializedName("name")
     private String name;
     
-    @Expose
-    @SerializedName("clan")
+    @Expose @SerializedName("clan")
     private String groupName;
     
-    @Expose
-    @SerializedName("observer_slot")
+    @Expose @SerializedName("observer_slot")
     private Integer observerSlot;
     
-    @Expose
-    @SerializedName("team")
+    @Expose @SerializedName("team")
     private EnumValue<Team> team;
     
-    @Expose
-    @SerializedName("activity")
+    @Expose @SerializedName("activity")
     private EnumValue<Activity> activity;
     
-    @Expose
-    @SerializedName("match_stats")
-    private PlayerMatchStats stats;
+    @Expose @SerializedName("match_stats")
+    private MatchStats stats;
     
-    @Expose
-    @SerializedName("state")
+    @Expose @SerializedName("state")
     private PlayerStateDetails state;
     
-    @Expose
-    @SerializedName("weapons")
+    @Expose @SerializedName("weapons")
     private PlayerInventory inventory;
     
-    @Expose
-    @SerializedName("spectarget")
+    @Expose @SerializedName("spectarget")
     private String specTarget;
     
-    @Expose
-    @SerializedName("position")
+    @Expose @SerializedName("position")
     private Coordinate position;
     
-    @Expose
-    @SerializedName("forward")
+    @Expose @SerializedName("forward")
     private Coordinate facing;
     
     
@@ -103,7 +91,7 @@ public class PlayerState {
     /**
      * @return the current statistics for this player for this map
      */
-    public PlayerMatchStats getStatistics() {
+    public MatchStats getStatistics() {
         return stats;
     }
     
@@ -167,52 +155,40 @@ public class PlayerState {
     
     public static class PlayerStateDetails {
         
-        @Expose
-        @SerializedName("health")
+        @Expose @SerializedName("health")
         private int health;
         
-        @Expose
-        @SerializedName("armor")
+        @Expose @SerializedName("armor")
         private int armor;
         
-        @Expose
-        @SerializedName("helmet")
+        @Expose @SerializedName("helmet")
         private boolean helmet;
         
-        @Expose
-        @SerializedName("defusekit")
+        @Expose @SerializedName("defusekit")
         private boolean defuseKit;
         
-        @Expose
-        @SerializedName("flashed")
+        @Expose @SerializedName("flashed")
         private int flashed;
         
-        @Expose
-        @SerializedName("smoked")
+        @Expose @SerializedName("smoked")
         private int smoked;
         
-        @Expose
-        @SerializedName("burning")
+        @Expose @SerializedName("burning")
         private int burning;
         
-        @Expose
-        @SerializedName("money")
+        @Expose @SerializedName("money")
         private int money;
         
-        @Expose
-        @SerializedName("round_kills")
+        @Expose @SerializedName("round_kills")
         private int roundKills;
         
-        @Expose
-        @SerializedName("round_killhs")
+        @Expose @SerializedName("round_killhs")
         private int roundKillsHeadshot;
         
-        @Expose
-        @SerializedName("round_totaldmg")
+        @Expose @SerializedName("round_totaldmg")
         private int roundTotalDamage;
         
-        @Expose
-        @SerializedName("equip_value")
+        @Expose @SerializedName("equip_value")
         private int equipmentValue;
         
         
@@ -284,26 +260,21 @@ public class PlayerState {
         }
     }
     
-    public static class PlayerMatchStats {
+    public static class MatchStats {
         
-        @Expose
-        @SerializedName("kills")
+        @Expose @SerializedName("kills")
         private int kills;
         
-        @Expose
-        @SerializedName("assists")
+        @Expose @SerializedName("assists")
         private int assists;
         
-        @Expose
-        @SerializedName("deaths")
+        @Expose @SerializedName("deaths")
         private int deaths;
         
-        @Expose
-        @SerializedName("mvps")
+        @Expose @SerializedName("mvps")
         private int mvps;
         
-        @Expose
-        @SerializedName("score")
+        @Expose @SerializedName("score")
         private int score;
         
         
@@ -330,7 +301,7 @@ public class PlayerState {
     
         @Override
         public String toString() {
-            return "PlayerMatchStats{" +
+            return "MatchStats{" +
                     "kills=" + kills +
                     ", assists=" + assists +
                     ", deaths=" + deaths +

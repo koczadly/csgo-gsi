@@ -129,33 +129,25 @@ public class PlayerInventory {
     
     
     public static class ItemDetails {
-        
-        @Expose
-        @SerializedName("name")
+        @Expose @SerializedName("name")
         private EnumValue<Weapon> weapon;
         
-        @Expose
-        @SerializedName("paintkit")
+        @Expose @SerializedName("paintkit")
         private String skin;
         
-        @Expose
-        @SerializedName("type")
+        @Expose @SerializedName("type")
         private EnumValue<Weapon.Type> weaponType;
         
-        @Expose
-        @SerializedName("ammo_clip")
+        @Expose @SerializedName("ammo_clip")
         private int ammoClip;
         
-        @Expose
-        @SerializedName("ammo_clip_max")
+        @Expose @SerializedName("ammo_clip_max")
         private int maxAmmoClip;
         
-        @Expose
-        @SerializedName("ammo_reserve")
+        @Expose @SerializedName("ammo_reserve")
         private Integer ammoReserve;
         
-        @Expose
-        @SerializedName("state")
+        @Expose @SerializedName("state")
         private EnumValue<WeaponState> state;
         
         
@@ -202,10 +194,10 @@ public class PlayerInventory {
         @Override
         public String toString() {
             return "ItemDetails{" +
-                    "weapon=" + getWeapon().stringVal() +
+                    "weapon=" + getWeapon() +
                     ", skin='" + getSkin() + '\'' +
                     ", ammoReserve=" + getAmmoReserve() +
-                    ", state=" + getState().stringVal() +
+                    ", state=" + getState() +
                     '}';
         }
     }
@@ -236,7 +228,6 @@ public class PlayerInventory {
             for (int i=0; i<map.size(); i++) {
                 list.add(map.get("weapon_" + i));
             }
-            
             return new PlayerInventory(list);
         }
     }

@@ -5,24 +5,19 @@ import com.google.gson.annotations.SerializedName;
 
 public class ProviderState {
     
-    @Expose
-    @SerializedName("name")
+    @Expose @SerializedName("name")
     private String name;
     
-    @Expose
-    @SerializedName("appid")
+    @Expose @SerializedName("appid")
     private int appId;
     
-    @Expose
-    @SerializedName("version")
+    @Expose @SerializedName("version")
     private int version;
     
-    @Expose
-    @SerializedName("steamid")
+    @Expose @SerializedName("steamid")
     private String steamId;
     
-    @Expose
-    @SerializedName("timestamp")
+    @Expose @SerializedName("timestamp")
     private int timeStamp;
     
     

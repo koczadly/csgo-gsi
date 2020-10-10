@@ -86,8 +86,8 @@ public class PlayerInventoryTest {
     
     @Test
     public void testGetUtilities() {
-        assertEquals(1, inventory.getUtilities().size());
-        assertSame(inventory.getItems().get(3), inventory.getUtilities().iterator().next());
+        assertEquals(1, inventory.getUtilityItems().size());
+        assertSame(inventory.getItems().get(3), inventory.getUtilityItems().iterator().next());
     }
     
     @Test
