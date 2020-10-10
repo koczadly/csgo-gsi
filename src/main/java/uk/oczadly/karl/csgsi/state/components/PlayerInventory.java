@@ -160,51 +160,95 @@ public class PlayerInventory {
         private int ammoClip;
         
         @Expose @SerializedName("ammo_clip_max")
-        private int maxAmmoClip;
+        private Integer maxAmmoClip;
         
         @Expose @SerializedName("ammo_reserve")
         private Integer ammoReserve;
         
         @Expose @SerializedName("state")
         private EnumValue<WeaponState> state;
-        
-        
+    
+    
+        /**
+         * @return the weapon value
+         */
         public EnumValue<Weapon> getWeapon() {
             return weapon;
         }
-        
+    
+        /**
+         * @return the name of the skin, or null if not applicable
+         */
         public String getSkin() {
             return skin;
         }
-        
+    
+        /**
+         * @return true if the player is using the default weapon skin, or if the item cannot be skinned
+         */
         public boolean isDefaultSkin() {
             return skin == null || skin.equalsIgnoreCase("default");
         }
-        
+    
+        /**
+         * @return the weapon type/category
+         */
         public EnumValue<Weapon.Type> getType() {
             return weaponType;
         }
-        
+    
+        /**
+         * @return the amount of ammo in the clip (currently loaded), or the number of items stacked
+         */
         public int getAmmoClip() {
             return ammoClip;
         }
-        
+    
+        /**
+         * @return the maximum amount of ammo which can be held in the clip
+         */
         public int getMaxAmmoClip() {
-            return maxAmmoClip;
+            return maxAmmoClip != null ? maxAmmoClip : 0;
         }
-        
+    
+        /**
+         * @return the amount of ammo in reserve (not loaded)
+         */
         public int getAmmoReserve() {
             return ammoReserve != null ? ammoReserve : 0;
         }
-        
+    
+        /**
+         * @return the total amount of ammo remaining (clip + reserve)
+         */
         public int getAmmoRemaining() {
             return getAmmoReserve() + getAmmoClip();
         }
-        
+    
+        /**
+         * @return true if the weapon can take ammo and has completely ran out
+         */
         public boolean isAmmoEmpty() {
             return ammoReserve != null && getAmmoRemaining() <= 0;
         }
-        
+    
+        /**
+         * @return true if the weapon takes ammunition
+         */
+        public boolean isAmmoApplicable() {
+            return maxAmmoClip != null;
+        }
+    
+        /**
+         * @return true if the item is stackable
+         */
+        public boolean isStackable() {
+            return maxAmmoClip == null && ammoReserve != null;
+        }
+    
+        /**
+         * @return the current holding state of the weapon
+         */
         public EnumValue<WeaponState> getState() {
             return state;
         }
