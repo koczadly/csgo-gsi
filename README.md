@@ -8,7 +8,7 @@ This project is in active development, and will receive updates as changes are m
 
 ## Features
 This library provides simple access to 3 main features:
-- Automated location of the Steam and game directories (even on externally configured drives)
+- Automated location of game directories (works with major OS's and installation drives)
 - The creation and deletion of game state service configurations
 - A server which listens for updates and parses the game state data
 
