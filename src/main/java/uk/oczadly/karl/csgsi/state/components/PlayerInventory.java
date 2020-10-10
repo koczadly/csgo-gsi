@@ -12,6 +12,9 @@ import java.lang.reflect.Type;
 import java.util.*;
 
 /**
+ * This class represents a player's in-game inventory slots. This includes weapons, utilities and other miscellaneous
+ * items that the player can purchase or collect and carry around with them.
+ *
  * @author Karl Oczadly
  */
 @com.google.gson.annotations.JsonAdapter(PlayerInventory.JsonAdapter.class)
