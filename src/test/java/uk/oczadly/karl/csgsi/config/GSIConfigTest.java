@@ -85,10 +85,13 @@ public class GSIConfigTest {
     }
     
     
-    //TODO: doesn't test for nested values correctly, only that the key-value pair is in the object
+    /*
+    TODO: doesn't test for nested values correctly, only that the key-value pair is in the object.
+    Also relies heavily on the exact formatting of the file (spaces, etc), rather than the structure.
+     */
     private static void testSet(String conf, String key, Object expectedValue) {
         assertTrue("Key \"" + key + "\" and value \"" + expectedValue.toString() + "\" not apparent in exported configuration",
-                conf.contains("\"" + key + "\" \"" + expectedValue.toString() + "\""));
+                conf.contains("\"" + key + "\"\t\"" + expectedValue.toString() + "\""));
     }
     
     private static String genConfig(GSIConfig profile) {
