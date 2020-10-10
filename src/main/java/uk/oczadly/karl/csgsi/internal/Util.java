@@ -2,12 +2,17 @@ package uk.oczadly.karl.csgsi.internal;
 
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
+import uk.oczadly.karl.csgsi.internal.json.InstantAdapter;
+
+import java.time.Instant;
 
 public class Util {
     
     public static Gson createGsonObject() {
         return new GsonBuilder()
-                .setLenient().excludeFieldsWithoutExposeAnnotation().create();
+                .setLenient().excludeFieldsWithoutExposeAnnotation()
+                .registerTypeAdapter(Instant.class, new InstantAdapter())
+                .create();
     }
     
     public static String repeatChar(char c, int length) {
