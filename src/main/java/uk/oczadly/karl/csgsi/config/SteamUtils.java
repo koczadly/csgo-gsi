@@ -235,6 +235,7 @@ public class SteamUtils {
      * Helper method to read Windows registry keys
      */
     private static String readWinRegValue(String path, String key) {
+        String value = null;
         try {
             Process proc = Runtime.getRuntime().exec("reg query \"" + path + "\" /v \"" + key + "\"");
             BufferedReader reader = new BufferedReader(new InputStreamReader(proc.getInputStream()));
@@ -243,7 +244,7 @@ public class SteamUtils {
             while ((line = reader.readLine()) != null) {
                 Matcher matcher = REG_PATTERN.matcher(line);
                 if (matcher.matches() && matcher.group(1).equalsIgnoreCase(key)) {
-                    return matcher.group(2);
+                    value = matcher.group(2);
                 }
             }
             reader.close();
@@ -252,8 +253,9 @@ public class SteamUtils {
             LOGGER.warn("Failed to read registry key {} at path {}", key, path, e);
             return null;
         }
-        LOGGER.warn("Failed to read registry key {} at path {}", key, path);
-        return null;
+        if (value == null)
+            LOGGER.warn("Failed to read registry key {} at path {}", key, path);
+        return value;
     }
     
     private static List<Matcher> matchSteamFile(Path filePath, Pattern pattern) throws IOException {
