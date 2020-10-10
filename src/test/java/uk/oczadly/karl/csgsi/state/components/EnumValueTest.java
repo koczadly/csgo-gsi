@@ -20,22 +20,22 @@ public class EnumValueTest {
         TestContainer vals = gson.fromJson("{\"standard\": \"B\", \"named\": \"BB\", \"deserializer\": \"VAL_B\"" +
                 ", \"notFound\": \"D\", \"list\": [\"A\",\"B\",\"D\"]}", TestContainer.class);
     
-        assertSame(Enum.B, vals.standard.getEnum());
-        assertEquals("B", vals.standard.getRawString());
+        assertSame(Enum.B, vals.standard.val());
+        assertEquals("B", vals.standard.stringVal());
         
-        assertSame(EnumWithNames.B, vals.named.getEnum());
-        assertEquals("BB", vals.named.getRawString());
+        assertSame(EnumWithNames.B, vals.named.val());
+        assertEquals("BB", vals.named.stringVal());
     
-        assertSame(EnumWithDeserializer.B, vals.deserializer.getEnum());
-        assertEquals("VAL_B", vals.deserializer.getRawString());
+        assertSame(EnumWithDeserializer.B, vals.deserializer.val());
+        assertEquals("VAL_B", vals.deserializer.stringVal());
     
-        assertSame(null, vals.notFound.getEnum());
-        assertEquals("D", vals.notFound.getRawString());
+        assertSame(null, vals.notFound.val());
+        assertEquals("D", vals.notFound.stringVal());
         
         assertSame(3, vals.list.size());
-        assertSame(Enum.A, vals.list.get(0).getEnum());
-        assertSame(Enum.B, vals.list.get(1).getEnum());
-        assertNull(vals.list.get(2).getEnum());
+        assertSame(Enum.A, vals.list.get(0).val());
+        assertSame(Enum.B, vals.list.get(1).val());
+        assertNull(vals.list.get(2).val());
     }
     
     

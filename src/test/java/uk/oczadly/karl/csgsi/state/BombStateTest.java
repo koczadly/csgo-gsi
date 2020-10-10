@@ -29,7 +29,7 @@ public class BombStateTest extends GameStateBaseTest {
     
     @Test
     public void testStatus() {
-        assertEquals(BombState.BombStatus.CARRIED, bombState.getPhase().getEnum());
+        assertEquals(BombState.BombStatus.CARRIED, bombState.getPhase().val());
     }
     
     @Test

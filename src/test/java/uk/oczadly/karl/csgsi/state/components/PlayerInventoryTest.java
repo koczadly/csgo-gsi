@@ -57,31 +57,31 @@ public class PlayerInventoryTest {
     
     @Test
     public void testGetItems() {
-        assertEquals(Weapon.KNIFE_T, inventory.getItems().get(0).getWeapon().getEnum());
-        assertEquals(Weapon.GLOCK, inventory.getItems().get(1).getWeapon().getEnum());
-        assertEquals(Weapon.C4, inventory.getItems().get(2).getWeapon().getEnum());
-        assertEquals(Weapon.HE_GRENADE, inventory.getItems().get(3).getWeapon().getEnum());
-        assertEquals(Weapon.AK_47, inventory.getItems().get(4).getWeapon().getEnum());
+        assertEquals(Weapon.KNIFE_T, inventory.getItems().get(0).getWeapon().val());
+        assertEquals(Weapon.GLOCK, inventory.getItems().get(1).getWeapon().val());
+        assertEquals(Weapon.C4, inventory.getItems().get(2).getWeapon().val());
+        assertEquals(Weapon.HE_GRENADE, inventory.getItems().get(3).getWeapon().val());
+        assertEquals(Weapon.AK_47, inventory.getItems().get(4).getWeapon().val());
     }
     
     @Test
     public void testGetActiveItem() {
-        assertEquals(Weapon.C4, inventory.getActiveItem().getWeapon().getEnum());
+        assertEquals(Weapon.C4, inventory.getActiveItem().getWeapon().val());
     }
     
     @Test
     public void testGetPrimarySlot() {
-        assertEquals(Weapon.AK_47, inventory.getPrimarySlot().getWeapon().getEnum());
+        assertEquals(Weapon.AK_47, inventory.getPrimarySlot().getWeapon().val());
     }
     
     @Test
     public void testGetSecondarySlot() {
-        assertEquals(Weapon.GLOCK, inventory.getSecondarySlot().getWeapon().getEnum());
+        assertEquals(Weapon.GLOCK, inventory.getSecondarySlot().getWeapon().val());
     }
     
     @Test
     public void testGetMainWeapon() {
-        assertEquals(Weapon.AK_47, inventory.getMainWeapon().getWeapon().getEnum());
+        assertEquals(Weapon.AK_47, inventory.getMainWeapon().getWeapon().val());
     }
     
     @Test

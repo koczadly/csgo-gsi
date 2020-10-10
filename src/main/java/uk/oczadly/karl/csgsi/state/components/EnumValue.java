@@ -18,13 +18,13 @@ import java.util.Objects;
  * This class is a wrapper for {@code Enum} values, allowing for cases where the corresponding enum constant cannot be
  * parsed while still maintaining the original information.
  *
- * In most implementations, the {@link #getEnum()} method can be used to retrieve the enum value as normal. For cases
+ * In most implementations, the {@link #val()} method can be used to retrieve the enum value as normal. For cases
  * where the originally returned value could not be parsed as an enum constant (resulting in a null enum value), the
- * {@link #getRawString()} value will return the raw serialized value received from the game client.
+ * {@link #stringVal()} value will return the raw serialized value received from the game client.
  *
  * @param <E> the enum class
  *
- * @see #getEnum()
+ * @see #val()
  */
 @JsonAdapter(EnumValue.DeserializerFactory.class)
 public class EnumValue<E extends Enum<E>> {
@@ -41,21 +41,12 @@ public class EnumValue<E extends Enum<E>> {
     /**
      * Returns the parsed enum value, or null in cases where the corresponding enum constant could not be parsed. If
      * the game client did not send a null value, and the value returned from this method is null, then the
-     * {@link #getRawString()} method will return the serialized string value.
+     * {@link #stringVal()} method will return the serialized string value.
      *
      * @return the parsed enum value, or null if not found
      */
-    public E getEnum() {
+    public E val() {
         return enumVal;
-    }
-    
-    /**
-     * Returns whether the enum value was resolved or not. When this value is true, {@link #getEnum()} won't return a
-     * null value.
-     * @return true if the value is resolved
-     */
-    public boolean isResolved() {
-        return enumVal != null;
     }
     
     /**
@@ -63,14 +54,22 @@ public class EnumValue<E extends Enum<E>> {
      * game state data, as it will always contain the correct value sent by the game client.
      * @return the raw value sent by the game client
      */
-    public String getRawString() {
+    public String stringVal() {
         return rawVal;
     }
     
+    /**
+     * Returns whether the enum value was resolved or not. When this value is true, {@link #val()} won't return a
+     * null value.
+     * @return true if the value is resolved
+     */
+    public boolean isResolved() {
+        return enumVal != null;
+    }
     
     @Override
     public String toString() {
-        return getRawString();
+        return isResolved() ? val().toString() : stringVal();
     }
     
     
@@ -123,7 +122,7 @@ public class EnumValue<E extends Enum<E>> {
         
         @Override
         public void write(JsonWriter out, EnumValue<E> value) throws IOException {
-            enumAdapter.write(out, value.getEnum());
+            enumAdapter.write(out, value.val());
         }
     }
 

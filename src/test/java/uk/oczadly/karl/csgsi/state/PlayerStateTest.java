@@ -4,7 +4,6 @@ import org.junit.BeforeClass;
 import org.junit.Test;
 import uk.oczadly.karl.csgsi.state.components.Coordinate;
 import uk.oczadly.karl.csgsi.state.components.Team;
-import uk.oczadly.karl.csgsi.state.components.Weapon;
 
 import static org.junit.Assert.*;
 
@@ -99,12 +98,12 @@ public class PlayerStateTest extends GameStateBaseTest {
     
     @Test
     public void testTeam() {
-        assertEquals(Team.TERRORIST, playerState.getTeam().getEnum());
+        assertEquals(Team.TERRORIST, playerState.getTeam().val());
     }
     
     @Test
     public void testActivity() {
-        assertEquals(PlayerState.Activity.PLAYING, playerState.getActivity().getEnum());
+        assertEquals(PlayerState.Activity.PLAYING, playerState.getActivity().val());
     }
     
     @Test

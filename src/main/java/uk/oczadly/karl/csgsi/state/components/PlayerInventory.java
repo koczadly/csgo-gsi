@@ -28,16 +28,16 @@ public class PlayerInventory {
         // Determine helper values
         List<ItemDetails> utilities = new ArrayList<>();
         for (ItemDetails item : items) {
-            if (activeWeapon == null && (item.getState().getEnum() == WeaponState.ACTIVE
-                    || item.getState().getEnum() == WeaponState.RELOADING)) {
+            if (activeWeapon == null && (item.getState().val() == WeaponState.ACTIVE
+                    || item.getState().val() == WeaponState.RELOADING)) {
                 activeWeapon = item;
             }
             if (item.getType().isResolved()) {
-                if (primaryWeapon == null && item.getType().getEnum().isPrimaryWeapon())
+                if (primaryWeapon == null && item.getType().val().isPrimaryWeapon())
                     primaryWeapon = item;
-                if (secondaryWeapon == null && item.getType().getEnum().isSecondaryWeapon())
+                if (secondaryWeapon == null && item.getType().val().isSecondaryWeapon())
                     secondaryWeapon = item;
-                if (item.getType().getEnum().isUtility())
+                if (item.getType().val().isUtility())
                     utilities.add(item);
             }
         }
@@ -99,7 +99,7 @@ public class PlayerInventory {
      */
     public ItemDetails getItem(Weapon weapon) {
         for (ItemDetails item : getItems()) {
-            if (item.getWeapon().getEnum() == weapon)
+            if (item.getWeapon().val() == weapon)
                 return item;
         }
         return null;
@@ -193,10 +193,10 @@ public class PlayerInventory {
         @Override
         public String toString() {
             return "ItemDetails{" +
-                    "weapon=" + getWeapon().getRawString() +
+                    "weapon=" + getWeapon().stringVal() +
                     ", skin='" + getSkin() + '\'' +
                     ", ammoReserve=" + getAmmoReserve() +
-                    ", state=" + getState().getRawString() +
+                    ", state=" + getState().stringVal() +
                     '}';
         }
     }

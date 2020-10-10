@@ -2,7 +2,6 @@ package uk.oczadly.karl.csgsi.state;
 
 import org.junit.BeforeClass;
 import org.junit.Test;
-import uk.oczadly.karl.csgsi.state.MapState;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
@@ -28,7 +27,7 @@ public class PhaseCountdownStateTest extends GameStateBaseTest {
     
     @Test
     public void testPhase() {
-        assertEquals(PhaseCountdownState.Phase.FREEZE_TIME, phaseState.getPhase().getEnum());
+        assertEquals(PhaseCountdownState.Phase.FREEZE_TIME, phaseState.getPhase().val());
     }
     
     @Test
