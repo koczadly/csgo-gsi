@@ -9,24 +9,28 @@ import org.slf4j.LoggerFactory;
 import uk.oczadly.karl.csgsi.internal.Util;
 import uk.oczadly.karl.csgsi.internal.httpserver.HTTPServer;
 import uk.oczadly.karl.csgsi.state.GameState;
+import uk.oczadly.karl.csgsi.state.ProviderState;
 
 import java.io.IOException;
 import java.net.InetAddress;
+import java.time.Instant;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
-import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.CopyOnWriteArraySet;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
 /**
  * This class is used to listen for live game state information as sent by the game client.
- * <p>
- * The listening network port is configured within the class constructor, and the server is started through the {@link
- * #start()} method. Observers can be registered through the {@link #registerObserver(GSIObserver)} method, which
- * subscribes the object to new game state information as it is received.
+ *
+ * <p>The listening network port is configured within the class constructor, and the server is started through the
+ * {@link #start()} method. Observers can be registered through the {@link #registerObserver(GSIObserver)} method, which
+ * subscribes the object to new game state information as it is received.</p>
+ *
+ * <p>While a single {@link GSIServer} can listen for game states from multiple game clients or devices, it is not
+ * recommended as out-of-sync states will be discarded, and timing information may be incorrect.</p>
  */
 public final class GSIServer {
     
@@ -37,10 +41,10 @@ public final class GSIServer {
     private final Set<GSIObserver> observers = new CopyOnWriteArraySet<>();
     private final ExecutorService observerExecutor = Executors.newFixedThreadPool(50);
     private final Map<String, String> requiredAuthTokens;
-    private volatile boolean discardOlderStates = true;
     
     private volatile GameState latestGameState;
-    private final Map<InetAddress, Integer> latestTimestamps = new ConcurrentHashMap<>();
+    private volatile Instant latestProviderTimestamp;
+    private volatile long latestLocalTimestamp;
     
     
     /**
@@ -57,10 +61,10 @@ public final class GSIServer {
         
         //Validate auth tokens
         if (requiredAuthTokens != null) {
-            for (Map.Entry<String, String> key : requiredAuthTokens.entrySet()) {
+            // Validate map
+            for (Map.Entry<String, String> key : requiredAuthTokens.entrySet())
                 if (key.getKey() == null || key.getValue() == null)
                     throw new IllegalArgumentException("Auth token key or value cannot be null");
-            }
             this.requiredAuthTokens = Collections.unmodifiableMap(new HashMap<>(requiredAuthTokens));
         } else {
             this.requiredAuthTokens = Collections.unmodifiableMap(new HashMap<>());
@@ -163,7 +167,8 @@ public final class GSIServer {
         if (server.isRunning())
             throw new IllegalStateException("The GSI server is already running.");
     
-        latestTimestamps.clear();
+        latestProviderTimestamp = null;
+        latestLocalTimestamp = -1;
         latestGameState = null;
         server.start();
         LOGGER.info("GSI server on port {} successfully started", server.getPort());
@@ -208,22 +213,6 @@ public final class GSIServer {
         return requiredAuthTokens;
     }
     
-    /**
-     * @return whether game states with an older timestamp will be discarded
-     */
-    public boolean getDiscardOlderStates() {
-        return discardOlderStates;
-    }
-    
-    /**
-     * @param discardOlderStates whether game states with an older timestamp will be discarded
-     * @return this instance
-     */
-    public GSIServer setDiscardOlderStates(boolean discardOlderStates) {
-        this.discardOlderStates = discardOlderStates;
-        return this;
-    }
-    
     
     /**
      * Used for unit tests
@@ -254,25 +243,32 @@ public final class GSIServer {
             }
         }
         
-        GameState state = GSON.fromJson(jsonObject, GameState.class); //Parse game state
-        GameStateContext context = new GameStateContext(this, latestGameState, address, authTokens, jsonObject, json);
+        // Parse the game state into an object
+        GameState state = GSON.fromJson(jsonObject, GameState.class);
         
-        // Discard old game states
-        if (!discardOlderStates
-                || state.getProviderDetails() == null
-                || state.getProviderDetails().getTimeStamp() <= 0
-                || state.getProviderDetails().getTimeStamp() >= latestTimestamps.getOrDefault(address, 0)) {
+        // Handle state
+        ProviderState provider = state.getProviderDetails();
+        if (provider == null || provider.getTimeStamp() == null || latestProviderTimestamp == null
+                || provider.getTimeStamp().isAfter(latestProviderTimestamp)) { // Check if state is expired
+            // Calculate timing information
+            long currentMillis = System.currentTimeMillis();
+            int millis = latestLocalTimestamp == -1 ? -1 : (int)(currentMillis - latestLocalTimestamp);
+            
             // Update latest state and timestamps
             latestGameState = state;
-            latestTimestamps.put(address,
-                    state.getProviderDetails() != null ? state.getProviderDetails().getTimeStamp() : 0);
+            latestLocalTimestamp = currentMillis;
+            if (provider != null)
+                latestProviderTimestamp = provider.getTimeStamp();
+            
+            GameStateContext context = new GameStateContext(
+                    this, latestGameState, millis, address, authTokens, jsonObject, json);
     
             // Notify observers
             notifyObservers(state, context);
         } else {
             // Discard the state (and log)
             if (LOGGER.isDebugEnabled())
-                LOGGER.debug("Discarding received game state due to outdated timestamp.");
+                LOGGER.debug("Discarding received game state due to expired timestamp.");
         }
     }
     
@@ -292,6 +288,7 @@ public final class GSIServer {
                 task.run();
             } catch (Exception e) {
                 LOGGER.error("Uncaught exception in GSIServer observer notification", e);
+                e.printStackTrace();
             }
         }
     }

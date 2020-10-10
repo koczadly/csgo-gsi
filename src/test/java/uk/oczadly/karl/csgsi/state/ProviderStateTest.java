@@ -26,7 +26,7 @@ public class ProviderStateTest extends GameStateBaseTest {
         assertEquals(730, state.getAppId());
         assertEquals(13688, state.getVersion());
         assertEquals("76561198050830377", state.getClientSteamId());
-        assertEquals(1556199071, state.getTimeStamp());
+        assertEquals(1556199071, state.getTimeStamp().getEpochSecond());
     }
     
     @Test

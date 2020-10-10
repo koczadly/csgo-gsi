@@ -3,6 +3,8 @@ package uk.oczadly.karl.csgsi.state;
 import com.google.gson.annotations.Expose;
 import com.google.gson.annotations.SerializedName;
 
+import java.time.Instant;
+
 public class ProviderState {
     
     @Expose @SerializedName("name")
@@ -18,7 +20,7 @@ public class ProviderState {
     private String steamId;
     
     @Expose @SerializedName("timestamp")
-    private int timeStamp;
+    private Instant timeStamp;
     
     
     /**
@@ -52,7 +54,7 @@ public class ProviderState {
     /**
      * @return the timestamp of the reported game state
      */
-    public int getTimeStamp() {
+    public Instant getTimeStamp() {
         return timeStamp;
     }
     
