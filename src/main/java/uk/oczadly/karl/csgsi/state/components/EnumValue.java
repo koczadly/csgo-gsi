@@ -33,6 +33,9 @@ public class EnumValue<E extends Enum<E>> {
     private final String rawVal;
     
     public EnumValue(E enumVal, String rawVal) {
+        if (rawVal == null)
+            throw new IllegalArgumentException("The raw string value cannot be null.");
+        
         this.enumVal = enumVal;
         this.rawVal = rawVal;
     }
@@ -59,14 +62,20 @@ public class EnumValue<E extends Enum<E>> {
     }
     
     /**
-     * Returns whether the enum value was resolved or not. When this value is true, {@link #val()} won't return a
-     * null value.
+     * Returns whether the enum value could be resolved or not. If this value is false, {@link #val()} will return a
+     * null value and {@link #stringVal()} should be used instead.
      * @return true if the value is resolved
      */
     public boolean isResolved() {
         return enumVal != null;
     }
     
+    /**
+     * Returns a string value of the contained object. If the enum can be resolved, then the {@link Enum#toString()}
+     * value of the enum will be returned — if not, then the raw string value will be used instead.
+     *
+     * @return a string representation of this value
+     */
     @Override
     public String toString() {
         return isResolved() ? val().toString() : stringVal();
@@ -122,7 +131,11 @@ public class EnumValue<E extends Enum<E>> {
         
         @Override
         public void write(JsonWriter out, EnumValue<E> value) throws IOException {
-            enumAdapter.write(out, value.val());
+            if (value.isResolved()) {
+                enumAdapter.write(out, value.val());
+            } else {
+                out.value(value.stringVal());
+            }
         }
     }
 
