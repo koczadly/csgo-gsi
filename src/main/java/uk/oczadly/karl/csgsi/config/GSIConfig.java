@@ -590,21 +590,23 @@ public class GSIConfig {
      * Removes a configuration file in the located game directory, if it exists.
      *
      * <p>This method automatically locates the game directory using the {@link SteamUtils#locateCsgoConfigFolder()}
-     * utility method. If neither the Steam or game directory can be identified, then a
-     * {@link GameNotFoundException} will be raised.</p>
+     * utility method. If neither the Steam or game directory can be identified, then a {@link GameNotFoundException}
+     * will be raised.</p>
      *
      * @param serviceName the identifying name of your application/service (no special characters, and excluding
      *                    {@code .cfg} suffix)
+     *
      * @return true if the file was successfully removed, false if it didn't exist
      *
+     * @throws GameNotFoundException if the Steam or CSGO directories could not be located
      * @throws IOException           if the file could not be removed
      * @throws SecurityException     if the security manager disallows access to the file
      * @throws FileNotFoundException if the given path argument is not an existing directory
      *
      * @see SteamUtils#locateCsgoConfigFolder()
      */
-    public static boolean removeConfig(String serviceName) throws GameNotFoundException, IOException {
-        return removeConfig(SteamUtils.locateCsgoConfigFolder(), serviceName);
+    public static boolean removeConfigFile(String serviceName) throws GameNotFoundException, IOException {
+        return removeConfigFile(SteamUtils.locateCsgoConfigFolder(), serviceName);
     }
     
     /**
@@ -616,6 +618,7 @@ public class GSIConfig {
      * @param dir         the directory which the configuration file resides in
      * @param serviceName the identifying name of your application/service (no special characters, and excluding
      *                    {@code .cfg} suffix)
+     *
      * @return true if the file was successfully removed, false if it didn't exist
      *
      * @throws IOException           if the file could not be removed
@@ -625,7 +628,7 @@ public class GSIConfig {
      *
      * @see SteamUtils#locateCsgoConfigFolder()
      */
-    public static boolean removeConfig(Path dir, String serviceName) throws IOException {
+    public static boolean removeConfigFile(Path dir, String serviceName) throws IOException {
         if (!Files.exists(dir))
             throw new FileNotFoundException("Path argument is not an existing directory.");
         if (!Files.isDirectory(dir))
@@ -637,6 +640,28 @@ public class GSIConfig {
             LOGGER.debug("Attempting to remove config file {}...", file.toString());
         
         return Files.deleteIfExists(file);
+    }
+    
+    /**
+     * Checks whether a configuration file currently exists with the specified service name.
+     *
+     * <p>This method automatically locates the game directory using the {@link SteamUtils#locateCsgoConfigFolder()}
+     * utility method. If neither the Steam or game directory can be identified, then a {@link GameNotFoundException}
+     * will be raised.</p>
+     *
+     * @param serviceName the identifying name of your application/service (no special characters, and excluding
+     *                    {@code .cfg} suffix)
+     *
+     * @return true if a configuration file already exists
+     *
+     * @throws GameNotFoundException if the Steam or CSGO directories could not be located
+     * @throws SecurityException     if the security manager disallows access to the file
+     *
+     * @see SteamUtils#locateCsgoConfigFolder()
+     */
+    public static boolean configFileExists(String serviceName) throws GameNotFoundException {
+        Path file = SteamUtils.locateCsgoConfigFolder().resolve(generateConfigName(serviceName));
+        return Files.isRegularFile(file);
     }
     
     
