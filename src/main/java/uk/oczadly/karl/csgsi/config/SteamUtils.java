@@ -25,12 +25,10 @@ public class SteamUtils {
     
     private static final Pattern STEAM_VDF_PATTERN = Pattern.compile("\\s+\"(?:\\d+)\"\\s+\"(.+)\"");
     private static final Pattern STEAM_ACF_PATTERN = Pattern.compile("\\s+\"installdir\"\\s+\"(.+)\"");
-    private static final Pattern REG_PATTERN = Pattern.compile(" {4}([^\\s]+) {4}[^\\s]+ {4}(.*+)");
+    private static final Pattern REG_PATTERN = Pattern.compile(" {4}(\\S+) {4}\\S+ {4}(.*+)");
     
     
-    /**
-     * The CS:GO Steam app ID number.
-     */
+    /** The CS:GO Steam app ID number. */
     public static final int CSGO_STEAM_ID = 730;
     
     /** The name of the CS:GO configuration folder, relative to the game dir. */
