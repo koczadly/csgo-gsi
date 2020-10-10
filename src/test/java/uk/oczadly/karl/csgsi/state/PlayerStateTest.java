@@ -137,23 +137,8 @@ public class PlayerStateTest extends GameStateBaseTest {
     
     @Test
     public void testWeapons() {
-        assertNotNull(playerState.getWeaponsInventory());
-        assertEquals(3, playerState.getWeaponsInventory().size());
-        
-        PlayerState.WeaponDetails weapon1 = playerState.getWeaponsInventory().get(1);
-        assertNotNull(weapon1);
-
-        assertEquals(Weapon.GLOCK, weapon1.getWeapon().getEnum());
-        assertEquals("weapon_glock", weapon1.getWeapon().getRawString());
-        assertEquals("default", weapon1.getSkin());
-        assertTrue(weapon1.isDefaultSkin());
-        assertEquals(Weapon.Type.PISTOL, weapon1.getWeaponType().getEnum());
-        assertEquals(20, weapon1.getAmmoClip());
-        assertEquals(20, weapon1.getMaxAmmoClip());
-        assertEquals(120, weapon1.getAmmoReserve());
-        assertEquals(PlayerState.WeaponState.HOLSTERED, weapon1.getState().getEnum());
-    
-        assertEquals(Weapon.Type.BOMB, playerState.getSelectedWeapon().getWeaponType().getEnum());
+        // Additional info is tested in PlayerInventoryTest
+        assertNotNull(playerState.getInventory());
     }
     
     @Test
@@ -180,12 +165,6 @@ public class PlayerStateTest extends GameStateBaseTest {
     public void testActivityEnum() {
         testEnums(PlayerState.Activity.class,
                 "playing", "textinput", "menu");
-    }
-    
-    @Test
-    public void testWeaponStateEnum() {
-        testEnums(PlayerState.WeaponState.class,
-                "active", "holstered", "reloading");
     }
     
 }

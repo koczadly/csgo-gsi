@@ -58,10 +58,10 @@ public class AllPlayersStateTest extends GameStateBaseTest {
                 "}");
         assertNotNull(state);
         
-        assertEquals(1, state.getPlayerStates().size());
-        assertNotNull(state.getPlayerStates().get("76561197960265729"));
+        assertEquals(1, state.getAllPlayerStates().size());
+        assertNotNull(state.getAllPlayerStates().get("76561197960265729"));
         
-        assertEquals("Wesley", state.getPlayerStates().get("76561197960265729").getName());
+        assertEquals("Wesley", state.getAllPlayerStates().get("76561197960265729").getName());
     }
     
 }

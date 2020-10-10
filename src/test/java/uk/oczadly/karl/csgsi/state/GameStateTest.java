@@ -17,7 +17,7 @@ public class GameStateTest extends GameStateBaseTest {
         assertNull(state.getMapState());
         assertNull(state.getPhaseCountdownState());
         assertNull(state.getPlayerState());
-        assertNull(state.getPlayerStates());
+        assertNull(state.getAllPlayerStates());
         assertNull(state.getProviderDetails());
         assertNull(state.getRoundState());
     }

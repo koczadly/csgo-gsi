@@ -1,17 +1,11 @@
 package uk.oczadly.karl.csgsi.state;
 
-import com.google.gson.*;
 import com.google.gson.annotations.Expose;
-import com.google.gson.annotations.JsonAdapter;
 import com.google.gson.annotations.SerializedName;
-import com.google.gson.reflect.TypeToken;
-import uk.oczadly.karl.csgsi.state.components.EnumValue;
 import uk.oczadly.karl.csgsi.state.components.Coordinate;
+import uk.oczadly.karl.csgsi.state.components.EnumValue;
+import uk.oczadly.karl.csgsi.state.components.PlayerInventory;
 import uk.oczadly.karl.csgsi.state.components.Team;
-import uk.oczadly.karl.csgsi.state.components.Weapon;
-
-import java.lang.reflect.Type;
-import java.util.*;
 
 public class PlayerState {
 
@@ -49,8 +43,7 @@ public class PlayerState {
     
     @Expose
     @SerializedName("weapons")
-    @JsonAdapter(WeaponsListDeserializer.class)
-    private List<WeaponDetails> weapons;
+    private PlayerInventory inventory;
     
     @Expose
     @SerializedName("spectarget")
@@ -63,8 +56,6 @@ public class PlayerState {
     @Expose
     @SerializedName("forward")
     private Coordinate facing;
-    
-    private volatile WeaponDetails selectedWeapon;
     
     
     /**
@@ -124,29 +115,10 @@ public class PlayerState {
     }
     
     /**
-     * @return the current weapons inventory of this player
+     * @return the current set of weapons and items held by the player
      */
-    public List<WeaponDetails> getWeaponsInventory() {
-        return weapons;
-    }
-    
-    /**
-     * @return the active weapon that the player currently has selected
-     */
-    public WeaponDetails getSelectedWeapon() {
-        if (selectedWeapon == null && getWeaponsInventory() != null) {
-            synchronized (this) { // Double-checked locking
-                if (selectedWeapon == null) {
-                    for (WeaponDetails w : getWeaponsInventory()) {
-                        if (w.getState().getEnum() != WeaponState.HOLSTERED) {
-                            selectedWeapon = w;
-                            break;
-                        }
-                    }
-                }
-            }
-        }
-        return selectedWeapon;
+    public PlayerInventory getInventory() {
+        return inventory;
     }
     
     /**
@@ -172,45 +144,25 @@ public class PlayerState {
     
     @Override
     public String toString() {
-        return getName();
+        return getName() + " (" + getSteamId() + ")";
     }
     
-    
-    private static class WeaponsListDeserializer implements JsonDeserializer<List<WeaponDetails>> {
-        @Override
-        public List<WeaponDetails> deserialize(JsonElement json, Type typeOfT, JsonDeserializationContext context)
-                throws JsonParseException {
-            // Fetch map of weapons
-            Map<String, WeaponDetails> map = context.deserialize(json,
-                    new TypeToken<HashMap<String, WeaponDetails>>() {}.getType());
-            
-            // Add to list (in order)
-            List<WeaponDetails> list = new ArrayList<>(map.size());
-            for (int i=0; i<map.size(); i++) {
-                list.add(map.get("weapon_" + i));
-            }
-            return Collections.unmodifiableList(list);
-        }
-    }
     
     public enum Activity {
         /**
          * Currently playing/watching the game.
          */
-        @SerializedName("playing")
-        PLAYING,
+        @SerializedName("playing") PLAYING,
         
         /**
          * Currently typing in the chat.
          */
-        @SerializedName("textinput")
-        TEXT_INPUT,
+        @SerializedName("textinput") TEXT_INPUT,
         
         /**
          * Currently navigating a game menu.
          */
-        @SerializedName("menu")
-        MENU
+        @SerializedName("menu") MENU
     }
     
     public static class PlayerStateDetails {
@@ -311,7 +263,25 @@ public class PlayerState {
         public int getEquipmentValue() {
             return equipmentValue;
         }
-        
+    
+    
+        @Override
+        public String toString() {
+            return "PlayerStateDetails{" +
+                    "health=" + health +
+                    ", armor=" + armor +
+                    ", helmet=" + helmet +
+                    ", defuseKit=" + defuseKit +
+                    ", flashed=" + flashed +
+                    ", smoked=" + smoked +
+                    ", burning=" + burning +
+                    ", money=" + money +
+                    ", roundKills=" + roundKills +
+                    ", roundKillsHeadshot=" + roundKillsHeadshot +
+                    ", roundTotalDamage=" + roundTotalDamage +
+                    ", equipmentValue=" + equipmentValue +
+                    '}';
+        }
     }
     
     public static class PlayerMatchStats {
@@ -368,109 +338,6 @@ public class PlayerState {
                     ", score=" + score +
                     '}';
         }
-    }
-    
-    public static class WeaponDetails {
-        
-        @Expose
-        @SerializedName("name")
-        private EnumValue<Weapon> weapon;
-        
-        @Expose
-        @SerializedName("paintkit")
-        private String skin;
-        
-        @Expose
-        @SerializedName("type")
-        private EnumValue<Weapon.Type> weaponType;
-        
-        @Expose
-        @SerializedName("ammo_clip")
-        private int ammoClip;
-        
-        @Expose
-        @SerializedName("ammo_clip_max")
-        private int maxAmmoClip;
-        
-        @Expose
-        @SerializedName("ammo_reserve")
-        private int ammoReserve;
-        
-        @Expose
-        @SerializedName("state")
-        private EnumValue<WeaponState> state;
-        
-        
-        public EnumValue<Weapon> getWeapon() {
-            return weapon;
-        }
-        
-        /**
-         * @return the internal name of the weapon
-         * @deprecated use {@link #getWeapon()} to retrieve the raw name or enum value
-         */
-        @Deprecated(forRemoval = true)
-        public String getName() {
-            return weapon.getRawString();
-        }
-        
-        public String getSkin() {
-            return skin;
-        }
-        
-        public boolean isDefaultSkin() {
-            return skin == null || skin.equalsIgnoreCase("default");
-        }
-        
-        public EnumValue<Weapon.Type> getWeaponType() {
-            return weaponType;
-        }
-        
-        public int getAmmoClip() {
-            return ammoClip;
-        }
-        
-        public int getMaxAmmoClip() {
-            return maxAmmoClip;
-        }
-        
-        public int getAmmoReserve() {
-            return ammoReserve;
-        }
-        
-        public EnumValue<WeaponState> getState() {
-            return state;
-        }
-    
-        @Override
-        public String toString() {
-            return "WeaponDetails{" +
-                    "weapon=" + getName() +
-                    ", skin='" + getSkin() + '\'' +
-                    ", ammoClip=" + getAmmoClip() +
-                    ", state=" + getState().getRawString() +
-                    '}';
-        }
-    }
-    
-    public enum WeaponState {
-        /**
-         * Weapon is currently being held by the player.
-         */
-        @SerializedName("active")
-        ACTIVE,
-        
-        /**
-         * Weapon is currently holstered (not selected).
-         */
-        @SerializedName("holstered")
-        HOLSTERED,
-        
-        /**
-         * Weapon is currently active and being reloaded.
-         */
-        @SerializedName("reloading")
-        RELOADING
     }
 
 }

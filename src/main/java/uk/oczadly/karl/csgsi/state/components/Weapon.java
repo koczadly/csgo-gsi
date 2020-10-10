@@ -149,36 +149,68 @@ public enum Weapon {
     
     
     public enum Type {
-        @SerializedName("Pistol")
-        PISTOL,
-        @SerializedName("Rifle")
-        RIFLE,
-        @SerializedName("Knife")
-        KNIFE,
-        @SerializedName("Fists")
-        FISTS,
-        @SerializedName("Tablet")
-        TABLET,
-        @SerializedName("StackableItem")
-        STACKABLE_ITEM,
-        @SerializedName("Submachine Gun")
-        SUBMACHINE_GUN,
-        @SerializedName("C4")
-        BOMB,
-        @SerializedName("Melee")
-        MELEE,
-        @SerializedName("Breach Charge")
-        BREACH_CHARGE,
-        @SerializedName("Grenade")
-        GRENADE,
-        @SerializedName("Machine Gun")
-        MACHINE_GUN,
-        @SerializedName("Shotgun")
-        SHOTGUN,
-        @SerializedName("SniperRifle")
-        SNIPER_RIFLE,
-        @SerializedName("Bump Mine")
-        BUMP_MINE
+        @SerializedName("Pistol")         PISTOL          (false, false, true, false, true),
+        @SerializedName("Rifle")          RIFLE           (false, false, true, true, false),
+        @SerializedName("Knife")          KNIFE           (true, false, false, false, false),
+        @SerializedName("Fists")          FISTS           (true, false, false, false, false),
+        @SerializedName("Tablet")         TABLET          (false, false, false, false, false),
+        @SerializedName("StackableItem")  STACKABLE_ITEM  (false, true, false, false, false),
+        @SerializedName("Submachine Gun") SUBMACHINE_GUN  (false, false, true, true, false),
+        @SerializedName("C4")             BOMB            (false, false, false, false, false),
+        @SerializedName("Melee")          MELEE           (true, false, false, false, false),
+        @SerializedName("Breach Charge")  BREACH_CHARGE   (false, false, false, false, false),
+        @SerializedName("Grenade")        GRENADE         (false, true, false, false, false),
+        @SerializedName("Machine Gun")    MACHINE_GUN     (false, false, true, true, false),
+        @SerializedName("Shotgun")        SHOTGUN         (false, false, true, true, false),
+        @SerializedName("SniperRifle")    SNIPER_RIFLE    (false, false, true, true, false),
+        @SerializedName("Bump Mine")      BUMP_MINE       (false, false, false, false, false);
+        
+        
+        final boolean isMelee, isUtility, isGun, isPrimary, isSecondary;
+        
+        Type(boolean isMelee, boolean isUtility, boolean isGun, boolean isPrimary, boolean isSecondary) {
+            this.isMelee = isMelee;
+            this.isUtility = isUtility;
+            this.isGun = isGun;
+            this.isPrimary = isPrimary;
+            this.isSecondary = isSecondary;
+        }
+    
+    
+        /**
+         * @return true if the type is a melee (close-range) weapon
+         */
+        public boolean isMelee() {
+            return isMelee;
+        }
+    
+        /**
+         * @return true if the type is a utility item (grenade or stackable item)
+         */
+        public boolean isUtility() {
+            return isUtility;
+        }
+    
+        /**
+         * @return true if the type is a gun
+         */
+        public boolean isFirearm() {
+            return isGun;
+        }
+    
+        /**
+         * @return true if the type is a primary weapon
+         */
+        public boolean isPrimaryWeapon() {
+            return isPrimary;
+        }
+    
+        /**
+         * @return true if the type is a secondary weapon
+         */
+        public boolean isSecondaryWeapon() {
+            return isSecondary;
+        }
     }
     
 }
