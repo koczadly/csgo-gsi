@@ -235,18 +235,18 @@ public final class GSIServer {
     void handleStateUpdate(String json, InetAddress address) {
         JsonObject jsonObject = JsonParser.parseString(json).getAsJsonObject();
         
-        //Parse auth tokens
+        // Parse auth tokens
         Map<String, String> authTokens = GSON.fromJson(jsonObject.getAsJsonObject("auth"),
                 new TypeToken<Map<String, String>>() {}.getType());
         authTokens = (authTokens != null) ? authTokens : Collections.emptyMap();
         
-        //Verify auth tokens
+        // Verify auth tokens
         for (Map.Entry<String, String> token : requiredAuthTokens.entrySet()) {
             String val = authTokens.get(token.getKey());
             if (!token.getValue().equals(val)) {
                 LOGGER.debug("GSI state update rejected due to auth token mismatch (key '{}': expected '{}', "
                         + "got '{}')", token.getKey(), token.getValue(), val);
-                return; //Invalid auth token(s), ignore
+                return; //Invalid auth token(s), skip
             }
         }
         
@@ -256,7 +256,7 @@ public final class GSIServer {
         // Handle state
         ProviderState provider = state.getProviderDetails();
         if (provider == null || provider.getTimeStamp() == null || latestProviderTimestamp == null
-                || provider.getTimeStamp().isAfter(latestProviderTimestamp)) { // Check if state is expired
+                || provider.getTimeStamp().compareTo(latestProviderTimestamp) >= 0) { // Check if state is expired
             // Calculate timing information
             long currentMillis = System.currentTimeMillis();
             int millis = latestLocalTimestamp == -1 ? -1 : (int)(currentMillis - latestLocalTimestamp);
@@ -275,7 +275,7 @@ public final class GSIServer {
         } else {
             // Discard the state (and log)
             if (LOGGER.isDebugEnabled())
-                LOGGER.debug("Discarding received game state due to expired timestamp.");
+                LOGGER.debug("GSI state update discarded due to expired timestamp.");
         }
     }
     
