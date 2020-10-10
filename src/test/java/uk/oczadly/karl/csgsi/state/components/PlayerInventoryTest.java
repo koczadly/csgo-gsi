@@ -80,6 +80,11 @@ public class PlayerInventoryTest {
     }
     
     @Test
+    public void testGetKnifeSlot() {
+        assertEquals(Weapon.KNIFE_T, inventory.getKnifeSlot().getWeapon().val());
+    }
+    
+    @Test
     public void testGetMainWeapon() {
         assertEquals(Weapon.AK_47, inventory.getMainWeapon().getWeapon().val());
     }

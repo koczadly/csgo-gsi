@@ -21,7 +21,7 @@ import java.util.*;
 public class PlayerInventory {
     
     private final List<ItemDetails> items;
-    private ItemDetails activeWeapon, primaryWeapon, secondaryWeapon;
+    private ItemDetails activeWeapon, primarySlot, secondarySlot, knifeSlot;
     private Collection<ItemDetails> utilities;
     
     
@@ -32,14 +32,15 @@ public class PlayerInventory {
         List<ItemDetails> utilities = new ArrayList<>();
         for (ItemDetails item : items) {
             if (activeWeapon == null && (item.getState().val() == WeaponState.ACTIVE
-                    || item.getState().val() == WeaponState.RELOADING)) {
+                    || item.getState().val() == WeaponState.RELOADING))
                 activeWeapon = item;
-            }
+            if (knifeSlot == null && item.getType().val() == Weapon.Type.KNIFE)
+                knifeSlot = item;
             if (item.getType().isResolved()) {
-                if (primaryWeapon == null && item.getType().val().isPrimaryWeapon())
-                    primaryWeapon = item;
-                if (secondaryWeapon == null && item.getType().val().isSecondaryWeapon())
-                    secondaryWeapon = item;
+                if (primarySlot == null && item.getType().val().isPrimaryWeapon())
+                    primarySlot = item;
+                if (secondarySlot == null && item.getType().val().isSecondaryWeapon())
+                    secondarySlot = item;
                 if (item.getType().val().isUtility())
                     utilities.add(item);
             }
@@ -49,7 +50,8 @@ public class PlayerInventory {
     
     
     /**
-     * Returns a list of all the items, weapons and utilities currently in the players inventory.
+     * Gets a list of all the items, weapons and utilities currently in the players inventory.
+     *
      * @return a list of all the items that the player currently has
      */
     public List<ItemDetails> getItems() {
@@ -57,7 +59,8 @@ public class PlayerInventory {
     }
     
     /**
-     * Returns the current actively selected weapon or item.
+     * Gets the current actively selected weapon or item.
+     *
      * @return the current active item
      */
     public ItemDetails getActiveItem() {
@@ -65,35 +68,47 @@ public class PlayerInventory {
     }
     
     /**
-     * Returns the item in the primary weapon (rifle) slot.
-     * @return the primary weapon which the player currently has (rifle), or null if they don't have one
+     * Gets the item in the primary weapon (rifle) slot.
+     *
+     * @return the primary weapon (rifle), or null if they don't have one
      */
     public ItemDetails getPrimarySlot() {
-        return primaryWeapon;
+        return primarySlot;
     }
     
     /**
-     * Returns the item in the secondary weapon (pistol) slot.
-     * @return the secondary weapon which the player currently has (pistol), or null if they don't have one
+     * Gets the item in the secondary weapon (pistol) slot.
+     *
+     * @return the secondary weapon (pistol), or null if they don't have one
      */
     public ItemDetails getSecondarySlot() {
-        return secondaryWeapon;
+        return secondarySlot;
     }
     
     /**
-     * Returns the main (best) weapon which the player has in their inventory.
+     * Gets the item in the knife slot.
+     * <p>Note that this will only return the knife item, and will not return any other melee weapons or fists.</p>
+     *
+     * @return the knife item, or null if they don't have one
+     */
+    public ItemDetails getKnifeSlot() {
+        return knifeSlot;
+    }
+    
+    /**
+     * Gets the main (best) weapon which the player has in their inventory.
      *
      * <p>This is either the primary weapon (rifle), or the secondary weapon (pistol) if no primary is specified. If
      * neither are present, this method will return null.</p>
      *
-     * @return the best weapon the player currently has, or null if they don't have one
+     * @return the best weapon the player has, or null if they don't have one
      */
     public ItemDetails getMainWeapon() {
-        return primaryWeapon != null ? primaryWeapon : secondaryWeapon;
+        return primarySlot != null ? primarySlot : secondarySlot;
     }
     
     /**
-     * Returns a collection of utility items held by the player.
+     * Gets a collection of utility items held by the player.
      *
      * <p><i>Utility items include grenades and miscellaneous stackable items like health shots.</i></p>
      *
@@ -104,7 +119,7 @@ public class PlayerInventory {
     }
     
     /**
-     * Returns an {@link ItemDetails} instance for the requested item or weapon.
+     * Gets an {@link ItemDetails} instance for the requested item or weapon.
      *
      * @param weapon the item to retrieve
      * @return the details of the requested item, or null if the player does not have the item
