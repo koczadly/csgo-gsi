@@ -59,7 +59,7 @@ public class GameState {
     }
     
     /**
-     * Returns information about the current player or the player being observed if spectating.
+     * Returns information about the current player, or the player being observed if spectating.
      *
      * @return the current player's state data, or null if not sent
      */
@@ -92,7 +92,7 @@ public class GameState {
      *
      * @return a list of other players in the game, or null if not sent
      */
-    public Map<String, PlayerState> getPlayerStates() {
+    public Map<String, PlayerState> getAllPlayerStates() {
         return playerStates;
     }
     
