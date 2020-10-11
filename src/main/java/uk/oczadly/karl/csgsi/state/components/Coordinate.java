@@ -20,14 +20,23 @@ public class Coordinate {
     }
     
     
+    /**
+     * @return the X coordinate or vector
+     */
     public double getX() {
         return x;
     }
     
+    /**
+     * @return the Y coordinate or vector
+     */
     public double getY() {
         return y;
     }
     
+    /**
+     * @return the Z coordinate or vector
+     */
     public double getZ() {
         return z;
     }
@@ -52,26 +61,20 @@ public class Coordinate {
     
     @Override
     public String toString() {
-        return new StringBuilder("{X=")
-                .append(x)
-                .append(", Y=")
-                .append(y)
-                .append(", Z=")
-                .append(z)
-                .append("}")
-                .toString();
+        return "{X=" + x + ", Y=" + y + ", Z=" + z + "}";
     }
     
     
     
     static class Deserializer implements JsonDeserializer<Coordinate> {
         @Override
-        public Coordinate deserialize(JsonElement json, Type typeOfT, JsonDeserializationContext context) throws JsonParseException {
-            String[] val = json.getAsString().split(",");
+        public Coordinate deserialize(JsonElement json, Type typeOfT, JsonDeserializationContext context)
+                throws JsonParseException {
+            String[] val = json.getAsString().split(", ");
             return new Coordinate(
-                    Double.parseDouble(val[0].trim()),
-                    Double.parseDouble(val[1].trim()),
-                    Double.parseDouble(val[2].trim()));
+                    Double.parseDouble(val[0]),
+                    Double.parseDouble(val[1]),
+                    Double.parseDouble(val[2]));
         }
     }
     
