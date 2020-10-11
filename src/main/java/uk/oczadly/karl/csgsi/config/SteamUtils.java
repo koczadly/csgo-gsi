@@ -2,11 +2,11 @@ package uk.oczadly.karl.csgsi.config;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import uk.oczadly.karl.csgsi.internal.Util;
 
 import java.io.BufferedReader;
 import java.io.FileNotFoundException;
 import java.io.IOException;
-import java.io.InputStreamReader;
 import java.nio.file.Files;
 import java.nio.file.InvalidPathException;
 import java.nio.file.Path;
@@ -25,7 +25,6 @@ public class SteamUtils {
     
     private static final Pattern STEAM_VDF_PATTERN = Pattern.compile("\\s+\"(?:\\d+)\"\\s+\"(.+)\"");
     private static final Pattern STEAM_ACF_PATTERN = Pattern.compile("\\s+\"installdir\"\\s+\"(.+)\"");
-    private static final Pattern REG_PATTERN = Pattern.compile(" {4}(\\S+) {4}\\S+ {4}(.*+)");
     
     
     /** The CS:GO Steam app ID number. */
@@ -67,7 +66,7 @@ public class SteamUtils {
                 candidatePaths.add(Paths.get(homePath, ".steam"));
             } else if (os.contains("win")) { // Windows
                 //Attempt to read from registry
-                String regVal = readWinRegValue("HKCU\\Software\\Valve\\Steam", "SteamPath");
+                String regVal = Util.readWinRegValue("HKCU\\Software\\Valve\\Steam", "SteamPath");
                 if (regVal != null) {
                     if (LOGGER.isDebugEnabled())
                         LOGGER.debug("Obtained Steam installation dir from registry ({})", regVal);
@@ -228,33 +227,6 @@ public class SteamUtils {
         return findGameDirectoryById(CSGO_STEAM_ID).resolve(CSGO_CONFIG_PATH);
     }
     
-    
-    /**
-     * Helper method to read Windows registry keys
-     */
-    private static String readWinRegValue(String path, String key) {
-        String value = null;
-        try {
-            Process proc = Runtime.getRuntime().exec("reg query \"" + path + "\" /v \"" + key + "\"");
-            BufferedReader reader = new BufferedReader(new InputStreamReader(proc.getInputStream()));
-            
-            String line;
-            while ((line = reader.readLine()) != null) {
-                Matcher matcher = REG_PATTERN.matcher(line);
-                if (matcher.matches() && matcher.group(1).equalsIgnoreCase(key)) {
-                    value = matcher.group(2);
-                }
-            }
-            reader.close();
-            proc.destroy();
-        } catch (IOException e) {
-            LOGGER.warn("Failed to read registry key {} at path {}", key, path, e);
-            return null;
-        }
-        if (value == null)
-            LOGGER.warn("Failed to read registry key {} at path {}", key, path);
-        return value;
-    }
     
     private static List<Matcher> matchSteamFile(Path filePath, Pattern pattern) throws IOException {
         if (!Files.isRegularFile(filePath))

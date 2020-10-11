@@ -7,22 +7,19 @@ import static org.junit.Assert.*;
 
 public class TeamTest {
     
-    Gson gson = Util.createGsonObject();
-    
-    
     @Test
     public void testDeserializer() {
         assertEquals(Team.TERRORIST,
-                gson.fromJson("\"t\"", Team.class));
+                Util.GSON.fromJson("\"t\"", Team.class));
     
         assertEquals(Team.TERRORIST,
-                gson.fromJson("\"T\"", Team.class));
+                Util.GSON.fromJson("\"T\"", Team.class));
     
         assertEquals(Team.COUNTER_TERRORIST,
-                gson.fromJson("\"ct\"", Team.class));
+                Util.GSON.fromJson("\"ct\"", Team.class));
     
         assertEquals(Team.COUNTER_TERRORIST,
-                gson.fromJson("\"CT\"", Team.class));
+                Util.GSON.fromJson("\"CT\"", Team.class));
     }
     
 }

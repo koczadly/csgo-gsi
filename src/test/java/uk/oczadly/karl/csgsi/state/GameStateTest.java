@@ -10,7 +10,7 @@ public class GameStateTest extends GameStateBaseTest {
     
     @Test
     public void testEmpty() {
-        GameState state = deserilizeState("{}");
+        GameState state = deserializeState("{}");
         
         assertNull(state.getBombState());
         assertNull(state.getGrenadeStates());

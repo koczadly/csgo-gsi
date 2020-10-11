@@ -12,7 +12,7 @@ public class PhaseCountdownStateTest extends GameStateBaseTest {
     
     @BeforeClass
     public static void setUp() {
-        GameState state = deserilizeState("{\n" +
+        GameState state = deserializeState("{\n" +
                 "  \"phase_countdowns\": {\n" +
                 "    \"phase\": \"freezetime\",\n" +
                 "    \"phase_ends_in\": \"13.1\"\n" +

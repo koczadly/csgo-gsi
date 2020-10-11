@@ -10,7 +10,7 @@ public class GrenadeStateTest extends GameStateBaseTest {
     
     @Test
     public void testDetails() {
-        GameState state = deserilizeState("{\n" +
+        GameState state = deserializeState("{\n" +
                 "  \"grenades\": {\n" +
                 "    \"129\": {\n" +
                 "      \"owner\": 76561198050830377,\n" +

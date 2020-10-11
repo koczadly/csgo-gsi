@@ -35,7 +35,7 @@ import java.util.concurrent.Executors;
 public final class GSIServer {
     
     private static final Logger LOGGER = LoggerFactory.getLogger(GSIServer.class);
-    private static final Gson GSON = Util.createGsonObject();
+    private static final Gson GSON = Util.GSON;
     
     private final HTTPServer server;
     private final Set<GSIObserver> observers = new CopyOnWriteArraySet<>();

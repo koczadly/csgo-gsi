@@ -8,7 +8,7 @@ public class RoundStateTest extends GameStateBaseTest {
 
     @Test
     public void testProviderDetails() {
-        GameState gameState = deserilizeState("{\n" +
+        GameState gameState = deserializeState("{\n" +
                 "  \"round\": {\n" +
                 "    \"phase\": \"over\",\n" +
                 "    \"win_team\": \"T\",\n" +
@@ -27,7 +27,7 @@ public class RoundStateTest extends GameStateBaseTest {
     
     @Test
     public void testEmpty() {
-        GameState state = deserilizeState("{}");
+        GameState state = deserializeState("{}");
         assertNull(state.getRoundState());
     }
     

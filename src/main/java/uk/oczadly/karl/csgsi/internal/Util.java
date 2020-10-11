@@ -2,18 +2,30 @@ package uk.oczadly.karl.csgsi.internal;
 
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import uk.oczadly.karl.csgsi.config.SteamUtils;
 import uk.oczadly.karl.csgsi.internal.json.InstantAdapter;
 
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStreamReader;
 import java.time.Instant;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 public class Util {
     
-    public static Gson createGsonObject() {
-        return new GsonBuilder()
-                .setLenient().excludeFieldsWithoutExposeAnnotation()
-                .registerTypeAdapter(Instant.class, new InstantAdapter())
-                .create();
-    }
+    private static final Logger LOGGER = LoggerFactory.getLogger(Util.class);
+    
+    private static final Pattern REG_PATTERN = Pattern.compile(" {4}(\\S+) {4}\\S+ {4}(.*+)");
+    
+    
+    public static final Gson GSON = new GsonBuilder()
+            .setLenient().excludeFieldsWithoutExposeAnnotation()
+            .registerTypeAdapter(Instant.class, new InstantAdapter())
+            .create();
+    
     
     public static String repeatChar(char c, int length) {
         StringBuilder sb = new StringBuilder(length);
@@ -22,4 +34,30 @@ public class Util {
         return sb.toString();
     }
     
+    /**
+     * Helper method to read Windows registry keys
+     */
+    public static String readWinRegValue(String path, String key) {
+        String value = null;
+        try {
+            Process proc = Runtime.getRuntime().exec("reg query \"" + path + "\" /v \"" + key + "\"");
+            BufferedReader reader = new BufferedReader(new InputStreamReader(proc.getInputStream()));
+            
+            String line;
+            while ((line = reader.readLine()) != null) {
+                Matcher matcher = REG_PATTERN.matcher(line);
+                if (matcher.matches() && matcher.group(1).equalsIgnoreCase(key)) {
+                    value = matcher.group(2);
+                }
+            }
+            reader.close();
+            proc.destroy();
+        } catch (IOException e) {
+            LOGGER.warn("Failed to read registry key {} at path {}", key, path, e);
+            return null;
+        }
+        if (value == null)
+            LOGGER.warn("Failed to read registry key {} at path {}", key, path);
+        return value;
+    }
 }

@@ -9,7 +9,7 @@ public class AllPlayersStateTest extends GameStateBaseTest {
     
     @Test
     public void testSize() {
-        GameState state = deserilizeState("{\n" +
+        GameState state = deserializeState("{\n" +
                 "  \"allplayers\": {\n" +
                 "    \"76561197960265729\": {\n" +
                 "      \"name\": \"Wesley\",\n" +

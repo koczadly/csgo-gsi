@@ -13,7 +13,7 @@ public class PlayerStateTest extends GameStateBaseTest {
     
     @BeforeClass
     public static void setUp() {
-        GameState state = deserilizeState("{\n" +
+        GameState state = deserializeState("{\n" +
                 "  \"player\": {\n" +
                 "    \"steamid\": \"76561198050830377\",\n" +
                 "    \"name\": \"PlayerName\",\n" +

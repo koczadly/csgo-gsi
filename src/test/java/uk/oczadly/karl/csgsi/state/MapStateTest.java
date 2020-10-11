@@ -12,7 +12,7 @@ public class MapStateTest extends GameStateBaseTest {
     
     @BeforeClass
     public static void setUp() {
-        GameState state = deserilizeState("{\n" +
+        GameState state = deserializeState("{\n" +
                 "  \"map\": {\n" +
                 "    \"round_wins\": {\n" +
                 "      \"1\": \"t_win_bomb\",\n" +

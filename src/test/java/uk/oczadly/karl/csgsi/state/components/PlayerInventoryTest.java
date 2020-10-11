@@ -15,7 +15,7 @@ public class PlayerInventoryTest {
     
     @BeforeClass
     public static void setUp() {
-        inventory = Util.createGsonObject().fromJson("{\n" +
+        inventory = Util.GSON.fromJson("{\n" +
                 "      \"weapon_0\": {\n" +
                 "        \"name\": \"weapon_knife_t\",\n" +
                 "        \"paintkit\": \"default\",\n" +

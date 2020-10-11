@@ -8,7 +8,7 @@ public class ProviderStateTest extends GameStateBaseTest {
 
     @Test
     public void testProviderDetails() {
-        GameState gameState = deserilizeState("{\n" +
+        GameState gameState = deserializeState("{\n" +
                 "  \"provider\": {\n" +
                 "  \"name\": \"Counter-Strike: Global Offensive\",\n" +
                 "  \"appid\": 730,\n" +
@@ -31,7 +31,7 @@ public class ProviderStateTest extends GameStateBaseTest {
     
     @Test
     public void testEmpty() {
-        GameState state = deserilizeState("{}");
+        GameState state = deserializeState("{}");
         assertNull(state.getProviderDetails());
     }
 

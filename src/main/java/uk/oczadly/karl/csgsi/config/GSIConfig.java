@@ -447,18 +447,18 @@ public class GSIConfig {
         conf.key(this.getDescription()).beginObject();
         
         // Values
-        conf.key("uri").value(this.getURI());
-        conf.key("timeout").value(this.getTimeoutPeriod());
-        conf.key("buffer").value(this.getBufferPeriod());
-        conf.key("throttle").value(this.getThrottlePeriod());
-        conf.key("heartbeat").value(this.getHeartbeatPeriod());
+        conf.key("uri").value(this.getURI())
+            .key("timeout").value(this.getTimeoutPeriod())
+            .key("buffer").value(this.getBufferPeriod())
+            .key("throttle").value(this.getThrottlePeriod())
+            .key("heartbeat").value(this.getHeartbeatPeriod());
     
         // Output precision
-        conf.key("output").beginObject();
-        conf.key("precision_time").value(this.getPrecisionTime());
-        conf.key("precision_position").value(this.getPrecisionPosition());
-        conf.key("precision_vector").value(this.getPrecisionVector());
-        conf.endObject();
+        conf.key("output").beginObject()
+            .key("precision_time").value(this.getPrecisionTime())
+            .key("precision_position").value(this.getPrecisionPosition())
+            .key("precision_vector").value(this.getPrecisionVector())
+            .endObject();
         
         // Auth tokens
         conf.key("auth").beginObject();
@@ -473,9 +473,7 @@ public class GSIConfig {
             conf.key(type.getConfigName())
                     .value(this.getDataComponents().contains(type) ? "1" : "0");
         }
-        conf.endObject();
-        
-        conf.endObject();
+        conf.endObject().endObject();
         conf.close();
     }
     

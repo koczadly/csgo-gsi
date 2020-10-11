@@ -13,7 +13,7 @@ public class BombStateTest extends GameStateBaseTest {
     
     @BeforeClass
     public static void setUp() {
-        GameState state = deserilizeState("{\n" +
+        GameState state = deserializeState("{\n" +
                 "  \"bomb\": {\n" +
                 "    \"state\": \"carried\",\n" +
                 "    \"position\": \"3084.00, 127.00, 1613.03\",\n" +
