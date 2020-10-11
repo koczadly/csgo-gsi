@@ -258,7 +258,7 @@ public class PlayerInventory {
             return "ItemDetails{" +
                     "weapon=" + getWeapon() +
                     ", skin='" + getSkin() + '\'' +
-                    ", ammoReserve=" + getAmmoReserve() +
+                    (ammoReserve != null ? (", ammo=" + getAmmoRemaining()) : "") +
                     ", state=" + getState() +
                     '}';
         }
