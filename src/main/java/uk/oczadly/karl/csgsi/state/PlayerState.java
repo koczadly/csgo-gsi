@@ -19,7 +19,7 @@ public class PlayerState {
     private String groupName;
     
     @Expose @SerializedName("observer_slot")
-    private Integer observerSlot;
+    private Byte observerSlot;
     
     @Expose @SerializedName("team")
     private EnumValue<Team> team;
@@ -70,7 +70,7 @@ public class PlayerState {
     /**
      * @return the slot this player is using (associated numerical key to spectate)
      */
-    public Integer getObserverSlot() {
+    public Byte getObserverSlot() {
         return observerSlot;
     }
     
@@ -156,10 +156,10 @@ public class PlayerState {
     public static class PlayerStateDetails {
         
         @Expose @SerializedName("health")
-        private int health;
+        private short health;
         
         @Expose @SerializedName("armor")
-        private int armor;
+        private short armor;
         
         @Expose @SerializedName("helmet")
         private boolean helmet;
@@ -168,74 +168,138 @@ public class PlayerState {
         private boolean defuseKit;
         
         @Expose @SerializedName("flashed")
-        private int flashed;
+        private short flashed;
         
         @Expose @SerializedName("smoked")
-        private int smoked;
+        private short smoked;
         
         @Expose @SerializedName("burning")
-        private int burning;
+        private short burning;
         
         @Expose @SerializedName("money")
         private int money;
         
         @Expose @SerializedName("round_kills")
-        private int roundKills;
+        private short roundKills;
         
         @Expose @SerializedName("round_killhs")
-        private int roundKillsHeadshot;
+        private short roundKillsHeadshot;
         
         @Expose @SerializedName("round_totaldmg")
-        private int roundTotalDamage;
+        private short roundTotalDamage;
         
         @Expose @SerializedName("equip_value")
         private int equipmentValue;
-        
-        
-        public int getHealth() {
+    
+    
+        /**
+         * @return the players health value (typically {@code 0–100})
+         */
+        public short getHealth() {
             return health;
         }
-        
-        public int getArmor() {
+    
+        /**
+         * @return the players armor value (typically {@code 0–100})
+         */
+        public short getArmor() {
             return armor;
         }
-        
+    
+        /**
+         * @return true if the player has armor
+         */
+        public boolean hasArmor() {
+            return getArmor() > 0;
+        }
+    
+        /**
+         * @return true if the player has head armor
+         */
         public boolean hasHelmet() {
             return helmet;
         }
     
+        /**
+         * @return true if the player has a defuse kit
+         */
         public boolean hasDefuseKit() {
             return defuseKit;
         }
     
-        public int getFlashed() {
+        /**
+         * @return how flashed the player's screen is (from {@code 0—255})
+         */
+        public short getFlashed() {
             return flashed;
         }
-        
-        public int getSmoked() {
+    
+        /**
+         * @return true if the player is flashed
+         */
+        public boolean isFlashed() {
+            return getFlashed() > 0;
+        }
+    
+        /**
+         * @return how smoked the player's vision is (from {@code 0—255})
+         */
+        public short getSmoked() {
             return smoked;
         }
-        
-        public int getBurning() {
+    
+        /**
+         * @return true if the player is standing in smoke
+         */
+        public boolean isSmoked() {
+            return getSmoked() > 0;
+        }
+    
+        /**
+         * @return how much the player is burning (from {@code 0—255})
+         */
+        public short getBurning() {
             return burning;
         }
-        
+    
+        /**
+         * @return true if the player is burning or on fire
+         */
+        public boolean isBurning() {
+            return getBurning() > 0;
+        }
+    
+        /**
+         * @return the amount of money the player has
+         */
         public int getMoney() {
             return money;
         }
-        
-        public int getRoundKills() {
+    
+        /**
+         * @return the number of kills the player has during the ongoing round
+         */
+        public short getRoundKills() {
             return roundKills;
         }
-        
-        public int getRoundKillsHeadshot() {
+    
+        /**
+         * @return the number of headshot kills the player has during the ongoing round
+         */
+        public short getRoundKillsHeadshot() {
             return roundKillsHeadshot;
         }
-        
-        public int getRoundTotalDamage() {
+    
+        /**
+         * @return the amount of damage the player has given during the ongoing round
+         */
+        public short getRoundTotalDamage() {
             return roundTotalDamage;
         }
-        
+    
+        /**
+         * @return the value of all the player's current equipment
+         */
         public int getEquipmentValue() {
             return equipmentValue;
         }
@@ -263,38 +327,60 @@ public class PlayerState {
     public static class MatchStats {
         
         @Expose @SerializedName("kills")
-        private int kills;
+        private short kills;
         
         @Expose @SerializedName("assists")
-        private int assists;
+        private short assists;
         
         @Expose @SerializedName("deaths")
-        private int deaths;
+        private short deaths;
         
         @Expose @SerializedName("mvps")
-        private int mvps;
+        private short mvps;
         
         @Expose @SerializedName("score")
-        private int score;
-        
-        
-        public int getKillCount() {
+        private short score;
+    
+    
+        /**
+         * @return the number of kills the player has during the current game
+         */
+        public short getKillCount() {
             return kills;
         }
-        
-        public int getAssistCount() {
+    
+        /**
+         * @return the number of assists the player has during the current game
+         */
+        public short getAssistCount() {
             return assists;
         }
-        
-        public int getDeathCount() {
+    
+        /**
+         * @return the number of deaths the player has during the current game
+         */
+        public short getDeathCount() {
             return deaths;
         }
-        
-        public int getMvpCount() {
+    
+        /**
+         * @return the kill-to-death ratio of the player
+         */
+        public float getKDR() {
+            return (float)getKillCount() / getDeathCount();
+        }
+    
+        /**
+         * @return the number of MVP awards the player has achieved during the current game
+         */
+        public short getMvpCount() {
             return mvps;
         }
-        
-        public int getScore() {
+    
+        /**
+         * @return the score of the player shown on the scoreboard
+         */
+        public short getScore() {
             return score;
         }
     
