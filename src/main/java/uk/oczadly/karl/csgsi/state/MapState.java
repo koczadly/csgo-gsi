@@ -121,7 +121,7 @@ public class MapState {
     }
     
     
-    public static class RoundOutcomeDeserializer implements JsonDeserializer<List<EnumValue<RoundOutcome>>> {
+    static class RoundOutcomeDeserializer implements JsonDeserializer<List<EnumValue<RoundOutcome>>> {
         @Override
         public List<EnumValue<RoundOutcome>> deserialize(JsonElement json, Type typeOfT,
                                                          JsonDeserializationContext context) throws JsonParseException {
