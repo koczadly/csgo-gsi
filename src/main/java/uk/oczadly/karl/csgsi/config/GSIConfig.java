@@ -481,10 +481,10 @@ public class GSIConfig {
      * but allows you to update or remove the configuration file at a later date.</p>
      *
      * <pre>
-     *  GSIConfig profile = ... //Create profile here
+     *  GSIConfig profile = ... // Create profile here
      *
      *  try {
-     *      profile.writeConfig("MyService");
+     *      profile.writeConfigFile("MyService");
      *      System.out.println("Profile successfully created!");
      *  } catch (GameNotFoundException e) {
      *      System.out.println("Couldn't locate CSGO or Steam installation directories.");
@@ -517,17 +517,13 @@ public class GSIConfig {
      * installation can be found on the system. The following example demonstrates how to create and write a
      * configuration file to the system:</p>
      * <pre>
-     *  GSIConfig profile = ... //Create profile here
+     *  GSIConfig profile = ... // Create profile here
      *
      *  try {
      *      Path configPath = SteamUtils.locateCsgoConfigFolder();
      *
-     *      if (configPath != null) {
-     *          profile.writeConfig("MyService", configPath);
-     *          System.out.println("Profile successfully created!");
-     *      } else {
-     *          System.out.println("Couldn't locate CS:GO directory");
-     *      }
+     *      profile.writeConfigFile("MyService", configPath);
+     *      System.out.println("Profile successfully created!");
      *  } catch (GameNotFoundException e) {
      *      System.out.println("Couldn't locate CSGO or Steam installation directories.");
      *  } catch (IOException e) {
