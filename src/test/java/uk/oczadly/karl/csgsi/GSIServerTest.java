@@ -140,7 +140,7 @@ public class GSIServerTest {
         return observer.called;
     }
     
-    private class TestObserver implements GSIObserver {
+    private static class TestObserver implements GSIObserver {
         boolean called = false;
         GameState state;
         GameStateContext context;

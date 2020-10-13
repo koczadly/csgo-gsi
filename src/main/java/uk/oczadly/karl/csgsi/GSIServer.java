@@ -235,48 +235,58 @@ public final class GSIServer {
     void handleStateUpdate(String json, InetAddress address) {
         JsonObject jsonObject = JsonParser.parseString(json).getAsJsonObject();
         
+        Map<String, String> authTokens = verifyStateAuth(jsonObject);
+        if (authTokens == null) return;
+        
+        // Parse the game state into an object
+        GameState state = GSON.fromJson(jsonObject, GameState.class);
+        
+        // Ensure state hasn't expired
+        if (isStateExpired(state)) {
+            // Discard the state (and log)
+            if (LOGGER.isDebugEnabled())
+                LOGGER.debug("GSI state update discarded due to expired timestamp.");
+        }
+            
+        // Calculate timing information
+        long currentMillis = System.currentTimeMillis();
+        int millis = latestLocalTimestamp == -1 ? -1 : (int)(currentMillis - latestLocalTimestamp);
+    
+        GameStateContext context = new GameStateContext(
+                this, latestGameState, millis, address, authTokens, jsonObject, json);
+        
+        // Update latest state and timestamps
+        latestGameState = state;
+        latestLocalTimestamp = currentMillis;
+        if (state.getProviderDetails() != null)
+            latestProviderTimestamp = state.getProviderDetails().getTimeStamp();
+        
+        // Notify observers
+        notifyObservers(state, context);
+    }
+    
+    private Map<String, String> verifyStateAuth(JsonObject json) {
         // Parse auth tokens
-        Map<String, String> authTokens = GSON.fromJson(jsonObject.getAsJsonObject("auth"),
+        Map<String, String> authTokens = GSON.fromJson(json.getAsJsonObject("auth"),
                 new TypeToken<Map<String, String>>() {}.getType());
         authTokens = (authTokens != null) ? authTokens : Collections.emptyMap();
-        
+    
         // Verify auth tokens
         for (Map.Entry<String, String> token : requiredAuthTokens.entrySet()) {
             String val = authTokens.get(token.getKey());
             if (!token.getValue().equals(val)) {
                 LOGGER.debug("GSI state update rejected due to auth token mismatch (key '{}': expected '{}', "
                         + "got '{}')", token.getKey(), token.getValue(), val);
-                return; //Invalid auth token(s), skip
+                return null; // Invalid auth token(s), skip
             }
         }
-        
-        // Parse the game state into an object
-        GameState state = GSON.fromJson(jsonObject, GameState.class);
-        
-        // Handle state
-        ProviderState provider = state.getProviderDetails();
-        if (provider == null || provider.getTimeStamp() == null || latestProviderTimestamp == null
-                || provider.getTimeStamp().compareTo(latestProviderTimestamp) >= 0) { // Check if state is expired
-            // Calculate timing information
-            long currentMillis = System.currentTimeMillis();
-            int millis = latestLocalTimestamp == -1 ? -1 : (int)(currentMillis - latestLocalTimestamp);
-            
-            // Update latest state and timestamps
-            latestGameState = state;
-            latestLocalTimestamp = currentMillis;
-            if (provider != null)
-                latestProviderTimestamp = provider.getTimeStamp();
-            
-            GameStateContext context = new GameStateContext(
-                    this, latestGameState, millis, address, authTokens, jsonObject, json);
+        return authTokens;
+    }
     
-            // Notify observers
-            notifyObservers(state, context);
-        } else {
-            // Discard the state (and log)
-            if (LOGGER.isDebugEnabled())
-                LOGGER.debug("GSI state update discarded due to expired timestamp.");
-        }
+    private boolean isStateExpired(GameState state) {
+        ProviderState provider = state.getProviderDetails();
+        return provider != null && provider.getTimeStamp() != null && latestProviderTimestamp != null
+                && provider.getTimeStamp().isBefore(latestProviderTimestamp);
     }
     
     
