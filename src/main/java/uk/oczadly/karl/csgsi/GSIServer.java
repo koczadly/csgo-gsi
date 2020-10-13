@@ -167,6 +167,7 @@ public final class GSIServer {
         }
         
         // Wait for all tasks to complete (and log any errors)
+        long start = System.currentTimeMillis();
         for (Future<?> f : futures) {
             try {
                 f.get();
@@ -175,6 +176,10 @@ public final class GSIServer {
                 LOGGER.error("Uncaught exception in GSIServer observer notification", e.getCause());
                 e.getCause().printStackTrace();
             }
+        }
+        long timeTaken = System.currentTimeMillis() - start;
+        if (timeTaken > 150) {
+            LOGGER.warn("Taken longer than 150ms to process game state update!");
         }
     }
     

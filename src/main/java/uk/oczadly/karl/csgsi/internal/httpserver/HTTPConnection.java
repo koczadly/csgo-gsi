@@ -33,25 +33,24 @@ class HTTPConnection implements Runnable {
             
             String[] requestData = reader.readLine().split(" ");
             
-            //Headers
+            // Headers
             Map<String, String> headers = parseHeaders(reader);
             if (!headers.containsKey("content-length")) {
                 LOGGER.warn("No content-length header found!");
                 return;
             }
             
-            //Body
+            // Handle
             String body = parseBody(reader, Integer.parseInt(headers.get("content-length")));
+            handler.handle(socket.getInetAddress(), requestData.length > 2 ? requestData[1] : "/", requestData[0],
+                    headers, body);
             
-            //Return 200 OK
+            // Return 200 OK
             writer.write("HTTP/1.1 200 OK\r\n\r\n");
             writer.flush();
             
-            //Close socket
+            // Close socket
             this.socket.close();
-            
-            handler.handle(socket.getInetAddress(), requestData.length > 2 ? requestData[1] : "/", requestData[0],
-                    headers, body);
         } catch (Exception e) {
             LOGGER.warn("Failed to handle HTTP connection", e);
         } finally {
