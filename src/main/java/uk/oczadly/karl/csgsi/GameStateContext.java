@@ -7,6 +7,9 @@ import java.net.InetAddress;
 import java.util.Collections;
 import java.util.Map;
 
+/**
+ * This class contains additional contextual information accompanying a {@link GameState} state update.
+ */
 public final class GameStateContext {
     
     private final GSIServer server;
@@ -48,7 +51,7 @@ public final class GameStateContext {
     }
     
     /**
-     * Gets the number of milliseconds elapsed since the last received state information.
+     * Gets the number of milliseconds elapsed since the last state update.
      *
      * <p>This value is based on the local timestamps when the data was parsed, and <em>not</em> on the timestamp
      * included in the provider state. The first received game state will return {@code -1}.</p>
