@@ -8,6 +8,7 @@ import com.google.gson.annotations.Expose;
 import com.google.gson.annotations.JsonAdapter;
 import com.google.gson.annotations.SerializedName;
 import com.google.gson.reflect.TypeToken;
+import uk.oczadly.karl.csgsi.config.DataComponent;
 import uk.oczadly.karl.csgsi.state.components.EnumValue;
 import uk.oczadly.karl.csgsi.state.components.Team;
 
@@ -51,6 +52,12 @@ public class MapState {
     
     
     /**
+     * <p>This set of state information requires one or more of the following data components to be enabled in the
+     * configuration:</p>
+     * <ul>
+     *     <li>{@link DataComponent#MAP_ROUND_WINS}</li>
+     * </ul>
+     *
      * @return an ordered list of round outcomes
      */
     public List<EnumValue<RoundOutcome>> getRoundResults() {
@@ -58,6 +65,12 @@ public class MapState {
     }
     
     /**
+     * <p>This set of state information requires one or more of the following data components to be enabled in the
+     * configuration:</p>
+     * <ul>
+     *     <li>{@link DataComponent#MAP}</li>
+     * </ul>
+     *
      * @return the current game mode being played
      */
     public EnumValue<GameMode> getMode() {
@@ -65,6 +78,12 @@ public class MapState {
     }
     
     /**
+     * <p>This set of state information requires one or more of the following data components to be enabled in the
+     * configuration:</p>
+     * <ul>
+     *     <li>{@link DataComponent#MAP}</li>
+     * </ul>
+     *
      * @return the name of the map (eg. de_dust2)
      */
     public String getName() {
@@ -72,6 +91,12 @@ public class MapState {
     }
     
     /**
+     * <p>This set of state information requires one or more of the following data components to be enabled in the
+     * configuration:</p>
+     * <ul>
+     *     <li>{@link DataComponent#MAP}</li>
+     * </ul>
+     *
      * @return the current phase of the match
      */
     public EnumValue<GamePhase> getPhase() {
@@ -79,6 +104,12 @@ public class MapState {
     }
     
     /**
+     * <p>This set of state information requires one or more of the following data components to be enabled in the
+     * configuration:</p>
+     * <ul>
+     *     <li>{@link DataComponent#MAP}</li>
+     * </ul>
+     *
      * @return the current round number
      */
     public short getRoundNumber() {
@@ -86,6 +117,12 @@ public class MapState {
     }
     
     /**
+     * <p>This set of state information requires one or more of the following data components to be enabled in the
+     * configuration:</p>
+     * <ul>
+     *     <li>{@link DataComponent#MAP}</li>
+     * </ul>
+     *
      * @return the statistics and data relating to the counter-terrorist team
      */
     public TeamStats getCounterTerroristStatistics() {
@@ -93,6 +130,12 @@ public class MapState {
     }
     
     /**
+     * <p>This set of state information requires one or more of the following data components to be enabled in the
+     * configuration:</p>
+     * <ul>
+     *     <li>{@link DataComponent#MAP}</li>
+     * </ul>
+     *
      * @return the statistics and data relating to the terrorist team
      */
     public TeamStats getTerroristStatistics() {
@@ -100,6 +143,12 @@ public class MapState {
     }
     
     /**
+     * <p>This set of state information requires one or more of the following data components to be enabled in the
+     * configuration:</p>
+     * <ul>
+     *     <li>{@link DataComponent#MAP}</li>
+     * </ul>
+     *
      * @return the number of matches needed to win the series
      */
     public short getSeriesMatchesToWin() {
@@ -107,6 +156,12 @@ public class MapState {
     }
     
     /**
+     * <p>This set of state information requires one or more of the following data components to be enabled in the
+     * configuration:</p>
+     * <ul>
+     *     <li>{@link DataComponent#MAP}</li>
+     * </ul>
+     *
      * @return the number of spectators watching the match
      */
     public int getSpectatorCount() {
@@ -114,6 +169,12 @@ public class MapState {
     }
     
     /**
+     * <p>This set of state information requires one or more of the following data components to be enabled in the
+     * configuration:</p>
+     * <ul>
+     *     <li>{@link DataComponent#MAP}</li>
+     * </ul>
+     *
      * @return the number of souvenir drops this match
      */
     public int getSouvenirDrops() {

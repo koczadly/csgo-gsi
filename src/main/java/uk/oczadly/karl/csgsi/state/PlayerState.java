@@ -2,6 +2,7 @@ package uk.oczadly.karl.csgsi.state;
 
 import com.google.gson.annotations.Expose;
 import com.google.gson.annotations.SerializedName;
+import uk.oczadly.karl.csgsi.config.DataComponent;
 import uk.oczadly.karl.csgsi.state.components.Coordinate;
 import uk.oczadly.karl.csgsi.state.components.EnumValue;
 import uk.oczadly.karl.csgsi.state.components.PlayerInventory;
@@ -47,6 +48,13 @@ public class PlayerState {
     
     
     /**
+     * <p>This set of state information requires one or more of the following data components to be enabled in the
+     * configuration:</p>
+     * <ul>
+     *     <li>{@link DataComponent#PLAYER_ID} (when accessing from {@link GameState#getPlayerState()})</li>
+     *     <li>{@link DataComponent#PLAYERS_ID} (when accessing from {@link GameState#getAllPlayerStates()})</li>
+     * </ul>
+     *
      * @return the Steam ID of the player
      */
     public long getSteamId() {
@@ -54,6 +62,13 @@ public class PlayerState {
     }
     
     /**
+     * <p>This set of state information requires one or more of the following data components to be enabled in the
+     * configuration:</p>
+     * <ul>
+     *     <li>{@link DataComponent#PLAYER_ID} (when accessing from {@link GameState#getPlayerState()})</li>
+     *     <li>{@link DataComponent#PLAYERS_ID} (when accessing from {@link GameState#getAllPlayerStates()})</li>
+     * </ul>
+     *
      * @return the display name of the player
      */
     public String getName() {
@@ -61,6 +76,13 @@ public class PlayerState {
     }
     
     /**
+     * <p>This set of state information requires one or more of the following data components to be enabled in the
+     * configuration:</p>
+     * <ul>
+     *     <li>{@link DataComponent#PLAYER_ID} (when accessing from {@link GameState#getPlayerState()})</li>
+     *     <li>{@link DataComponent#PLAYERS_ID} (when accessing from {@link GameState#getAllPlayerStates()})</li>
+     * </ul>
+     *
      * @return the name of the player's nominated clan/Steam group
      */
     public String getGroupName() {
@@ -68,6 +90,13 @@ public class PlayerState {
     }
     
     /**
+     * <p>This set of state information requires one or more of the following data components to be enabled in the
+     * configuration:</p>
+     * <ul>
+     *     <li>{@link DataComponent#PLAYER_ID} (when accessing from {@link GameState#getPlayerState()})</li>
+     *     <li>{@link DataComponent#PLAYERS_ID} (when accessing from {@link GameState#getAllPlayerStates()})</li>
+     * </ul>
+     *
      * @return the slot this player is using (associated numerical key to spectate), or null if they aren't a player
      */
     public Byte getObserverSlot() {
@@ -75,6 +104,13 @@ public class PlayerState {
     }
     
     /**
+     * <p>This set of state information requires one or more of the following data components to be enabled in the
+     * configuration:</p>
+     * <ul>
+     *     <li>{@link DataComponent#PLAYER_ID} (when accessing from {@link GameState#getPlayerState()})</li>
+     *     <li>{@link DataComponent#PLAYERS_ID} (when accessing from {@link GameState#getAllPlayerStates()})</li>
+     * </ul>
+     *
      * @return which team this player is on (terrorist or counter-terrorist)
      */
     public EnumValue<Team> getTeam() {
@@ -82,6 +118,12 @@ public class PlayerState {
     }
     
     /**
+     * <p>This set of state information requires one or more of the following data components to be enabled in the
+     * configuration:</p>
+     * <ul>
+     *     <li>{@link DataComponent#PLAYER_ID} (when accessing from {@link GameState#getPlayerState()})</li>
+     * </ul>
+     *
      * @return this player's activity, or null if not the client
      */
     public EnumValue<Activity> getActivity() {
@@ -89,6 +131,14 @@ public class PlayerState {
     }
     
     /**
+     * <p>This set of state information requires one or more of the following data components to be enabled in the
+     * configuration:</p>
+     * <ul>
+     *     <li>{@link DataComponent#PLAYER_MATCH_STATS} (when accessing from {@link GameState#getPlayerState()})</li>
+     *     <li>{@link DataComponent#PLAYERS_MATCH_STATS} (when accessing from {@link
+     *     GameState#getAllPlayerStates()})</li>
+     * </ul>
+     *
      * @return the current statistics for this player for this map
      */
     public MatchStats getStatistics() {
@@ -96,6 +146,13 @@ public class PlayerState {
     }
     
     /**
+     * <p>This set of state information requires one or more of the following data components to be enabled in the
+     * configuration:</p>
+     * <ul>
+     *     <li>{@link DataComponent#PLAYER_STATE} (when accessing from {@link GameState#getPlayerState()})</li>
+     *     <li>{@link DataComponent#PLAYERS_STATE} (when accessing from {@link GameState#getAllPlayerStates()})</li>
+     * </ul>
+     *
      * @return state information relating to this player
      */
     public PlayerStateDetails getState() {
@@ -103,6 +160,14 @@ public class PlayerState {
     }
     
     /**
+     * <p>This set of state information requires one or more of the following data components to be enabled in the
+     * configuration:</p>
+     * <ul>
+     *     <li>{@link DataComponent#PLAYER_WEAPONS} (when accessing from {@link GameState#getPlayerState()})</li>
+     *     <li>{@link DataComponent#PLAYERS_WEAPONS} (when accessing from {@link GameState#getAllPlayerStates()},
+     *     spectating only)</li>
+     * </ul>
+     *
      * @return the current set of weapons and items held by the player
      */
     public PlayerInventory getInventory() {
@@ -110,6 +175,13 @@ public class PlayerState {
     }
     
     /**
+     * <p>This set of state information requires one or more of the following data components to be enabled in the
+     * configuration:</p>
+     * <ul>
+     *     <li>{@link DataComponent#PLAYER_ID} (when accessing from {@link GameState#getPlayerState()},
+     *     spectating only)</li>
+     * </ul>
+     *
      * @return the ID of the player being spectated, or null if not spectating
      */
     public Long getSpectatorTarget() {
@@ -117,6 +189,16 @@ public class PlayerState {
     }
     
     /**
+     * <p>This set of state information requires one or more of the following data components to be enabled in the
+     * configuration:</p>
+     * <ul>
+     *     <li>{@link DataComponent#PLAYER_POSITION} (when accessing from {@link GameState#getPlayerState()},
+     *     spectating only)
+     *     </li>
+     *     <li>{@link DataComponent#PLAYERS_POSITION} (when accessing from {@link GameState#getPlayerState()},
+     *     spectating only)</li>
+     * </ul>
+     *
      * @return the position of this player on the map
      */
     public Coordinate getPosition() {

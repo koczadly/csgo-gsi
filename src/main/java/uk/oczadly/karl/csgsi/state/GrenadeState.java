@@ -8,7 +8,7 @@ import uk.oczadly.karl.csgsi.state.components.EnumValue;
 public class GrenadeState {
     
     @Expose @SerializedName("owner")
-    private String ownerId;
+    private long ownerId;
     
     @Expose @SerializedName("position")
     private Coordinate position;
@@ -29,7 +29,7 @@ public class GrenadeState {
     /**
      * @return the ID of the player who threw the grenade
      */
-    public String getOwnerId() {
+    public long getOwnerId() {
         return ownerId;
     }
     
