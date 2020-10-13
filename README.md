@@ -3,7 +3,7 @@
 A Java library for retrieving real-time game information and statistics from *Counter-Strike: Global Offensive* using
 the built-in game state integration service.
 
-This project is in active development, and will receive updates as changes to the game and it's state schema.
+This project is in active development, and will receive updates as changes are made to the game and it's state schema.
 
 ## Features
 This library provides simple access to 3 main features:
