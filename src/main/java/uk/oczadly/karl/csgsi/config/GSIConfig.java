@@ -39,6 +39,7 @@ public class GSIConfig {
     private static final Logger LOGGER = LoggerFactory.getLogger(GSIConfig.class);
     
     private static final Pattern SERVICE_NAME_PATTERN = Pattern.compile("^[\\w ]{1,24}$");
+    private static final String DEFAULT_DESC = "Created using https://github.com/koczadly/csgo-gsi";
     
     
     private String uri, description;
@@ -76,7 +77,7 @@ public class GSIConfig {
      * properties.
      */
     public GSIConfig() {
-        this.description = "Created using https://github.com/koczadly/csgo-gsi";
+        this.description = DEFAULT_DESC;
     }
     
     
@@ -169,7 +170,11 @@ public class GSIConfig {
      * @return this current object
      */
     public GSIConfig setDescription(String desc) {
-        this.description = desc;
+        if (desc == null) {
+            this.description = DEFAULT_DESC;
+        } else {
+            this.description = desc;
+        }
         return this;
     }
     
