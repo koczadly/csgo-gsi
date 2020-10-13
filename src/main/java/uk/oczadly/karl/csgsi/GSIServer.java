@@ -14,13 +14,8 @@ import uk.oczadly.karl.csgsi.state.ProviderState;
 import java.io.IOException;
 import java.net.InetAddress;
 import java.time.Instant;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Set;
-import java.util.concurrent.CopyOnWriteArraySet;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
+import java.util.*;
+import java.util.concurrent.*;
 import java.util.concurrent.atomic.AtomicInteger;
 
 /**
@@ -40,7 +35,7 @@ public final class GSIServer {
     
     private final HTTPServer server;
     private final Set<GSIObserver> observers = new CopyOnWriteArraySet<>();
-    private final ExecutorService observerExecutor = Executors.newFixedThreadPool(50);
+    private final ExecutorService observerExecutor = Executors.newCachedThreadPool();
     private final Map<String, String> requiredAuthTokens;
     
     private volatile GameState latestGameState;
@@ -166,9 +161,20 @@ public final class GSIServer {
     protected void notifyObservers(GameState state, GameStateContext context) {
         LOGGER.debug("Notifying {} observers of new GSI state from server on port {}", observers.size(), server.getPort());
         
+        List<Future<?>> futures = new ArrayList<>(observers.size());
         for (GSIObserver observer : observers) {
-            observerExecutor.submit(
-                    new LoggableTask(() -> observer.update(state, context)));
+            futures.add(observerExecutor.submit(() -> observer.update(state, context)));
+        }
+        
+        // Wait for all tasks to complete (and log any errors)
+        for (Future<?> f : futures) {
+            try {
+                f.get();
+            } catch (InterruptedException ignored) {
+            } catch (ExecutionException e) {
+                LOGGER.error("Uncaught exception in GSIServer observer notification", e.getCause());
+                e.getCause().printStackTrace();
+            }
         }
     }
     
@@ -301,27 +307,6 @@ public final class GSIServer {
         ProviderState provider = state.getProviderDetails();
         return provider != null && provider.getTimeStamp() != null && latestProviderTimestamp != null
                 && provider.getTimeStamp().isBefore(latestProviderTimestamp);
-    }
-    
-    
-    /**
-     * Used for notifying observers and logging exceptions
-     */
-    private static class LoggableTask implements Runnable {
-        Runnable task;
-        LoggableTask(Runnable task) {
-            this.task = task;
-        }
-        
-        @Override
-        public void run() {
-            try {
-                task.run();
-            } catch (Exception e) {
-                LOGGER.error("Uncaught exception in GSIServer observer notification", e);
-                e.printStackTrace();
-            }
-        }
     }
     
 }

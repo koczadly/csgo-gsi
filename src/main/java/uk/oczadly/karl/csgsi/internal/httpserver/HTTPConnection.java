@@ -57,7 +57,8 @@ class HTTPConnection implements Runnable {
         } finally {
             //Close socket
             try {
-                if (!this.socket.isClosed()) this.socket.close();
+                if (!this.socket.isClosed())
+                    this.socket.close();
             } catch (IOException ignored) {
             }
         }

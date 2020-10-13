@@ -21,7 +21,6 @@ public class HTTPServer {
     
     private int port;
     private InetAddress bindAddr;
-    private ExecutorService executorService;
     private HTTPRequestHandler handler;
     
     private Thread thread;
@@ -30,13 +29,11 @@ public class HTTPServer {
     
     /**
      * @param port            the port number to listen on
-     * @param executorService the ExecutorService used to handle HTTP requests
      * @param handler         the handling class to receive HTTP requests
      */
-    public HTTPServer(int port, InetAddress bindAddr, ExecutorService executorService, HTTPRequestHandler handler) {
+    public HTTPServer(int port, InetAddress bindAddr, HTTPRequestHandler handler) {
         this.port = port;
         this.bindAddr = bindAddr;
-        this.executorService = executorService;
         this.handler = handler;
     }
     
@@ -46,7 +43,7 @@ public class HTTPServer {
      * @param handler        the handling class to receive HTTP requests
      */
     public HTTPServer(int port, InetAddress bindAddr, int maxConnections, HTTPRequestHandler handler) {
-        this(port, bindAddr, Executors.newFixedThreadPool(maxConnections), handler);
+        this(port, bindAddr, handler);
     }
     
     
@@ -114,7 +111,7 @@ public class HTTPServer {
             while (!Thread.currentThread().isInterrupted()) {
                 try {
                     Socket conn = socket.accept();
-                    executorService.submit(new HTTPConnection(conn, handler));
+                    new HTTPConnection(conn, handler).run();
                 } catch (Exception e) {
                     LOGGER.warn("Exception occured while handling HTTP connection", e);
                 }
