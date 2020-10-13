@@ -21,6 +21,7 @@ import java.util.Set;
 import java.util.concurrent.CopyOnWriteArraySet;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.concurrent.atomic.AtomicInteger;
 
 /**
  * This class is used to listen for live game state information as sent by the game client.
@@ -45,6 +46,7 @@ public final class GSIServer {
     private volatile GameState latestGameState;
     private volatile Instant latestProviderTimestamp;
     private volatile long latestLocalTimestamp;
+    private final AtomicInteger stateCounter = new AtomicInteger();
     
     
     /**
@@ -184,10 +186,11 @@ public final class GSIServer {
         
         if (server.isRunning())
             throw new IllegalStateException("The GSI server is already running.");
-    
+        
         latestProviderTimestamp = null;
         latestLocalTimestamp = -1;
         latestGameState = null;
+        stateCounter.set(0);
         server.start();
         LOGGER.info("GSI server on port {} successfully started", server.getPort());
     }
@@ -259,12 +262,13 @@ public final class GSIServer {
                 LOGGER.debug("GSI state update discarded due to expired timestamp.");
         }
             
-        // Calculate timing information
+        // Calculate information
+        int counter = stateCounter.addAndGet(1);
         long currentMillis = System.currentTimeMillis();
         int millis = latestLocalTimestamp == -1 ? -1 : (int)(currentMillis - latestLocalTimestamp);
     
         GameStateContext context = new GameStateContext(
-                this, latestGameState, millis, address, authTokens, jsonObject, json);
+                this, latestGameState, millis, counter, address, authTokens, jsonObject, json);
         
         // Update latest state and timestamps
         latestGameState = state;

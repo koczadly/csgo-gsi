@@ -14,17 +14,18 @@ public final class GameStateContext {
     
     private final GSIServer server;
     private final GameState previousState;
-    private final int millisSinceLast;
+    private final int millisSinceLast, counter;
     private final InetAddress address;
     private final Map<String, String> authTokens;
     private final JsonObject rawJson;
     private final String rawJsonString;
     
-    GameStateContext(GSIServer server, GameState previousState, int millisSinceLast, InetAddress address,
+    GameStateContext(GSIServer server, GameState previousState, int millisSinceLast, int counter, InetAddress address,
                             Map<String, String> authTokens, JsonObject rawJson, String rawJsonString) {
         this.server = server;
         this.previousState = previousState;
         this.millisSinceLast = millisSinceLast;
+        this.counter = counter;
         this.address = address;
         this.authTokens = Collections.unmodifiableMap(authTokens);
         this.rawJson = rawJson;
@@ -59,6 +60,15 @@ public final class GameStateContext {
      * @return the number of milliseconds since the last received state, or {@code -1} for the first state
      */
     public int getMillisSinceLastState() {
+        return millisSinceLast;
+    }
+    
+    /**
+     * Gets the current game state counter (each new state increases the value by 1).
+     *
+     * @return the index counter of this game state
+     */
+    public int getSequentialCounter() {
         return millisSinceLast;
     }
     
