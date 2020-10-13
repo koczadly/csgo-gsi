@@ -6,6 +6,7 @@ import org.junit.Test;
 import uk.oczadly.karl.csgsi.state.GameState;
 
 import java.net.InetAddress;
+import java.time.Instant;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
@@ -95,8 +96,10 @@ public class GSIServerTest {
         InetAddress address = InetAddress.getLoopbackAddress();
         JsonObject jsonObject = new JsonObject();
         String jsonString = "{}";
+        Instant i1 = Instant.ofEpochMilli(500);
+        Instant i2 = Instant.ofEpochMilli(200);
         GameStateContext context = new GameStateContext(
-                server, previous, 42, 43, address, authTokens, jsonObject, jsonString);
+                server, previous, i1, i2, 43, address, authTokens, jsonObject, jsonString);
         
         //Notify observing object
         server.notifyObservers(state, context);
@@ -108,10 +111,14 @@ public class GSIServerTest {
         //Verify objects match
         assertSame(state, observer1.state);
         assertSame(state, observer2.state);
+        assertSame(i1, observer1.context.getTimestamp());
+        assertSame(i1, observer2.context.getTimestamp());
         assertSame(previous, observer1.context.getPreviousState());
         assertSame(previous, observer2.context.getPreviousState());
-        assertEquals(42, observer1.context.getMillisSinceLastState());
-        assertEquals(42, observer2.context.getMillisSinceLastState());
+        assertSame(i2, observer1.context.getPreviousTimestamp());
+        assertSame(i2, observer2.context.getPreviousTimestamp());
+        assertEquals(300, observer1.context.getMillisSinceLastState());
+        assertEquals(300, observer2.context.getMillisSinceLastState());
         assertEquals(43, observer1.context.getSequentialCounter());
         assertEquals(43, observer2.context.getSequentialCounter());
         assertEquals(authTokens, observer1.context.getAuthTokens());

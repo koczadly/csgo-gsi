@@ -44,8 +44,7 @@ public final class GSIServer {
     private final Map<String, String> requiredAuthTokens;
     
     private volatile GameState latestGameState;
-    private volatile Instant latestProviderTimestamp;
-    private volatile long latestLocalTimestamp;
+    private volatile Instant latestProviderTimestamp, latestLocalTimestamp;
     private final AtomicInteger stateCounter = new AtomicInteger();
     
     
@@ -188,7 +187,7 @@ public final class GSIServer {
             throw new IllegalStateException("The GSI server is already running.");
         
         latestProviderTimestamp = null;
-        latestLocalTimestamp = -1;
+        latestLocalTimestamp = null;
         latestGameState = null;
         stateCounter.set(0);
         server.start();
@@ -263,16 +262,16 @@ public final class GSIServer {
         }
             
         // Calculate information
-        int counter = stateCounter.addAndGet(1);
-        long currentMillis = System.currentTimeMillis();
-        int millis = latestLocalTimestamp == -1 ? -1 : (int)(currentMillis - latestLocalTimestamp);
-    
-        GameStateContext context = new GameStateContext(
-                this, latestGameState, millis, counter, address, authTokens, jsonObject, json);
+        int counter = stateCounter.incrementAndGet();
+        Instant now = Instant.now();
+        
+        // Create context object
+        GameStateContext context = new GameStateContext(this, latestGameState, now, latestLocalTimestamp, counter,
+                address, authTokens, jsonObject, json);
         
         // Update latest state and timestamps
         latestGameState = state;
-        latestLocalTimestamp = currentMillis;
+        latestLocalTimestamp = now;
         if (state.getProviderDetails() != null)
             latestProviderTimestamp = state.getProviderDetails().getTimeStamp();
         

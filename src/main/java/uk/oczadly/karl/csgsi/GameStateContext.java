@@ -4,6 +4,7 @@ import com.google.gson.JsonObject;
 import uk.oczadly.karl.csgsi.state.GameState;
 
 import java.net.InetAddress;
+import java.time.Instant;
 import java.util.Collections;
 import java.util.Map;
 
@@ -14,17 +15,19 @@ public final class GameStateContext {
     
     private final GSIServer server;
     private final GameState previousState;
-    private final int millisSinceLast, counter;
+    private final Instant timestamp, prevTimestamp;
+    private final int counter;
     private final InetAddress address;
     private final Map<String, String> authTokens;
     private final JsonObject rawJson;
     private final String rawJsonString;
     
-    GameStateContext(GSIServer server, GameState previousState, int millisSinceLast, int counter, InetAddress address,
-                            Map<String, String> authTokens, JsonObject rawJson, String rawJsonString) {
+    GameStateContext(GSIServer server, GameState previousState, Instant timestamp, Instant prevTimestamp, int counter,
+                     InetAddress address, Map<String, String> authTokens, JsonObject rawJson, String rawJsonString) {
         this.server = server;
         this.previousState = previousState;
-        this.millisSinceLast = millisSinceLast;
+        this.timestamp = timestamp;
+        this.prevTimestamp = prevTimestamp;
         this.counter = counter;
         this.address = address;
         this.authTokens = Collections.unmodifiableMap(authTokens);
@@ -60,7 +63,27 @@ public final class GameStateContext {
      * @return the number of milliseconds since the last received state, or {@code -1} for the first state
      */
     public int getMillisSinceLastState() {
-        return millisSinceLast;
+        if (prevTimestamp == null) return -1;
+        return (int)(timestamp.toEpochMilli() - prevTimestamp.toEpochMilli());
+    }
+    
+    /**
+     * Gets the local timestamp of when this state update was received (now).
+     *
+     * @return the timestamp of this state
+     */
+    public Instant getTimestamp() {
+        return timestamp;
+    }
+    
+    /**
+     * Gets the local timestamp of when the previous state was received. For the first received game state, this
+     * value will return null.
+     *
+     * @return the timestamp of the previous state, or null if the first state
+     */
+    public Instant getPreviousTimestamp() {
+        return prevTimestamp;
     }
     
     /**
@@ -69,7 +92,7 @@ public final class GameStateContext {
      * @return the index counter of this game state
      */
     public int getSequentialCounter() {
-        return millisSinceLast;
+        return counter;
     }
     
     /**
