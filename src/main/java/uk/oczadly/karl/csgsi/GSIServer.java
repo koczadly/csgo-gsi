@@ -127,7 +127,8 @@ public final class GSIServer {
      */
     public void registerObserver(GSIObserver observer) {
         if (LOGGER.isDebugEnabled())
-            LOGGER.debug("New observer #{} registered for GSI server on port {}", Integer.toHexString(observer.hashCode()), server.getPort());
+            LOGGER.debug("New observer #{} registered for GSI server on port {}",
+                    Integer.toHexString(observer.hashCode()), server.getPort());
         
         observers.add(observer);
     }
@@ -140,9 +141,19 @@ public final class GSIServer {
      */
     public void removeObserver(GSIObserver observer) {
         if (LOGGER.isDebugEnabled())
-            LOGGER.debug("Removing observer #{} from GSI server on port {}", Integer.toHexString(observer.hashCode()), server.getPort());
+            LOGGER.debug("Removing observer #{} from GSI server on port {}",
+                    Integer.toHexString(observer.hashCode()), server.getPort());
         
         observers.remove(observer);
+    }
+    
+    /**
+     * Removes all subscribed observers from the registry.
+     */
+    public void clearObservers() {
+        if (LOGGER.isDebugEnabled())
+            LOGGER.debug("Removing all observers from GSI server on port {}", server.getPort());
+        observers.clear();
     }
     
     /**
