@@ -647,24 +647,19 @@ public class GSIConfig {
     }
     
     /**
-     * Checks whether a configuration file currently exists with the specified service name.
-     *
-     * <p>This method automatically locates the game directory using the {@link SteamUtils#locateCsgoConfigFolder()}
-     * utility method. If neither the Steam or game directory can be identified, then a {@link GameNotFoundException}
-     * will be raised.</p>
+     * Checks whether a configuration file currently exists with the specified service name in the given directory.
      *
      * @param serviceName the identifying name of your application/service (no special characters, and excluding
      *                    {@code .cfg} suffix)
      *
      * @return true if a configuration file already exists
      *
-     * @throws GameNotFoundException if the Steam or CSGO directories could not be located
      * @throws SecurityException     if the security manager disallows access to the file
      *
      * @see SteamUtils#locateCsgoConfigFolder()
      * @see #configFileExists(String)
      */
-    public static boolean configFileExists(Path dir, String serviceName) throws GameNotFoundException {
+    public static boolean configFileExists(Path dir, String serviceName) {
         return Files.isRegularFile(getConfigFile(dir, serviceName));
     }
     
@@ -701,18 +696,11 @@ public class GSIConfig {
      * @see #getConfigFile(String) 
      */
     public static Path getConfigFile(Path dir, String serviceName) {
-        return dir.resolve(generateConfigName(serviceName));
-    }
-    
-    
-    /**
-     * Generates/validates the name of the configuration file based on the provided service name.
-     */
-    private static String generateConfigName(String service) {
-        if (!SERVICE_NAME_PATTERN.matcher(service).matches())
+        if (!SERVICE_NAME_PATTERN.matcher(serviceName).matches())
             throw new IllegalArgumentException("Invalid service name (can only include standard word characters, " +
                     "digits and underscores).");
-        return "gamestate_integration_" + service.toLowerCase().replace(' ', '_') + ".cfg";
+        String fName = "gamestate_integration_" + serviceName.toLowerCase().replace(' ', '_') + ".cfg";
+        return dir.resolve(fName);
     }
     
 }
