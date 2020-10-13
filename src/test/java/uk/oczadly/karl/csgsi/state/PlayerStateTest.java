@@ -78,7 +78,7 @@ public class PlayerStateTest extends GameStateBaseTest {
     
     @Test
     public void testSteamId() {
-        assertEquals("76561198050830377", playerState.getSteamId());
+        assertEquals(76561198050830377L, playerState.getSteamId());
     }
     
     @Test
@@ -93,7 +93,7 @@ public class PlayerStateTest extends GameStateBaseTest {
     
     @Test
     public void testObserverSlot() {
-        assertEquals((Integer)6, playerState.getObserverSlot());
+        assertEquals(6, (byte)playerState.getObserverSlot());
     }
     
     @Test
@@ -143,7 +143,7 @@ public class PlayerStateTest extends GameStateBaseTest {
     @Test
     public void testSpecTarget() {
         assertNotNull(playerState.getSpectatorTarget());
-        assertEquals("76561198050830377", playerState.getSpectatorTarget());
+        assertEquals(76561198050830377L, (long)playerState.getSpectatorTarget());
     }
     
     @Test

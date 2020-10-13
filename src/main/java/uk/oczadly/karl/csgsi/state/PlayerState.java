@@ -10,7 +10,7 @@ import uk.oczadly.karl.csgsi.state.components.Team;
 public class PlayerState {
 
     @Expose @SerializedName("steamid")
-    private String steamId;
+    private long steamId;
     
     @Expose @SerializedName("name")
     private String name;
@@ -37,7 +37,7 @@ public class PlayerState {
     private PlayerInventory inventory;
     
     @Expose @SerializedName("spectarget")
-    private String specTarget;
+    private Long specTarget;
     
     @Expose @SerializedName("position")
     private Coordinate position;
@@ -47,9 +47,9 @@ public class PlayerState {
     
     
     /**
-     * @return the Steam ID of the player, or null if not the client
+     * @return the Steam ID of the player
      */
-    public String getSteamId() {
+    public long getSteamId() {
         return steamId;
     }
     
@@ -68,7 +68,7 @@ public class PlayerState {
     }
     
     /**
-     * @return the slot this player is using (associated numerical key to spectate)
+     * @return the slot this player is using (associated numerical key to spectate), or null if they aren't a player
      */
     public Byte getObserverSlot() {
         return observerSlot;
@@ -112,7 +112,7 @@ public class PlayerState {
     /**
      * @return the ID of the player being spectated, or null if not spectating
      */
-    public String getSpectatorTarget() {
+    public Long getSpectatorTarget() {
         return specTarget;
     }
     
