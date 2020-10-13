@@ -7,10 +7,7 @@ import uk.oczadly.karl.csgsi.internal.Util;
 import java.io.BufferedReader;
 import java.io.FileNotFoundException;
 import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.InvalidPathException;
-import java.nio.file.Path;
-import java.nio.file.Paths;
+import java.nio.file.*;
 import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -25,6 +22,8 @@ public class SteamUtils {
     
     private static final Pattern STEAM_VDF_PATTERN = Pattern.compile("\\s+\"(?:\\d+)\"\\s+\"(.+)\"");
     private static final Pattern STEAM_ACF_PATTERN = Pattern.compile("\\s+\"installdir\"\\s+\"(.+)\"");
+    
+    private static volatile Path CSGO_CFG_CACHE;
     
     
     /** The CS:GO Steam app ID number. */
@@ -224,7 +223,14 @@ public class SteamUtils {
      * @throws SecurityException     if the security manager disallows access to the directory
      */
     public static Path locateCsgoConfigFolder() throws GameNotFoundException {
-        return findGameDirectoryById(CSGO_STEAM_ID).resolve(CSGO_CONFIG_PATH);
+        if (CSGO_CFG_CACHE == null || !Files.isDirectory(CSGO_CFG_CACHE)) { // Not cached or no longer exists
+            synchronized (SteamUtils.class) {
+                if (LOGGER.isDebugEnabled())
+                    LOGGER.debug("Attempting to locate CSGO configuration directory...");
+                CSGO_CFG_CACHE = findGameDirectoryById(CSGO_STEAM_ID).resolve(CSGO_CONFIG_PATH);
+            }
+        }
+        return CSGO_CFG_CACHE;
     }
     
     
