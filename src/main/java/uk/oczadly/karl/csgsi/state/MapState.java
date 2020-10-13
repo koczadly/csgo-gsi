@@ -32,7 +32,7 @@ public class MapState {
     private EnumValue<GamePhase> phase;
     
     @Expose @SerializedName("round")
-    private int roundNum;
+    private short roundNum;
     
     @Expose @SerializedName("team_ct")
     private TeamStats ctStats;
@@ -41,7 +41,7 @@ public class MapState {
     private TeamStats tStats;
     
     @Expose @SerializedName("num_matches_to_win_series")
-    private int seriesMatchesToWin;
+    private short seriesMatchesToWin;
     
     @Expose @SerializedName("current_spectators")
     private int spectatorCount;
@@ -81,7 +81,7 @@ public class MapState {
     /**
      * @return the current round number
      */
-    public int getRoundNumber() {
+    public short getRoundNumber() {
         return roundNum;
     }
     
@@ -102,7 +102,7 @@ public class MapState {
     /**
      * @return the number of matches needed to win the series
      */
-    public int getSeriesMatchesToWin() {
+    public short getSeriesMatchesToWin() {
         return seriesMatchesToWin;
     }
     
@@ -235,43 +235,43 @@ public class MapState {
     
     public static class TeamStats {
         @Expose @SerializedName("score")
-        private int score;
+        private short score;
         
         @Expose @SerializedName("consecutive_round_losses")
-        private int consecutiveLosses;
+        private short consecutiveLosses;
         
         @Expose @SerializedName("timeouts_remaining")
-        private int timeoutsRemaining;
+        private short timeoutsRemaining;
         
         @Expose @SerializedName("matches_won_this_series")
-        private int seriesMatchesWon;
+        private short seriesMatchesWon;
         
         
         /**
          * @return the current number of round wins for this team
          */
-        public int getScore() {
+        public short getScore() {
             return score;
         }
         
         /**
          * @return the number of consecutive losses for this team
          */
-        public int getConsecutiveLosses() {
+        public short getConsecutiveLosses() {
             return consecutiveLosses;
         }
         
         /**
          * @return the number of timeouts remaining which this team can use
          */
-        public int getTimeoutsRemaining() {
+        public short getTimeoutsRemaining() {
             return timeoutsRemaining;
         }
         
         /**
          * @return the number of matches won by the team this series
          */
-        public int getSeriesMatchesWon() {
+        public short getSeriesMatchesWon() {
             return seriesMatchesWon;
         }
     }
