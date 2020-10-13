@@ -9,6 +9,7 @@ import java.nio.file.Files;
 import java.nio.file.NotDirectoryException;
 import java.nio.file.Path;
 import java.util.*;
+import java.util.regex.Pattern;
 
 /**
  * <p>This class represents a series of parameters used in the game state profile configuration, and provides static
@@ -37,17 +38,7 @@ public class GSIConfig {
     
     private static final Logger LOGGER = LoggerFactory.getLogger(GSIConfig.class);
     
-    private static final String CONF_INDENT = "   ";
-    private static final int CONF_COMP_LEN;
-    
-    static {
-        // Determine max data component string length
-        int maxLen = 0;
-        for (DataComponent component : DataComponent.values()) {
-            maxLen = Math.max(component.getConfigName().length(), maxLen);
-        }
-        CONF_COMP_LEN = maxLen;
-    }
+    private static final Pattern SERVICE_NAME_PATTERN = Pattern.compile("^[\\w ]{1,24}$");
     
     
     private String uri, description;
@@ -508,11 +499,9 @@ public class GSIConfig {
      * @throws IOException           if the file cannot be written to
      * @throws GameNotFoundException if the Steam or CSGO directories could not be located
      * @throws SecurityException     if the security manager doesn't permit access to the file
-     *
-     * @see SteamUtils#locateCsgoConfigFolder()
      */
     public void writeConfigFile(String serviceName) throws GameNotFoundException, IOException {
-        writeConfigFile(serviceName, SteamUtils.locateCsgoConfigFolder());
+        writeConfigFile(getConfigFile(serviceName));
     }
     
     /**
@@ -560,7 +549,7 @@ public class GSIConfig {
     public void writeConfigFile(String serviceName, Path dir) throws IOException {
         if (!Files.isDirectory(dir))
             throw new NotDirectoryException("Path must be a directory.");
-        writeConfigFile(dir.resolve(generateConfigName(serviceName)));
+        writeConfigFile(getConfigFile(dir, serviceName));
     }
     
     /**
@@ -570,6 +559,8 @@ public class GSIConfig {
      *
      * @throws IOException       if the file cannot be written to
      * @throws SecurityException if the security manager doesn't permit access to the file
+     *
+     * @see #writeConfigFile(String)
      */
     public void writeConfigFile(Path file) throws IOException {
         if (Files.isDirectory(file))
@@ -600,8 +591,6 @@ public class GSIConfig {
      * @throws IOException           if the file could not be removed
      * @throws SecurityException     if the security manager disallows access to the file
      * @throws FileNotFoundException if the given path argument is not an existing directory
-     *
-     * @see SteamUtils#locateCsgoConfigFolder()
      */
     public static boolean removeConfigFile(String serviceName) throws GameNotFoundException, IOException {
         return removeConfigFile(SteamUtils.locateCsgoConfigFolder(), serviceName);
@@ -625,6 +614,7 @@ public class GSIConfig {
      * @throws NotDirectoryException if the given path argument is not a directory
      *
      * @see SteamUtils#locateCsgoConfigFolder()
+     * @see #removeConfigFile(String)
      */
     public static boolean removeConfigFile(Path dir, String serviceName) throws IOException {
         if (!Files.exists(dir))
@@ -632,12 +622,32 @@ public class GSIConfig {
         if (!Files.isDirectory(dir))
             throw new NotDirectoryException("Path must be a directory.");
         
-        Path file = dir.resolve(generateConfigName(serviceName));
+        Path file = getConfigFile(dir, serviceName);
         
         if (LOGGER.isDebugEnabled())
             LOGGER.debug("Attempting to remove config file {}...", file.toString());
         
         return Files.deleteIfExists(file);
+    }
+    
+    
+    /**
+     * Checks whether a configuration file currently exists with the specified service name.
+     *
+     * <p>This method automatically locates the game directory using the {@link SteamUtils#locateCsgoConfigFolder()}
+     * utility method. If neither the Steam or game directory can be identified, then a {@link GameNotFoundException}
+     * will be raised.</p>
+     *
+     * @param serviceName the identifying name of your application/service (no special characters, and excluding
+     *                    {@code .cfg} suffix)
+     *
+     * @return true if a configuration file already exists
+     *
+     * @throws GameNotFoundException if the Steam or CSGO directories could not be located
+     * @throws SecurityException     if the security manager disallows access to the file
+     */
+    public static boolean configFileExists(String serviceName) throws GameNotFoundException {
+        return Files.isRegularFile(getConfigFile(serviceName));
     }
     
     /**
@@ -656,17 +666,56 @@ public class GSIConfig {
      * @throws SecurityException     if the security manager disallows access to the file
      *
      * @see SteamUtils#locateCsgoConfigFolder()
+     * @see #configFileExists(String)
      */
-    public static boolean configFileExists(String serviceName) throws GameNotFoundException {
-        Path file = SteamUtils.locateCsgoConfigFolder().resolve(generateConfigName(serviceName));
-        return Files.isRegularFile(file);
+    public static boolean configFileExists(Path dir, String serviceName) throws GameNotFoundException {
+        return Files.isRegularFile(getConfigFile(dir, serviceName));
     }
     
     
     /**
-     * Generates the name of the configuration file based on the provided service name.
+     * Returns the path of the configuration file with the given service name. This method will not create any files,
+     * nor will it perform any checks as to whether the configuration file actually exists on the system.
+     *
+     * <p>This method automatically locates the game directory using the {@link SteamUtils#locateCsgoConfigFolder()}
+     * utility method. If neither the Steam or game directory can be identified, then a {@link GameNotFoundException}
+     * will be raised.</p>
+     *
+     * @param serviceName the identifying name of your application/service (no special characters, and excluding
+     *                    {@code .cfg} suffix)
+     *
+     * @return the configuration file for the given service
+     *
+     * @throws GameNotFoundException if the Steam or CSGO directories could not be located
+     */
+    public static Path getConfigFile(String serviceName) throws GameNotFoundException {
+        return getConfigFile(SteamUtils.locateCsgoConfigFolder(), serviceName);
+    }
+    
+    /**
+     * Returns the path of the configuration file with the given service name. This method will not create any files,
+     * nor will it perform any checks as to whether the configuration file actually exists on the system.
+     *
+     * @param serviceName the identifying name of your application/service (no special characters, and excluding
+     *                    {@code .cfg} suffix)
+     *
+     * @return the configuration file for the given service
+     *
+     * @see SteamUtils#locateCsgoConfigFolder()
+     * @see #getConfigFile(String) 
+     */
+    public static Path getConfigFile(Path dir, String serviceName) {
+        return dir.resolve(generateConfigName(serviceName));
+    }
+    
+    
+    /**
+     * Generates/validates the name of the configuration file based on the provided service name.
      */
     private static String generateConfigName(String service) {
+        if (!SERVICE_NAME_PATTERN.matcher(service).matches())
+            throw new IllegalArgumentException("Invalid service name (can only include standard word characters, " +
+                    "digits and underscores).");
         return "gamestate_integration_" + service.toLowerCase().replace(' ', '_') + ".cfg";
     }
     
