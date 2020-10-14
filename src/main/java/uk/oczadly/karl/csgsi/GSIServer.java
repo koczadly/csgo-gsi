@@ -10,7 +10,6 @@ import org.slf4j.LoggerFactory;
 import uk.oczadly.karl.csgsi.internal.Util;
 import uk.oczadly.karl.csgsi.internal.httpserver.HTTPServer;
 import uk.oczadly.karl.csgsi.state.GameState;
-import uk.oczadly.karl.csgsi.state.ProviderState;
 
 import java.io.IOException;
 import java.net.InetAddress;
@@ -25,9 +24,6 @@ import java.util.concurrent.atomic.AtomicInteger;
  * <p>The listening network port is configured within the class constructor, and the server is started through the
  * {@link #start()} method. Observers can be registered through the {@link #registerObserver(GSIObserver)} method, which
  * subscribes the object to new game state information as it is received.</p>
- *
- * <p>While a single {@link GSIServer} can listen for game states from multiple game clients or devices, it is not
- * recommended as out-of-sync states will be discarded, and timing information may be incorrect.</p>
  */
 public final class GSIServer {
     
@@ -42,9 +38,8 @@ public final class GSIServer {
     volatile Instant serverStartTimestamp;
     volatile GameState latestGameState;
     volatile GameStateContext latestStateContext;
-    volatile Instant latestProviderTimestamp, latestLocalTimestamp;
     final AtomicInteger stateCounter = new AtomicInteger();
-    final AtomicInteger stateDiscardCounter = new AtomicInteger();
+    final AtomicInteger stateRejectCounter = new AtomicInteger();
     final Object stateLock = new Object(); // Used to synchronize state updates
     
     
@@ -202,11 +197,9 @@ public final class GSIServer {
             throw new IllegalStateException("The GSI server is already running.");
         
         synchronized (stateLock) {
-            latestProviderTimestamp = null;
-            latestLocalTimestamp = null;
             latestGameState = null;
             latestStateContext = null;
-            stateDiscardCounter.set(0);
+            stateRejectCounter.set(0);
             stateCounter.set(0);
         }
         serverStartTimestamp = Instant.now();
@@ -278,7 +271,7 @@ public final class GSIServer {
         
         Map<String, String> authTokens = verifyStateAuth(jsonObject);
         if (authTokens == null) {
-            stateDiscardCounter.incrementAndGet();
+            stateRejectCounter.incrementAndGet();
             if (LOGGER.isDebugEnabled())
                 LOGGER.debug("GSI state update rejected due to auth token mismatch");
             return false;
@@ -286,14 +279,6 @@ public final class GSIServer {
         
         // Parse the game state into an object
         GameState state = GSON.fromJson(jsonObject, GameState.class);
-    
-        // Ensure state hasn't expired
-        if (isStateExpired(state)) {
-            // Discard the state (and log)
-            stateDiscardCounter.incrementAndGet();
-            if (LOGGER.isDebugEnabled())
-                LOGGER.debug("GSI state update discarded due to expired timestamp.");
-        }
     
         // Calculate information
         int counter;
@@ -303,16 +288,13 @@ public final class GSIServer {
         Instant now = Instant.now();
         
         // Create context object
-        GameStateContext context = new GameStateContext(this, latestGameState, now, latestLocalTimestamp, counter,
-                address, authTokens, jsonObject, json);
+        GameStateContext context = new GameStateContext(this, latestGameState, now, latestStateContext.getTimestamp(),
+                counter, address, authTokens, jsonObject, json);
         
         // Update latest state and timestamps
         synchronized (stateLock) {
             latestGameState = state;
             latestStateContext = context;
-            latestLocalTimestamp = now;
-            if (state.getProviderDetails() != null)
-                latestProviderTimestamp = state.getProviderDetails().getTimeStamp();
         }
         
         // Notify observers
@@ -334,12 +316,6 @@ public final class GSIServer {
             }
         }
         return authTokens;
-    }
-    
-    private boolean isStateExpired(GameState state) {
-        ProviderState provider = state.getProviderDetails();
-        return provider != null && provider.getTimeStamp() != null && latestProviderTimestamp != null
-                && provider.getTimeStamp().isBefore(latestProviderTimestamp);
     }
     
 }

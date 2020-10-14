@@ -54,7 +54,7 @@ class GSIServerHTTPHandler implements HTTPRequestHandler {
         synchronized (gsi.stateLock) {
             latestContext = gsi.latestStateContext;
             stateCount = gsi.stateCounter.intValue();
-            rejectCount = gsi.stateDiscardCounter.intValue();
+            rejectCount = gsi.stateRejectCounter.intValue();
         }
         
         // Build HTML
@@ -64,21 +64,18 @@ class GSIServerHTTPHandler implements HTTPRequestHandler {
         // Listening port
         sb.append("<b>Listening on:</b> <code>")
                 .append(gsi.getBindingAddress() != null ? gsi.getBindingAddress() : "localhost")
-                .append(":").append(gsi.getPort())
-                .append("</code><br>\n");
+                .append(":").append(gsi.getPort()).append("</code><br>\n");
         // Uptime
         double uptimeMins = ((now - gsi.serverStartTimestamp.toEpochMilli()) / 1000d) / 60d;
         sb.append("<b>Server startup time:</b> ").append(DateTimeFormatter.RFC_1123_DATE_TIME.format(
                 gsi.serverStartTimestamp.atZone(ZoneId.systemDefault())))
                 .append(" (").append(String.format("%,.2f", uptimeMins)).append(" minutes)<br>\n");
         // Auth keys
-        sb.append("<b>Auth keys configured:</b> ")
-                .append(requiresAuth ? "Yes" : "No")
-                .append("<br>\n");
+        sb.append("<b>Auth keys configured:</b> ").append(requiresAuth ? "Yes" : "No").append("<br>\n");
         // State counter
         sb.append("<b>State updates received:</b> ").append(String.format("%,d", stateCount))
                 .append(rejectCount == 0 ? " <i>(" : " <i style=\"color:red\">(")
-                .append(String.format("%,d", rejectCount)).append(" discarded or rejected)</i><br>\n");
+                .append(String.format("%,d", rejectCount)).append(" rejected)</i><br>\n");
         
         if (gsi.latestGameState != null) {
             // Latest TS
@@ -86,7 +83,7 @@ class GSIServerHTTPHandler implements HTTPRequestHandler {
                     .append(DateTimeFormatter.RFC_1123_DATE_TIME.format(
                             latestContext.getTimestamp().atZone(ZoneId.systemDefault())))
                     .append(" <i>(").append(String.format("%,.3f",
-                    (now - latestContext.getTimestamp().toEpochMilli()) / 1000d))
+                            (now - latestContext.getTimestamp().toEpochMilli()) / 1000d))
                     .append(" seconds ago)</i><br>\n");
             // Millis since last state
             sb.append("<b>Time diff between previous state: </b>");
@@ -99,8 +96,7 @@ class GSIServerHTTPHandler implements HTTPRequestHandler {
             // JSON dump
             if (!requiresAuth) {
                 sb.append("<b>Latest state JSON dump:</b><br><pre><code>")
-                        .append(latestContext.getRawJsonString().replace("\t", "    "))
-                        .append("</code></pre>\n");
+                        .append(latestContext.getRawJsonString().replace("\t", "    ")).append("</code></pre>\n");
             }
         }
         sb.append("</body>\n");
