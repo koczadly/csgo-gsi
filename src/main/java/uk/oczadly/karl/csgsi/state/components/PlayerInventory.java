@@ -34,9 +34,9 @@ public class PlayerInventory {
             if (activeWeapon == null && (item.getState().val() == WeaponState.ACTIVE
                     || item.getState().val() == WeaponState.RELOADING))
                 activeWeapon = item;
-            if (knifeSlot == null && item.getType().val() == Weapon.Type.KNIFE)
+            if (knifeSlot == null && item.getType() != null && item.getType().val() == Weapon.Type.KNIFE)
                 knifeSlot = item;
-            if (item.getType().isResolved()) {
+            if (item.getType() != null && item.getType().isResolved()) {
                 if (primarySlot == null && item.getType().val().isPrimaryWeapon())
                     primarySlot = item;
                 if (secondarySlot == null && item.getType().val().isSecondaryWeapon())
