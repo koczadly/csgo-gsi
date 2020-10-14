@@ -69,7 +69,7 @@ class GSIServerHTTPHandler implements HTTPRequestHandler {
         double uptimeMins = ((now - gsi.serverStartTimestamp.toEpochMilli()) / 1000d) / 60d;
         sb.append("<b>Server startup time:</b> ").append(DateTimeFormatter.RFC_1123_DATE_TIME.format(
                 gsi.serverStartTimestamp.atZone(ZoneId.systemDefault())))
-                .append(" (").append(String.format("%,.2f", uptimeMins)).append(" minutes)<br>\n");
+                .append(" <i>(").append(String.format("%,.2f", uptimeMins)).append(" mins uptime)</i><br>\n");
         // Auth keys
         sb.append("<b>Auth keys configured:</b> ").append(requiresAuth ? "Yes" : "No").append("<br>\n");
         // State counter
