@@ -54,7 +54,7 @@ class GSIServerHTTPHandler implements HTTPRequestHandler {
         synchronized (gsi.stateLock) {
             latestContext = gsi.latestStateContext;
             stateCount = gsi.stateCounter.intValue();
-            rejectCount = gsi.statesRejectedCounter.intValue();
+            rejectCount = gsi.stateDiscardCounter.intValue();
         }
         
         // Build HTML
@@ -78,7 +78,7 @@ class GSIServerHTTPHandler implements HTTPRequestHandler {
         // State counter
         sb.append("<b>State updates received:</b> ").append(String.format("%,d", stateCount))
                 .append(rejectCount == 0 ? " <i>(" : " <i style=\"color:red\">(")
-                .append(String.format("%,d", rejectCount)).append(" rejected)</i><br>\n");
+                .append(String.format("%,d", rejectCount)).append(" discarded or rejected)</i><br>\n");
         
         if (gsi.latestGameState != null) {
             // Latest TS

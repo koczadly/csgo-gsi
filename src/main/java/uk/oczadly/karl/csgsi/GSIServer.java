@@ -8,8 +8,6 @@ import com.google.gson.reflect.TypeToken;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import uk.oczadly.karl.csgsi.internal.Util;
-import uk.oczadly.karl.csgsi.internal.httpserver.HTTPRequestHandler;
-import uk.oczadly.karl.csgsi.internal.httpserver.HTTPResponse;
 import uk.oczadly.karl.csgsi.internal.httpserver.HTTPServer;
 import uk.oczadly.karl.csgsi.state.GameState;
 import uk.oczadly.karl.csgsi.state.ProviderState;
@@ -17,7 +15,6 @@ import uk.oczadly.karl.csgsi.state.ProviderState;
 import java.io.IOException;
 import java.net.InetAddress;
 import java.time.Instant;
-import java.time.ZoneId;
 import java.util.*;
 import java.util.concurrent.*;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -47,7 +44,7 @@ public final class GSIServer {
     volatile GameStateContext latestStateContext;
     volatile Instant latestProviderTimestamp, latestLocalTimestamp;
     final AtomicInteger stateCounter = new AtomicInteger();
-    final AtomicInteger statesRejectedCounter = new AtomicInteger();
+    final AtomicInteger stateDiscardCounter = new AtomicInteger();
     final Object stateLock = new Object(); // Used to synchronize state updates
     
     
@@ -209,7 +206,7 @@ public final class GSIServer {
             latestLocalTimestamp = null;
             latestGameState = null;
             latestStateContext = null;
-            statesRejectedCounter.set(0);
+            stateDiscardCounter.set(0);
             stateCounter.set(0);
         }
         serverStartTimestamp = Instant.now();
@@ -281,7 +278,7 @@ public final class GSIServer {
         
         Map<String, String> authTokens = verifyStateAuth(jsonObject);
         if (authTokens == null) {
-            statesRejectedCounter.incrementAndGet();
+            stateDiscardCounter.incrementAndGet();
             if (LOGGER.isDebugEnabled())
                 LOGGER.debug("GSI state update rejected due to auth token mismatch");
             return false;
@@ -293,7 +290,7 @@ public final class GSIServer {
         // Ensure state hasn't expired
         if (isStateExpired(state)) {
             // Discard the state (and log)
-            statesRejectedCounter.incrementAndGet();
+            stateDiscardCounter.incrementAndGet();
             if (LOGGER.isDebugEnabled())
                 LOGGER.debug("GSI state update discarded due to expired timestamp.");
         }
