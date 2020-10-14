@@ -19,7 +19,6 @@ class GSIServerHTTPHandler implements HTTPRequestHandler {
     private static final Logger LOGGER = LoggerFactory.getLogger(GSIServerHTTPHandler.class);
     
     private static final HTTPResponse RESPONSE_UPDATE = new HTTPResponse(200, null, null);
-    private static final HTTPResponse RESPONSE_404 = new HTTPResponse(404, null, null);
     
     private final GSIServer gsi;
     
@@ -37,14 +36,10 @@ class GSIServerHTTPHandler implements HTTPRequestHandler {
             if (body != null)
                 gsi.handleStateUpdate(body, address);
             return RESPONSE_UPDATE;
-        } else if (path.equals("/")) {
+        } else {
             // Browser or other request type (?)
             LOGGER.warn("Non-POST request received from {}! (ignore if accessing test page)", address);
             return new HTTPResponse(200, "text/html", buildInfoHTML());
-        } else {
-            // Unknown page
-            LOGGER.warn("Non-POST request received from {}! (ignore if accessing test page)", address);
-            return RESPONSE_404;
         }
     }
     
