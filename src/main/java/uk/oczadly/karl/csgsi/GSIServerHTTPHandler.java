@@ -20,8 +20,6 @@ class GSIServerHTTPHandler implements HTTPRequestHandler {
     
     private static final HTTPResponse RESPONSE_UPDATE = new HTTPResponse(200, null, null);
     private static final HTTPResponse RESPONSE_404 = new HTTPResponse(404, null, null);
-    private static final HTTPResponse RESPONSE_503 = new HTTPResponse(503, null, null);
-    private static final String JSON_DUMP_PATH = "/state.json";
     
     private final GSIServer gsi;
     
@@ -39,15 +37,6 @@ class GSIServerHTTPHandler implements HTTPRequestHandler {
             if (body != null)
                 gsi.handleStateUpdate(body, address);
             return RESPONSE_UPDATE;
-        } else if (path.equalsIgnoreCase(JSON_DUMP_PATH)) {
-            // Return raw JSON data
-            if (LOGGER.isDebugEnabled())
-                LOGGER.debug("Dumping raw state JSON data");
-            if (gsi.latestStateContext != null) {
-                return new HTTPResponse(200, "application/json", gsi.latestStateContext.getRawJsonString());
-            } else {
-                return RESPONSE_503; // Not available
-            }
         } else if (path.equals("/")) {
             // Browser or other request type (?)
             LOGGER.warn("Non-POST request received from {}! (ignore if accessing test page)", address);
@@ -64,6 +53,7 @@ class GSIServerHTTPHandler implements HTTPRequestHandler {
     private String buildInfoHTML() {
         // Retrieve latest state information
         long now = System.currentTimeMillis();
+        boolean requiresAuth = !gsi.getRequiredAuthTokens().isEmpty();
         GameStateContext latestContext;
         int stateCount;
         synchronized (gsi.stateLock) {
@@ -87,10 +77,10 @@ class GSIServerHTTPHandler implements HTTPRequestHandler {
                 .append(" (").append(String.format("%,.2f", uptimeMins)).append(" minutes)<br>\n");
         // Auth keys
         sb.append("<b>Auth keys configured:</b> ")
-                .append(gsi.getRequiredAuthTokens().isEmpty() ? "No" : "Yes")
+                .append(requiresAuth ? "Yes" : "No")
                 .append("<br>\n");
         // State counter
-        sb.append("<b>States handled:</b> ").append(String.format("%,d", stateCount));
+        sb.append("<b>State updates received:</b> ").append(String.format("%,d", stateCount));
         if (stateCount == 0) sb.append(" <i>(awaiting first state...)</i>");
         sb.append("<br>\n");
         
@@ -111,9 +101,11 @@ class GSIServerHTTPHandler implements HTTPRequestHandler {
                 sb.append("<i>N/A</i><br>\n");
             }
             // JSON dump
-            sb.append("<b>Latest state JSON dump:</b> <a href=\"" + JSON_DUMP_PATH + "\">(raw data)</a><br><pre><code>")
-                    .append(latestContext.getRawJsonString())
-                    .append("</code></pre>\n");
+            if (!requiresAuth) {
+                sb.append("<b>Latest state JSON dump:</b><br><pre><code>")
+                        .append(latestContext.getRawJsonString().replace("\t", "    "))
+                        .append("</code></pre>\n");
+            }
         }
         sb.append("</body>\n");
         return sb.toString();
