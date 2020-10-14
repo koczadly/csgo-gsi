@@ -19,6 +19,8 @@ class GSIServerHTTPHandler implements HTTPRequestHandler {
     private static final Logger LOGGER = LoggerFactory.getLogger(GSIServerHTTPHandler.class);
     
     private static final HTTPResponse RESPONSE_UPDATE = new HTTPResponse(200, null, null);
+    private static final HTTPResponse RESPONSE_404 = new HTTPResponse(404, null, null);
+    private static final HTTPResponse RESPONSE_503 = new HTTPResponse(503, null, null);
     private static final String JSON_DUMP_PATH = "/state.json";
     
     private final GSIServer gsi;
@@ -41,8 +43,11 @@ class GSIServerHTTPHandler implements HTTPRequestHandler {
             // Return raw JSON data
             if (LOGGER.isDebugEnabled())
                 LOGGER.debug("Dumping raw state JSON data");
-            return new HTTPResponse(200, "application/json",
-                    gsi.latestStateContext != null ? gsi.latestStateContext.getRawJsonString() : null);
+            if (gsi.latestStateContext != null) {
+                return new HTTPResponse(200, "application/json", gsi.latestStateContext.getRawJsonString());
+            } else {
+                return RESPONSE_503; // Not available
+            }
         } else if (path.equals("/")) {
             // Browser or other request type (?)
             LOGGER.warn("Non-POST request received from {}! (ignore if accessing test page)", address);
@@ -50,7 +55,7 @@ class GSIServerHTTPHandler implements HTTPRequestHandler {
         } else {
             // Unknown page
             LOGGER.warn("Non-POST request received from {}! (ignore if accessing test page)", address);
-            return new HTTPResponse(404, null, null);
+            return RESPONSE_404;
         }
     }
     
