@@ -59,8 +59,8 @@ class GSIServerHTTPHandler implements HTTPRequestHandler {
         
         // Build HTML
         StringBuilder sb = new StringBuilder();
-        sb.append("<body><h1><a style=\"color:green\" href=\"").append(Util.GITHUB_URL)
-                .append("\">CSGO-GSI server is running!</a></h1>\n");
+        sb.append("<body style=\"background-color:#e4f4f5\"><h1><a style=\"color:green\" href=\"")
+                .append(Util.GITHUB_URL).append("\">CSGO-GSI server is running!</a></h1>\n");
         // Listening port
         sb.append("<b>Listening on:</b> <code>")
                 .append(gsi.getBindingAddress() != null ? gsi.getBindingAddress() : "localhost")
