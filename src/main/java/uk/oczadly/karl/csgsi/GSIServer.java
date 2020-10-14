@@ -2,6 +2,7 @@ package uk.oczadly.karl.csgsi;
 
 import com.google.gson.Gson;
 import com.google.gson.JsonObject;
+import com.google.gson.JsonParseException;
 import com.google.gson.JsonParser;
 import com.google.gson.reflect.TypeToken;
 import org.slf4j.Logger;
@@ -46,6 +47,7 @@ public final class GSIServer {
     volatile GameStateContext latestStateContext;
     volatile Instant latestProviderTimestamp, latestLocalTimestamp;
     final AtomicInteger stateCounter = new AtomicInteger();
+    final AtomicInteger statesRejectedCounter = new AtomicInteger();
     final Object stateLock = new Object(); // Used to synchronize state updates
     
     
@@ -207,6 +209,7 @@ public final class GSIServer {
             latestLocalTimestamp = null;
             latestGameState = null;
             latestStateContext = null;
+            statesRejectedCounter.set(0);
             stateCounter.set(0);
         }
         serverStartTimestamp = Instant.now();
@@ -265,11 +268,24 @@ public final class GSIServer {
     /**
      * Handles a new JSON state and notifies the appropriate observers.
      */
-    void handleStateUpdate(String json, InetAddress address) {
-        JsonObject jsonObject = JsonParser.parseString(json).getAsJsonObject();
+    boolean handleStateUpdate(String json, InetAddress address) {
+        JsonObject jsonObject = null;
+        try {
+            jsonObject = JsonParser.parseString(json).getAsJsonObject();
+        } catch (JsonParseException e) {
+            if (LOGGER.isWarnEnabled())
+                LOGGER.warn("GSI server received invalid JSON object", e);
+            e.printStackTrace();
+            return false;
+        }
         
         Map<String, String> authTokens = verifyStateAuth(jsonObject);
-        if (authTokens == null) return;
+        if (authTokens == null) {
+            statesRejectedCounter.incrementAndGet();
+            if (LOGGER.isDebugEnabled())
+                LOGGER.debug("GSI state update rejected due to auth token mismatch");
+            return false;
+        }
         
         // Parse the game state into an object
         GameState state = GSON.fromJson(jsonObject, GameState.class);
@@ -277,6 +293,7 @@ public final class GSIServer {
         // Ensure state hasn't expired
         if (isStateExpired(state)) {
             // Discard the state (and log)
+            statesRejectedCounter.incrementAndGet();
             if (LOGGER.isDebugEnabled())
                 LOGGER.debug("GSI state update discarded due to expired timestamp.");
         }
@@ -303,6 +320,7 @@ public final class GSIServer {
         
         // Notify observers
         notifyObservers(state, context);
+        return true;
     }
     
     private Map<String, String> verifyStateAuth(JsonObject json) {
@@ -315,8 +333,6 @@ public final class GSIServer {
         for (Map.Entry<String, String> token : requiredAuthTokens.entrySet()) {
             String val = authTokens.get(token.getKey());
             if (!token.getValue().equals(val)) {
-                LOGGER.debug("GSI state update rejected due to auth token mismatch (key '{}': expected '{}', "
-                        + "got '{}')", token.getKey(), token.getValue(), val);
                 return null; // Invalid auth token(s), skip
             }
         }

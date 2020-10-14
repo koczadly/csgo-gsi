@@ -55,12 +55,13 @@ class GSIServerHTTPHandler implements HTTPRequestHandler {
         long now = System.currentTimeMillis();
         boolean requiresAuth = !gsi.getRequiredAuthTokens().isEmpty();
         GameStateContext latestContext;
-        int stateCount;
+        int stateCount, rejectCount;
         synchronized (gsi.stateLock) {
             latestContext = gsi.latestStateContext;
             stateCount = gsi.stateCounter.intValue();
+            rejectCount = gsi.statesRejectedCounter.intValue();
         }
-    
+        
         // Build HTML
         StringBuilder sb = new StringBuilder();
         sb.append("<body><h1><a style=\"color:green\" href=\"").append(Util.GITHUB_URL)
@@ -80,9 +81,9 @@ class GSIServerHTTPHandler implements HTTPRequestHandler {
                 .append(requiresAuth ? "Yes" : "No")
                 .append("<br>\n");
         // State counter
-        sb.append("<b>State updates received:</b> ").append(String.format("%,d", stateCount));
-        if (stateCount == 0) sb.append(" <i>(awaiting first state...)</i>");
-        sb.append("<br>\n");
+        sb.append("<b>State updates received:</b> ").append(String.format("%,d", stateCount))
+                .append(rejectCount == 0 ? " <i>(" : " <i style=\"color:red\">(")
+                .append(String.format("%,d", rejectCount)).append(" rejected)</i><br>\n");
         
         if (gsi.latestGameState != null) {
             // Latest TS
