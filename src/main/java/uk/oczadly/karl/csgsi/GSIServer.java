@@ -288,7 +288,8 @@ public final class GSIServer {
         Instant now = Instant.now();
         
         // Create context object
-        GameStateContext context = new GameStateContext(this, latestGameState, now, latestStateContext.getTimestamp(),
+        GameStateContext context = new GameStateContext(this, latestGameState, now,
+                latestStateContext != null ? latestStateContext.getTimestamp() : null,
                 counter, address, authTokens, jsonObject, json);
         
         // Update latest state and timestamps
