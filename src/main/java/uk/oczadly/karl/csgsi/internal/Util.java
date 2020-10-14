@@ -20,6 +20,7 @@ public class Util {
     
     private static final Pattern REG_PATTERN = Pattern.compile(" {4}(\\S+) {4}\\S+ {4}(.*+)");
     
+    public static final String GITHUB_URL = "https://github.com/koczadly/csgo-gsi";
     
     public static final Gson GSON = new GsonBuilder()
             .setLenient().excludeFieldsWithoutExposeAnnotation()

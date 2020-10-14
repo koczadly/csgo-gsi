@@ -18,6 +18,6 @@ public interface HTTPRequestHandler {
      * @param headers a map of headers
      * @param body    the payload body contents
      */
-    void handle(InetAddress address, String path, String method, Map<String, String> headers, String body);
+    HTTPResponse handle(InetAddress address, String path, String method, Map<String, String> headers, String body);
     
 }

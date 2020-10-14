@@ -37,15 +37,6 @@ public class HTTPServer {
         this.handler = handler;
     }
     
-    /**
-     * @param port           the port number to listen on
-     * @param maxConnections the maximum number of connections to be processed at one time
-     * @param handler        the handling class to receive HTTP requests
-     */
-    public HTTPServer(int port, InetAddress bindAddr, int maxConnections, HTTPRequestHandler handler) {
-        this(port, bindAddr, handler);
-    }
-    
     
     /**
      * @return the specified port to listen on

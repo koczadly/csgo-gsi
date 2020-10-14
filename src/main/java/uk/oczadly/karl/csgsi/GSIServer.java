@@ -7,6 +7,8 @@ import com.google.gson.reflect.TypeToken;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import uk.oczadly.karl.csgsi.internal.Util;
+import uk.oczadly.karl.csgsi.internal.httpserver.HTTPRequestHandler;
+import uk.oczadly.karl.csgsi.internal.httpserver.HTTPResponse;
 import uk.oczadly.karl.csgsi.internal.httpserver.HTTPServer;
 import uk.oczadly.karl.csgsi.state.GameState;
 import uk.oczadly.karl.csgsi.state.ProviderState;
@@ -14,6 +16,7 @@ import uk.oczadly.karl.csgsi.state.ProviderState;
 import java.io.IOException;
 import java.net.InetAddress;
 import java.time.Instant;
+import java.time.ZoneId;
 import java.util.*;
 import java.util.concurrent.*;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -38,9 +41,12 @@ public final class GSIServer {
     private final ExecutorService observerExecutor = Executors.newCachedThreadPool();
     private final Map<String, String> requiredAuthTokens;
     
-    private volatile GameState latestGameState;
-    private volatile Instant latestProviderTimestamp, latestLocalTimestamp;
-    private final AtomicInteger stateCounter = new AtomicInteger();
+    volatile Instant serverStartTimestamp;
+    volatile GameState latestGameState;
+    volatile GameStateContext latestStateContext;
+    volatile Instant latestProviderTimestamp, latestLocalTimestamp;
+    final AtomicInteger stateCounter = new AtomicInteger();
+    final Object stateLock = new Object(); // Used to synchronize state updates
     
     
     /**
@@ -63,11 +69,10 @@ public final class GSIServer {
                     throw new IllegalArgumentException("Auth token key or value cannot be null");
             this.requiredAuthTokens = Collections.unmodifiableMap(new HashMap<>(requiredAuthTokens));
         } else {
-            this.requiredAuthTokens = Collections.unmodifiableMap(new HashMap<>());
+            this.requiredAuthTokens = Collections.emptyMap();
         }
         
-        this.server = new HTTPServer(port, bindAddr, 1,
-                (address, path, method, headers, body) -> handleStateUpdate(body.trim(), address));
+        this.server = new HTTPServer(port, bindAddr, new GSIServerHTTPHandler(this));
     }
     
     /**
@@ -197,10 +202,14 @@ public final class GSIServer {
         if (server.isRunning())
             throw new IllegalStateException("The GSI server is already running.");
         
-        latestProviderTimestamp = null;
-        latestLocalTimestamp = null;
-        latestGameState = null;
-        stateCounter.set(0);
+        synchronized (stateLock) {
+            latestProviderTimestamp = null;
+            latestLocalTimestamp = null;
+            latestGameState = null;
+            latestStateContext = null;
+            stateCounter.set(0);
+        }
+        serverStartTimestamp = Instant.now();
         server.start();
         LOGGER.info("GSI server on port {} successfully started", server.getPort());
     }
@@ -264,16 +273,19 @@ public final class GSIServer {
         
         // Parse the game state into an object
         GameState state = GSON.fromJson(jsonObject, GameState.class);
-        
+    
         // Ensure state hasn't expired
         if (isStateExpired(state)) {
             // Discard the state (and log)
             if (LOGGER.isDebugEnabled())
                 LOGGER.debug("GSI state update discarded due to expired timestamp.");
         }
-            
+    
         // Calculate information
-        int counter = stateCounter.incrementAndGet();
+        int counter;
+        synchronized (stateLock) {
+            counter = stateCounter.incrementAndGet();
+        }
         Instant now = Instant.now();
         
         // Create context object
@@ -281,10 +293,13 @@ public final class GSIServer {
                 address, authTokens, jsonObject, json);
         
         // Update latest state and timestamps
-        latestGameState = state;
-        latestLocalTimestamp = now;
-        if (state.getProviderDetails() != null)
-            latestProviderTimestamp = state.getProviderDetails().getTimeStamp();
+        synchronized (stateLock) {
+            latestGameState = state;
+            latestStateContext = context;
+            latestLocalTimestamp = now;
+            if (state.getProviderDetails() != null)
+                latestProviderTimestamp = state.getProviderDetails().getTimeStamp();
+        }
         
         // Notify observers
         notifyObservers(state, context);
@@ -295,7 +310,7 @@ public final class GSIServer {
         Map<String, String> authTokens = GSON.fromJson(json.getAsJsonObject("auth"),
                 new TypeToken<Map<String, String>>() {}.getType());
         authTokens = (authTokens != null) ? authTokens : Collections.emptyMap();
-    
+        
         // Verify auth tokens
         for (Map.Entry<String, String> token : requiredAuthTokens.entrySet()) {
             String val = authTokens.get(token.getKey());
