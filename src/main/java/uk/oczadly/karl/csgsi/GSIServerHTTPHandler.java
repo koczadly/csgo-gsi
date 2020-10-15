@@ -59,13 +59,13 @@ class GSIServerHTTPHandler implements HTTPRequestHandler {
         
         // Build HTML
         StringBuilder sb = new StringBuilder();
-        sb.append("<head><script src=\"https://cdn.jsdelivr.net/gh/google/code-prettify@master/loader/")
-                .append("run_prettify.js\"></script><meta charset=\"UTF-8\"></head>\n");
+        sb.append("<head><script src=\"https://cdnjs.cloudflare.com/ajax/libs/prettify/r298/run_prettify.js\">")
+                .append("</script><meta charset=\"UTF-8\"></head>\n");
         sb.append("<body><h1><a style=\"color:green\" href=\"").append(Util.GITHUB_URL)
                 .append("\">CSGO-GSI server is running!</a></h1>\n");
         // Listening port
-        sb.append("<b>Listening on:</b> <code>")
-                .append(gsi.getBindingAddress() != null ? gsi.getBindingAddress() : "localhost")
+        sb.append("<b>Listening on:</b> <code>http://")
+                .append(gsi.getBindingAddress() != null ? gsi.getBindingAddress() : "0.0.0.0")
                 .append(":").append(gsi.getPort()).append("</code><br>\n");
         // Uptime
         double uptimeMins = ((now - gsi.serverStartTimestamp.toEpochMilli()) / 1000d) / 60d;
