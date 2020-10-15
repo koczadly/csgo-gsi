@@ -34,7 +34,7 @@ class GSIServerHTTPHandler implements HTTPRequestHandler {
         if (method.equalsIgnoreCase("POST") && "application/json".equals(contentType)) {
             // State update from client
             if (body != null)
-                gsi.handleStateUpdate(body, address);
+                gsi.handleStateUpdate(body, path, address);
             return RESPONSE_UPDATE;
         } else {
             // Browser or other request type (?)

@@ -31,7 +31,7 @@ public class GSIServerTest {
         GSIServer server = new GSIServer(1337);
         server.registerObserver(observer);
         
-        server.handleStateUpdate(AUTH_TOKEN_JSON, ADDRESS);
+        server.handleStateUpdate(AUTH_TOKEN_JSON, "/", ADDRESS);
         
         //Wait for observer
         server.getObserverExecutorService().shutdown();
@@ -80,7 +80,7 @@ public class GSIServerTest {
     
     @Test
     public void testEmptyState() { //Ensure no exception
-        new GSIServer(1337).handleStateUpdate("{}", ADDRESS);
+        new GSIServer(1337).handleStateUpdate("{}", "/", ADDRESS);
     }
     
     @Test
@@ -95,11 +95,10 @@ public class GSIServerTest {
         Map<String, String> authTokens = new HashMap<>();
         InetAddress address = InetAddress.getLoopbackAddress();
         JsonObject jsonObject = new JsonObject();
-        String jsonString = "{}";
-        Instant i1 = Instant.ofEpochMilli(500);
-        Instant i2 = Instant.ofEpochMilli(200);
+        String uriPath = "/", jsonString = "{}";
+        Instant i1 = Instant.ofEpochMilli(500), i2 = Instant.ofEpochMilli(200);
         GameStateContext context = new GameStateContext(
-                server, previous, i1, i2, 43, address, authTokens, jsonObject, jsonString);
+                server, uriPath, previous, i1, i2, 43, address, authTokens, jsonObject, jsonString);
         
         //Notify observing object
         server.notifyObservers(state, context);
@@ -111,6 +110,8 @@ public class GSIServerTest {
         //Verify objects match
         assertSame(state, observer1.state);
         assertSame(state, observer2.state);
+        assertSame(uriPath, observer1.context.getUriPath());
+        assertSame(uriPath, observer2.context.getUriPath());
         assertSame(i1, observer1.context.getTimestamp());
         assertSame(i1, observer2.context.getTimestamp());
         assertSame(previous, observer1.context.getPreviousState());
@@ -140,7 +141,7 @@ public class GSIServerTest {
         GSIServer server = new GSIServer(1337, expectedTokens);
         server.registerObserver(observer);
         
-        server.handleStateUpdate(AUTH_TOKEN_JSON, ADDRESS);
+        server.handleStateUpdate(AUTH_TOKEN_JSON, "/", ADDRESS);
         
         //Wait for observer
         server.getObserverExecutorService().shutdown();

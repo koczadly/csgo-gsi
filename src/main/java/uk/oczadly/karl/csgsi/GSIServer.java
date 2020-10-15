@@ -258,7 +258,7 @@ public final class GSIServer {
     /**
      * Handles a new JSON state and notifies the appropriate observers.
      */
-    boolean handleStateUpdate(String json, InetAddress address) {
+    boolean handleStateUpdate(String json, String path, InetAddress address) {
         JsonObject jsonObject = null;
         try {
             jsonObject = JsonParser.parseString(json).getAsJsonObject();
@@ -288,7 +288,7 @@ public final class GSIServer {
         Instant now = Instant.now();
         
         // Create context object
-        GameStateContext context = new GameStateContext(this, latestGameState, now,
+        GameStateContext context = new GameStateContext(this, path, latestGameState, now,
                 latestStateContext != null ? latestStateContext.getTimestamp() : null,
                 counter, address, authTokens, jsonObject, json);
         

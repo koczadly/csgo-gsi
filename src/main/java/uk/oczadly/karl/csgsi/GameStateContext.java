@@ -20,11 +20,13 @@ public final class GameStateContext {
     private final InetAddress address;
     private final Map<String, String> authTokens;
     private final JsonObject rawJson;
-    private final String rawJsonString;
+    private final String uriPath, rawJsonString;
     
-    GameStateContext(GSIServer server, GameState previousState, Instant timestamp, Instant prevTimestamp, int counter,
-                     InetAddress address, Map<String, String> authTokens, JsonObject rawJson, String rawJsonString) {
+    GameStateContext(GSIServer server, String uriPath, GameState previousState, Instant timestamp,
+                     Instant prevTimestamp, int counter, InetAddress address, Map<String, String> authTokens,
+                     JsonObject rawJson, String rawJsonString) {
         this.server = server;
+        this.uriPath = uriPath;
         this.previousState = previousState;
         this.timestamp = timestamp;
         this.prevTimestamp = prevTimestamp;
@@ -37,12 +39,21 @@ public final class GameStateContext {
     
     
     /**
-     * Returns the game state server which triggered the callback.
+     * Gets the game state server which triggered this callback.
      *
      * @return the {@link GSIServer} that triggered the callback
      */
     public GSIServer getGsiServer() {
         return server;
+    }
+    
+    /**
+     * Gets the URI path which the game client sent the state HTTP request to.
+     *
+     * @return the URI of the request
+     */
+    public String getUriPath() {
+        return uriPath;
     }
     
     /**
