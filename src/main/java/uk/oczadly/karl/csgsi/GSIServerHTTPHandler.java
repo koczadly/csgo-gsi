@@ -59,8 +59,10 @@ class GSIServerHTTPHandler implements HTTPRequestHandler {
         
         // Build HTML
         StringBuilder sb = new StringBuilder();
-        sb.append("<body style=\"background-color:#e4f4f5\"><h1><a style=\"color:green\" href=\"")
-                .append(Util.GITHUB_URL).append("\">CSGO-GSI server is running!</a></h1>\n");
+        sb.append("<head><script src=\"https://cdn.jsdelivr.net/gh/google/code-prettify@master/loader/")
+                .append("run_prettify.js\"></script><meta charset=\"UTF-8\"></head>\n");
+        sb.append("<body><h1><a style=\"color:green\" href=\"").append(Util.GITHUB_URL)
+                .append("\">CSGO-GSI server is running!</a></h1>\n");
         // Listening port
         sb.append("<b>Listening on:</b> <code>")
                 .append(gsi.getBindingAddress() != null ? gsi.getBindingAddress() : "localhost")
@@ -72,6 +74,10 @@ class GSIServerHTTPHandler implements HTTPRequestHandler {
                 .append(" <i>(").append(String.format("%,.2f", uptimeMins)).append(" mins uptime)</i><br>\n");
         // Auth keys
         sb.append("<b>Auth keys configured:</b> ").append(requiresAuth ? "Yes" : "No").append("<br>\n");
+        // Observers
+        sb.append("<b>Subscribed observers:</b> <span")
+                .append(gsi.observers.isEmpty() ? " style=\"color:red\">" : ">")
+                .append(gsi.observers.size()).append("</span><br>\n");
         // State counter
         sb.append("<b>State updates received:</b> ").append(String.format("%,d", stateCount))
                 .append(rejectCount == 0 ? " <i>(" : " <i style=\"color:red\">(")
@@ -95,7 +101,7 @@ class GSIServerHTTPHandler implements HTTPRequestHandler {
             }
             // JSON dump
             if (!requiresAuth) {
-                sb.append("<b>Latest state JSON dump:</b><br><pre><code>")
+                sb.append("<b>Latest state JSON dump:</b><br>\n<pre><code class=\"prettyprint\">")
                         .append(latestContext.getRawJsonString().replace("\t", "    ")).append("</code></pre>\n");
             }
         }

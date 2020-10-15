@@ -30,10 +30,10 @@ public final class GSIServer {
     private static final Logger LOGGER = LoggerFactory.getLogger(GSIServer.class);
     private static final Gson GSON = Util.GSON;
     
-    private final HTTPServer server;
-    private final Set<GSIObserver> observers = new CopyOnWriteArraySet<>();
-    private final ExecutorService observerExecutor = Executors.newCachedThreadPool();
-    private final Map<String, String> requiredAuthTokens;
+    final HTTPServer server;
+    final Set<GSIObserver> observers = new CopyOnWriteArraySet<>();
+    final ExecutorService observerExecutor = Executors.newCachedThreadPool();
+    final Map<String, String> requiredAuthTokens;
     
     volatile Instant serverStartTimestamp;
     volatile GameState latestGameState;
