@@ -12,16 +12,19 @@ import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+/**
+ * Manages an active HTTP connection, parsing the request data, calling the handler and writing the response data.
+ */
 class HTTPConnection implements Runnable {
     
     private static final Logger LOGGER = LoggerFactory.getLogger(HTTPConnection.class);
     
     private static final Charset CHARSET = StandardCharsets.UTF_8;
     private static final Pattern HEADER_REGEX = Pattern.compile("^([\\w-]+)\\s*:\\s*(.+)$");
-    private static final Pattern START_REGEX = Pattern.compile("^(.+) (.+) (.+)$");
+    private static final Pattern START_REGEX = Pattern.compile("^(\\w+) (.+) (HTTP/[0-9.]+)$");
     
-    private Socket socket;
-    private HTTPRequestHandler handler;
+    private final Socket socket;
+    private final HTTPRequestHandler handler;
     
     public HTTPConnection(Socket socket, HTTPRequestHandler handler) {
         this.socket = socket;
@@ -35,18 +38,19 @@ class HTTPConnection implements Runnable {
             InputStream is = socket.getInputStream();
             OutputStream os = socket.getOutputStream();
             
+            // Read start-line header
             String startLine = readLine(is);
             if (startLine == null) {
-                LOGGER.warn("HTTP stream was null");
+                LOGGER.warn("HTTP stream returned null data.");
                 return;
             }
             Matcher startMatcher = START_REGEX.matcher(startLine);
             if (!startMatcher.matches()) {
-                LOGGER.warn("Invalid HTTP start-line header!");
+                LOGGER.warn("Invalid HTTP start-line header \"{}\"!", startLine);
                 return;
             }
-
-            // Headers
+            
+            // Read headers and body
             Map<String, String> headers = parseHeaders(is);
             String body = null;
             if (headers.containsKey("content-length")) {
@@ -59,9 +63,8 @@ class HTTPConnection implements Runnable {
                 res = handler.handle(socket.getInetAddress(),
                         startMatcher.group(2), startMatcher.group(1), headers, body);
             } catch (Exception e) {
-                LOGGER.warn("HTTP handler threw uncaught exception", e);
-                e.printStackTrace();
-                res = new HTTPResponse(500, null, null);
+                LOGGER.error("HTTP handler threw uncaught exception.", e);
+                res = new HTTPResponse(500);
             }
 
             // Return header & body data
@@ -70,8 +73,7 @@ class HTTPConnection implements Runnable {
             // Close socket
             os.flush();
         } catch (Exception e) {
-            LOGGER.warn("Failed to handle HTTP connection", e);
-            e.printStackTrace();
+            LOGGER.warn("Failed to handle HTTP connection.", e);
         } finally {
             //Close socket
             try {
@@ -103,6 +105,7 @@ class HTTPConnection implements Runnable {
     }
     
     private void writeResponse(HTTPResponse res, OutputStream os) throws IOException {
+        // Always prints OK response message, even if not a 200 status code.
         writeString(os, "HTTP/1.1 " + res.getStatusCode() + " OK\r\n");
         if (res.getBody() != null) {
             byte[] body = res.getBody().getBytes(CHARSET);
@@ -111,7 +114,7 @@ class HTTPConnection implements Runnable {
             writeString(os, "Content-type: " + contentType + "\r\n\r\n");
             writeString(os, res.getBody());
         }
-        os.flush();
+        os.close();
     }
     
     private String readLine(InputStream inputStream) throws IOException {

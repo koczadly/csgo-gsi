@@ -7,8 +7,6 @@ import java.io.IOException;
 import java.net.InetAddress;
 import java.net.ServerSocket;
 import java.net.Socket;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
 
 /**
  * This class implements a basic HTTP server for the use of retrieving request data. The server always returns a 200 OK
@@ -67,12 +65,10 @@ public class HTTPServer {
         if (isRunning())
             throw new IllegalStateException("Server is already running.");
         
-        if (LOGGER.isInfoEnabled())
-            LOGGER.info("Starting HTTP server on port {}...", port);
-        
+        LOGGER.info("Starting HTTP server on port {}...", port);
         
         socket = new ServerSocket(port, 50, bindAddr);
-        thread = new Thread(new ConnectionAcceptor());
+        thread = new Thread(new ConnectionAcceptorTask());
         thread.start();
     }
     
@@ -85,8 +81,7 @@ public class HTTPServer {
         if (!isRunning())
             throw new IllegalStateException("Server is not currently running.");
         
-        if (LOGGER.isInfoEnabled())
-            LOGGER.info("Stopping HTTP server on port {}...", port);
+        LOGGER.info("Stopping HTTP server on port {}...", port);
         
         thread.interrupt();
         try {
@@ -96,15 +91,18 @@ public class HTTPServer {
     }
     
     
-    private class ConnectionAcceptor implements Runnable {
+    /** Accepts new client connections and handles them */
+    private class ConnectionAcceptorTask implements Runnable {
         @Override
         public void run() {
             while (!Thread.currentThread().isInterrupted()) {
                 try {
                     Socket conn = socket.accept();
+                    LOGGER.debug("Incoming HTTP request from {} on server port {}...",
+                            conn.getInetAddress(), getPort());
                     new HTTPConnection(conn, handler).run();
                 } catch (Exception e) {
-                    LOGGER.warn("Exception occured while handling HTTP connection", e);
+                    LOGGER.error("Exception occured while handling HTTP connection", e);
                 }
             }
         }

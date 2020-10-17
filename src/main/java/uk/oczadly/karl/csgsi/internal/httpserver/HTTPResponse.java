@@ -8,6 +8,10 @@ public class HTTPResponse {
     private final int statusCode;
     private final String contentType, body;
     
+    public HTTPResponse(int statusCode) {
+        this(statusCode, null, null);
+    }
+    
     public HTTPResponse(int statusCode, String contentType, String body) {
         this.statusCode = statusCode;
         this.contentType = contentType;

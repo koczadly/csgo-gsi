@@ -174,7 +174,6 @@ public final class GSIServer {
             } catch (InterruptedException ignored) {
             } catch (ExecutionException e) {
                 LOGGER.error("Uncaught exception in GSIServer observer notification", e.getCause());
-                e.getCause().printStackTrace();
             }
         }
         long timeTaken = System.currentTimeMillis() - start;
@@ -262,20 +261,18 @@ public final class GSIServer {
     boolean handleStateUpdate(String json, String path, InetAddress address) {
         LOGGER.debug("Handling new state update on server running on port {}...", getPort());
         
-        JsonObject jsonObject = null;
+        JsonObject jsonObject;
         try {
             jsonObject = JsonParser.parseString(json).getAsJsonObject();
         } catch (JsonParseException e) {
-            if (LOGGER.isWarnEnabled())
-                LOGGER.warn("GSI server received invalid JSON object", e);
-            e.printStackTrace();
+            LOGGER.warn("GSI server received invalid JSON object", e);
             return false;
         }
         
         Map<String, String> authTokens = verifyStateAuth(jsonObject);
         if (authTokens == null) {
             stateRejectCounter.incrementAndGet();
-            LOGGER.debug("GSI state update rejected due to auth token mismatch");
+            LOGGER.warn("GSI state update rejected due to auth token mismatch");
             return false;
         }
         

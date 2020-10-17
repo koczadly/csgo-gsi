@@ -18,7 +18,7 @@ class GSIServerHTTPHandler implements HTTPRequestHandler {
     
     private static final Logger LOGGER = LoggerFactory.getLogger(GSIServerHTTPHandler.class);
     
-    private static final HTTPResponse RESPONSE_UPDATE = new HTTPResponse(200, null, null);
+    private static final HTTPResponse RESPONSE_UPDATE = new HTTPResponse(200);
     
     private final GSIServer gsi;
     
@@ -36,15 +36,24 @@ class GSIServerHTTPHandler implements HTTPRequestHandler {
             if (body != null)
                 gsi.handleStateUpdate(body, path, address);
             return RESPONSE_UPDATE;
-        } else {
-            // Browser or other request type (?)
-            LOGGER.warn("Non-POST request received from {}! (ignore if accessing test page)", address);
+        } else if (method.equalsIgnoreCase("GET") && path.equals("/")) {
+            // Browser requesting info page
+            LOGGER.debug("Serving info HTML page.");
             return new HTTPResponse(200, "text/html", buildInfoHTML());
+        } else if (method.equalsIgnoreCase("GET") && (path.equalsIgnoreCase("/favicon.ico") ||
+                path.equalsIgnoreCase("/robots.txt") || path.equalsIgnoreCase("/sitemap.xml"))) {
+            // Ignore automatic requests
+            LOGGER.debug("Ignoring automated HTTP request {} from {}.", path, address);
+            return new HTTPResponse(404);
+        } else {
+            // Unknown request type
+            LOGGER.warn("Unexpected HTTP request received ({} at {}) from {}!", method, path, address);
+            return new HTTPResponse(404);
         }
     }
     
     
-    /** Builds the test page HTML code */
+    /** Builds the test/info page HTML code */
     private String buildInfoHTML() {
         // Retrieve latest state information
         long now = System.currentTimeMillis();
@@ -59,8 +68,11 @@ class GSIServerHTTPHandler implements HTTPRequestHandler {
         
         // Build HTML
         StringBuilder sb = new StringBuilder();
-        sb.append("<head><script src=\"https://cdn.jsdelivr.net/gh/google/code-prettify@master/loader/")
-                .append("run_prettify.js\"></script><meta charset=\"UTF-8\"></head>\n");
+        sb.append("<DOCTYPE html>\n\n");
+        sb.append("<head><meta charset=\"UTF-8\"><meta http-equiv=\"expires\" content=\"0\" />")
+                .append("<script src=\"https://cdn.jsdelivr.net/gh/google/code-prettify@master/loader/")
+                .append("run_prettify.js\"></script></head>\n");
+        
         sb.append("<body><h1><a style=\"color:green\" href=\"").append(Util.GITHUB_URL)
                 .append("\">CSGO-GSI server is running!</a></h1>\n");
         // Listening port
@@ -101,11 +113,11 @@ class GSIServerHTTPHandler implements HTTPRequestHandler {
             }
             // JSON dump
             if (!requiresAuth) {
-                sb.append("<b>Latest state JSON dump:</b><br>\n<pre><code class=\"prettyprint\">")
+                sb.append("<b>Latest state JSON:</b><br>\n<pre><code class=\"prettyprint\">")
                         .append(latestContext.getRawJsonString().replace("\t", "    ")).append("</code></pre>\n");
             }
         }
-        sb.append("</body>\n");
+        sb.append("</body>");
         return sb.toString();
     }
     
