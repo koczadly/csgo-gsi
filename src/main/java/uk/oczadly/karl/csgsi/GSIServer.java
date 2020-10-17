@@ -123,7 +123,7 @@ public final class GSIServer {
     public void registerObserver(GSIObserver observer) {
         if (LOGGER.isDebugEnabled())
             LOGGER.debug("New observer #{} registered for GSI server on port {}",
-                    Integer.toHexString(observer.hashCode()), server.getPort());
+                    Integer.toHexString(System.identityHashCode(observer)), server.getPort());
         
         observers.add(observer);
     }
@@ -137,7 +137,7 @@ public final class GSIServer {
     public void removeObserver(GSIObserver observer) {
         if (LOGGER.isDebugEnabled())
             LOGGER.debug("Removing observer #{} from GSI server on port {}",
-                    Integer.toHexString(observer.hashCode()), server.getPort());
+                    Integer.toHexString(System.identityHashCode(observer)), server.getPort());
         
         observers.remove(observer);
     }
