@@ -158,7 +158,8 @@ public final class GSIServer {
      * @param context       the game state and request context
      */
     protected void notifyObservers(GameState state, GameStateContext context) {
-        LOGGER.debug("Notifying {} observers of new GSI state from server on port {}", observers.size(), server.getPort());
+        LOGGER.debug("Notifying {} observers of new GSI state from server on port {}",
+                observers.size(), server.getPort());
         
         List<Future<?>> futures = new ArrayList<>(observers.size());
         for (GSIObserver observer : observers) {
@@ -259,6 +260,8 @@ public final class GSIServer {
      * Handles a new JSON state and notifies the appropriate observers.
      */
     boolean handleStateUpdate(String json, String path, InetAddress address) {
+        LOGGER.debug("Handling new state update on server running on port {}...", getPort());
+        
         JsonObject jsonObject = null;
         try {
             jsonObject = JsonParser.parseString(json).getAsJsonObject();
@@ -272,8 +275,7 @@ public final class GSIServer {
         Map<String, String> authTokens = verifyStateAuth(jsonObject);
         if (authTokens == null) {
             stateRejectCounter.incrementAndGet();
-            if (LOGGER.isDebugEnabled())
-                LOGGER.debug("GSI state update rejected due to auth token mismatch");
+            LOGGER.debug("GSI state update rejected due to auth token mismatch");
             return false;
         }
         
