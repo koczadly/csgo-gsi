@@ -7,6 +7,7 @@ import com.google.gson.JsonParser;
 import com.google.gson.reflect.TypeToken;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import uk.oczadly.karl.csgsi.config.GSIConfig;
 import uk.oczadly.karl.csgsi.internal.Util;
 import uk.oczadly.karl.csgsi.internal.httpserver.HTTPServer;
 import uk.oczadly.karl.csgsi.state.GameState;
@@ -21,18 +22,50 @@ import java.util.concurrent.atomic.AtomicInteger;
 /**
  * This class is used to listen for live game state information as sent by the game client.
  *
- * <p>The listening network port is configured within the class constructor, and the server is started through the
- * {@link #start()} method. Observers can be registered through the {@link #registerObserver(GSIObserver)} method, which
- * subscribes the object to new game state information as it is received.</p>
+ * <p>The class can be constructed using the provided {@link Builder} class, where you can set the listening port and
+ * other configuration details for the {@link GSIServer} through the setter methods. The server can be started using the
+ * {@link #start()} method, and observers can be registered through the {@link #registerObserver(GSIObserver)} method,
+ * which subscribes the observer to new game state information as it is received. Observers may be registered while
+ * the server is active.</p>
+ *
+ * <p>The example below demonstrates how to use this class:</p>
+ * <pre>
+ *     // Create observer
+ *     GSIObserver observer = (state, context) -> {
+ *         System.out.println("New state from game client address " + context.getAddress().getHostAddress());
+ *         if (state.getProviderDetails() != null) {
+ *             System.out.println("Client SteamID: " + state.getProviderDetails().getClientSteamId());
+ *         }
+ *         if (state.getMapState() != null) {
+ *             System.out.println("Current map: " + state.getMapState().getName());
+ *         }
+ *     };
+ *
+ *     // Configure server (port 1337, requiring password)
+ *     GSIServer server = new GSIServer.Builder(1337)
+ *             .addRequiredAuthToken("password", "Q79v5tcxVQ8u")
+ *             .registerObserver(observer) // Alternatively, you can call this on the GSIServer
+ *             .build();
+ *
+ *     // Start server
+ *     try {
+ *         server.start(); // Start the server (runs in a separate thread)
+ *         System.out.println("Server started. Listening for state data...");
+ *     } catch (IOException e) {
+ *         System.out.println("Could not start server.");
+ *     }
+ * </pre>
+ *
+ * @see GSIConfig
  */
 public final class GSIServer {
     
     private static final Logger LOGGER = LoggerFactory.getLogger(GSIServer.class);
     private static final Gson GSON = Util.GSON;
+    private static final ExecutorService OBS_EXECUTOR = Executors.newCachedThreadPool();
     
     final HTTPServer server;
     final Set<GSIObserver> observers = new CopyOnWriteArraySet<>();
-    final ExecutorService observerExecutor = Executors.newCachedThreadPool();
     final Map<String, String> requiredAuthTokens;
     
     volatile Instant serverStartTimestamp;
@@ -43,13 +76,24 @@ public final class GSIServer {
     final Object stateLock = new Object(); // Used to synchronize state updates
     
     
+    GSIServer(InetAddress bindAddr, int port, Map<String, String> authTokens,
+              Collection<GSIObserver> observers) {
+        this.requiredAuthTokens = Collections.unmodifiableMap(authTokens);
+        this.observers.addAll(observers);
+        this.server = new HTTPServer(port, bindAddr, new GSIServerHTTPHandler(this));
+    }
+    
+    
     /**
      * Constructs a new GSIServer object with pre-processed client authentication.
      *
      * @param port               the network port for the server to listen on
      * @param bindAddr           the local address to bind to
      * @param requiredAuthTokens the authentication tokens required to accept state reports
+     *
+     * @deprecated Use inner builder class {@link Builder} to create {@link GSIServer} instances
      */
+    @Deprecated(forRemoval = true)
     public GSIServer(int port, InetAddress bindAddr, Map<String, String> requiredAuthTokens) {
         //Validate port
         if (port <= 0 || port > 65535)
@@ -74,7 +118,10 @@ public final class GSIServer {
      *
      * @param port               the network port for the server to listen on
      * @param requiredAuthTokens the authentication tokens required to accept state reports
+     *
+     * @deprecated Use inner builder class {@link Builder} to create {@link GSIServer} instances
      */
+    @Deprecated(forRemoval = true)
     public GSIServer(int port, Map<String, String> requiredAuthTokens) {
         this(port, null, requiredAuthTokens);
     }
@@ -84,7 +131,10 @@ public final class GSIServer {
      *
      * @param port     the network port for the server to listen on
      * @param bindAddr the local address to bind to
+     *
+     * @deprecated Use inner builder class {@link Builder} to create {@link GSIServer} instances
      */
+    @Deprecated(forRemoval = true)
     public GSIServer(int port, InetAddress bindAddr) {
         this(port, bindAddr, new HashMap<>());
     }
@@ -93,7 +143,10 @@ public final class GSIServer {
      * Constructs a new GSIServer object with no pre-processed client authentication.
      *
      * @param port the network port for the server to listen on
+     *
+     * @deprecated Use inner builder class {@link Builder} to create {@link GSIServer} instances
      */
+    @Deprecated(forRemoval = true)
     public GSIServer(int port) {
         this(port, (InetAddress)null);
     }
@@ -163,11 +216,10 @@ public final class GSIServer {
         
         List<Future<?>> futures = new ArrayList<>(observers.size());
         for (GSIObserver observer : observers) {
-            futures.add(observerExecutor.submit(() -> observer.update(state, context)));
+            futures.add(OBS_EXECUTOR.submit(() -> observer.update(state, context)));
         }
         
         // Wait for all tasks to complete (and log any errors)
-        long start = System.currentTimeMillis();
         for (Future<?> f : futures) {
             try {
                 f.get();
@@ -176,10 +228,7 @@ public final class GSIServer {
                 LOGGER.error("Uncaught exception in GSIServer observer notification", e.getCause());
             }
         }
-        long timeTaken = System.currentTimeMillis() - start;
-        if (timeTaken > 150) {
-            LOGGER.warn("Taken longer than 150ms to process game state update!");
-        }
+        LOGGER.debug("Finished notifying state observers.");
     }
     
     
@@ -191,10 +240,10 @@ public final class GSIServer {
      * @throws IOException           if the configured port cannot be bound to
      */
     public void start() throws IOException {
-        LOGGER.debug("Attempting to start GSI server on port {}...", server.getPort());
-        
         if (server.isRunning())
             throw new IllegalStateException("The GSI server is already running.");
+        
+        LOGGER.debug("Attempting to start GSI server on port {}...", server.getPort());
         
         synchronized (stateLock) {
             latestGameState = null;
@@ -203,8 +252,9 @@ public final class GSIServer {
             stateCounter.set(0);
         }
         serverStartTimestamp = Instant.now();
+        
         server.start();
-        LOGGER.info("GSI server on port {} successfully started", server.getPort());
+        LOGGER.info("GSI server on port {} successfully started.", server.getPort());
     }
     
     /**
@@ -215,7 +265,7 @@ public final class GSIServer {
     public void stop() {
         LOGGER.debug("Attempting to stop GSI server running on port {}...", server.getPort());
         server.stop();
-        LOGGER.info("GSI server on port {} successfully shut down", server.getPort());
+        LOGGER.info("GSI server on port {} successfully shut down.", server.getPort());
     }
     
     /**
@@ -251,7 +301,7 @@ public final class GSIServer {
      * Used for unit tests
      */
     ExecutorService getObserverExecutorService() {
-        return observerExecutor;
+        return OBS_EXECUTOR;
     }
     
     
@@ -316,6 +366,129 @@ public final class GSIServer {
             }
         }
         return authTokens;
+    }
+    
+    
+    /**
+     * Used for configuring and constructing instances of {@link GSIServer} objects.
+     */
+    public static class Builder {
+        private final int bindPort;
+        private final InetAddress bindAddr;
+        private final Map<String, String> authTokens = new HashMap<>();
+        private final Set<GSIObserver> observers = new HashSet<>();
+    
+    
+        /**
+         * Creates a builder with the specified port, binding to all IP interfaces.
+         * @param bindPort the socket port to bind to
+         */
+        public Builder(int bindPort) {
+            this(null, bindPort);
+        }
+    
+        /**
+         * Creates a builder with the specified port, binding to all IP interfaces.
+         * @param bindAddr the socket IP address to bind to
+         * @param bindPort the socket port to bind to
+         */
+        public Builder(InetAddress bindAddr, int bindPort) {
+            this.bindAddr = bindAddr;
+            this.bindPort = bindPort;
+        }
+    
+    
+        /**
+         * @return the port which the server will listen on
+         */
+        public int getBindPort() {
+            return bindPort;
+        }
+    
+        /**
+         * @return the IP address the server will bind to
+         */
+        public InetAddress getBindAddress() {
+            return bindAddr;
+        }
+    
+        /**
+         * @return an immutable map of authentication tokens required
+         */
+        public Map<String, String> getRequiredAuthTokens() {
+            return Collections.unmodifiableMap(authTokens);
+        }
+    
+        /**
+         * Sets the map of authentication tokens which are required by the server. Any state updates which do not
+         * contain these key/value entries will be rejected.
+         *
+         * @param authTokens a map of auth tokens (case sensitive)
+         * @return this builder
+         */
+        public Builder setRequiredAuthTokens(Map<String, String> authTokens) {
+            if (authTokens != null) {
+                for (Map.Entry<String, String> key : authTokens.entrySet())
+                    if (key.getKey() == null || key.getValue() == null)
+                        throw new IllegalArgumentException("Auth token key or value cannot be null.");
+                this.authTokens.clear();
+                this.authTokens.putAll(authTokens);
+            } else {
+                this.authTokens.clear();
+            }
+            return this;
+        }
+    
+        /**
+         * Adds an authentication token which will be required by the server. Any state updates which do not contain
+         * these key/value entries will be rejected.
+         *
+         * @param key   the key (case sensitive)
+         * @param value the value/password (case sensitive)
+         * @return this builder
+         */
+        public Builder addRequiredAuthToken(String key, String value) {
+            if (key == null || value == null)
+                throw new IllegalArgumentException("Auth token key or value cannot be null.");
+            authTokens.put(key, value);
+            return this;
+        }
+    
+        /**
+         * @return a collection of pre-registered observer instances
+         */
+        public Collection<GSIObserver> getObservers() {
+            return Collections.unmodifiableSet(observers);
+        }
+    
+        /**
+         * Pre-registers an observer instance to listen to state updates.
+         *
+         * @param observer the observer to register
+         * @return this builder
+         */
+        public Builder registerObserver(GSIObserver observer) {
+            observers.add(observer);
+            return this;
+        }
+    
+        /**
+         * Removes all pre-registered observers.
+         * @return this builder
+         */
+        public Builder clearObservers() {
+            observers.clear();
+            return this;
+        }
+    
+        /**
+         * Constructs a new {@link GSIServer} with the specified parameters.
+         *
+         * @return a new {@link GSIServer} object
+         */
+        public GSIServer build() {
+            return new GSIServer(bindAddr, bindPort, authTokens, observers);
+        }
     }
     
 }

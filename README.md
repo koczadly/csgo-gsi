@@ -69,9 +69,13 @@ GSIObserver observer = (state, context) -> {
     }
 };
 
-// Configure server on port 1337, requiring the specified "password" auth token
-GSIServer server = new GSIServer(1337, Map.of("password", "Q79v5tcxVQ8u"));
-server.registerObserver(observer); // Register our observer object
+// Configure server (port 1337, requiring password)
+GSIServer server = new GSIServer.Builder(1337)
+        .addRequiredAuthToken("password", "Q79v5tcxVQ8u")
+        .registerObserver(observer) // Alternatively, you can call this on the GSIServer
+        .build();
+
+// Start server
 try {
     server.start(); // Start the server (runs in a separate thread)
     System.out.println("Server started. Listening for state data...");
