@@ -20,7 +20,7 @@ import java.util.concurrent.*;
 import java.util.concurrent.atomic.AtomicInteger;
 
 /**
- * This class is used to listen for live game state information as sent by the game client.
+ * This class is used to listen for live game state information sent by the game client.
  *
  * <p>The class can be constructed using the provided {@link Builder} class, where you can set the listening port and
  * other configuration details for the {@link GSIServer} through the setter methods. The server can be started using the
@@ -308,7 +308,7 @@ public final class GSIServer {
     /**
      * Handles a new JSON state and notifies the appropriate observers.
      */
-    boolean handleStateUpdate(String json, String path, InetAddress address) {
+    void handleStateUpdate(String json, String path, InetAddress address) {
         LOGGER.debug("Handling new state update on server running on port {}...", getPort());
         
         JsonObject jsonObject;
@@ -316,14 +316,14 @@ public final class GSIServer {
             jsonObject = JsonParser.parseString(json).getAsJsonObject();
         } catch (JsonParseException e) {
             LOGGER.warn("GSI server received invalid JSON object", e);
-            return false;
+            return;
         }
         
         Map<String, String> authTokens = verifyStateAuth(jsonObject);
         if (authTokens == null) {
             stateRejectCounter.incrementAndGet();
             LOGGER.warn("GSI state update rejected due to auth token mismatch");
-            return false;
+            return;
         }
         
         // Parse the game state into an object
@@ -349,7 +349,6 @@ public final class GSIServer {
         
         // Notify observers
         notifyObservers(state, context);
-        return true;
     }
     
     private Map<String, String> verifyStateAuth(JsonObject json) {
