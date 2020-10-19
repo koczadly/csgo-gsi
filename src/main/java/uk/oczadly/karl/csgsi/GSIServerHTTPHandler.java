@@ -36,11 +36,11 @@ class GSIServerHTTPHandler implements HTTPRequestHandler {
             if (body != null)
                 gsi.handleStateUpdate(body, path, address);
             return RESPONSE_UPDATE;
-        } else if (method.equalsIgnoreCase("GET") && path.equals("/")) {
+        } else if (gsi.diagPageEnabled && method.equalsIgnoreCase("GET") && path.equals("/")) {
             // Browser requesting info page
             LOGGER.debug("Serving info HTML page.");
             return new HTTPResponse(200, "text/html", buildInfoHTML());
-        } else if (method.equalsIgnoreCase("GET") && (path.equalsIgnoreCase("/favicon.ico") ||
+        } else if (gsi.diagPageEnabled && method.equalsIgnoreCase("GET") && (path.equalsIgnoreCase("/favicon.ico") ||
                 path.equalsIgnoreCase("/robots.txt") || path.equalsIgnoreCase("/sitemap.xml"))) {
             // Ignore automatic requests
             LOGGER.debug("Ignoring automated HTTP request {} from {}.", path, address);
@@ -60,10 +60,10 @@ class GSIServerHTTPHandler implements HTTPRequestHandler {
         boolean requiresAuth = !gsi.getRequiredAuthTokens().isEmpty();
         GameStateContext latestContext;
         int stateCount, rejectCount;
-        synchronized (gsi.stateLock) {
-            latestContext = gsi.latestStateContext;
-            stateCount = gsi.stateCounter.intValue();
-            rejectCount = gsi.stateRejectCounter.intValue();
+        synchronized (gsi.lastState.lock) {
+            latestContext = gsi.lastState.latestContext;
+            stateCount = gsi.lastState.stateCounter.intValue();
+            rejectCount = gsi.lastState.stateRejectCounter.intValue();
         }
         
         // Build HTML
@@ -95,7 +95,7 @@ class GSIServerHTTPHandler implements HTTPRequestHandler {
                 .append(rejectCount == 0 ? " <i>(" : " <i style=\"color:red\">(")
                 .append(String.format("%,d", rejectCount)).append(" rejected)</i><br>\n");
         
-        if (gsi.latestGameState != null) {
+        if (gsi.lastState.latestContext != null) {
             // Latest TS
             sb.append("<b>Latest state timestamp:</b> ")
                     .append(DateTimeFormatter.RFC_1123_DATE_TIME.format(

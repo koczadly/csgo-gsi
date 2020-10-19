@@ -56,6 +56,12 @@ import java.util.concurrent.atomic.AtomicInteger;
  *     }
  * </pre>
  *
+ * <p>If the diagnostics page is enabled (by default it is), then you can access the GSI server from a web browser
+ * through the HTTP protocol (eg. <a href="http://localhost:1337/">http://localhost:1337</a>). Information about the
+ * {@link GSIServer} instance, along with miscellaneous state information will be displayed. If one or more
+ * authentication keys are configured, then the latest state's JSON will not be viewable from the web panel (this is a
+ * security measure).</p>
+ *
  * @see GSIConfig
  */
 public final class GSIServer {
@@ -67,20 +73,18 @@ public final class GSIServer {
     final HTTPServer server;
     final Set<GSIObserver> observers = new CopyOnWriteArraySet<>();
     final Map<String, String> requiredAuthTokens;
+    final boolean diagPageEnabled;
     
     volatile Instant serverStartTimestamp;
-    volatile GameState latestGameState;
-    volatile GameStateContext latestStateContext;
-    final AtomicInteger stateCounter = new AtomicInteger();
-    final AtomicInteger stateRejectCounter = new AtomicInteger();
-    final Object stateLock = new Object(); // Used to synchronize state updates
+    final StateContainer lastState = new StateContainer();
     
     
     GSIServer(InetAddress bindAddr, int port, Map<String, String> authTokens,
-              Collection<GSIObserver> observers) {
+              Collection<GSIObserver> observers, boolean diagPageEnabled) {
+        this.server = new HTTPServer(port, bindAddr, new GSIServerHTTPHandler(this));
         this.requiredAuthTokens = Collections.unmodifiableMap(authTokens);
         this.observers.addAll(observers);
-        this.server = new HTTPServer(port, bindAddr, new GSIServerHTTPHandler(this));
+        this.diagPageEnabled = diagPageEnabled;
     }
     
     
@@ -111,6 +115,7 @@ public final class GSIServer {
         }
         
         this.server = new HTTPServer(port, bindAddr, new GSIServerHTTPHandler(this));
+        this.diagPageEnabled = true;
     }
     
     /**
@@ -156,14 +161,14 @@ public final class GSIServer {
      * @return the latest game state, or null if the server has yet to receive an update
      */
     public GameState getLatestGameState() {
-        return latestGameState;
+        return lastState.latestState;
     }
     
     /**
      * @return true if the server has received at least one valid game state since starting
      */
     public boolean hasReceivedState() {
-        return latestGameState != null;
+        return lastState.latestState != null;
     }
     
     
@@ -245,11 +250,11 @@ public final class GSIServer {
         
         LOGGER.debug("Attempting to start GSI server on port {}...", server.getPort());
         
-        synchronized (stateLock) {
-            latestGameState = null;
-            latestStateContext = null;
-            stateRejectCounter.set(0);
-            stateCounter.set(0);
+        synchronized (lastState.lock) {
+            lastState.latestState = null;
+            lastState.latestContext = null;
+            lastState.stateRejectCounter.set(0);
+            lastState.stateCounter.set(0);
         }
         serverStartTimestamp = Instant.now();
         
@@ -321,7 +326,7 @@ public final class GSIServer {
         
         Map<String, String> authTokens = verifyStateAuth(jsonObject);
         if (authTokens == null) {
-            stateRejectCounter.incrementAndGet();
+            lastState.stateRejectCounter.incrementAndGet();
             LOGGER.warn("GSI state update rejected due to auth token mismatch");
             return;
         }
@@ -331,20 +336,20 @@ public final class GSIServer {
     
         // Calculate information
         int counter;
-        synchronized (stateLock) {
-            counter = stateCounter.incrementAndGet();
+        synchronized (lastState.lock) {
+            counter = lastState.stateCounter.incrementAndGet();
         }
         Instant now = Instant.now();
         
         // Create context object
-        GameStateContext context = new GameStateContext(this, path, latestGameState, now,
-                latestStateContext != null ? latestStateContext.getTimestamp() : null,
+        GameStateContext context = new GameStateContext(this, path, lastState.latestState, now,
+                lastState.latestContext != null ? lastState.latestContext.getTimestamp() : null,
                 counter, address, authTokens, jsonObject, json);
         
         // Update latest state and timestamps
-        synchronized (stateLock) {
-            latestGameState = state;
-            latestStateContext = context;
+        synchronized (lastState.lock) {
+            lastState.latestState = state;
+            lastState.latestContext = context;
         }
         
         // Notify observers
@@ -376,6 +381,7 @@ public final class GSIServer {
         private final InetAddress bindAddr;
         private final Map<String, String> authTokens = new HashMap<>();
         private final Set<GSIObserver> observers = new HashSet<>();
+        private boolean diagPageEnabled = true;
     
     
         /**
@@ -481,13 +487,40 @@ public final class GSIServer {
         }
     
         /**
+         * @return true if the test HTTP page is enabled
+         */
+        public boolean isDiagnosticsPageEnabled() {
+            return diagPageEnabled;
+        }
+    
+        /**
+         * Sets whether the test HTTP page should be enabled. This allows administrators to view debug information
+         * through a web browser.
+         * @param enabled true if the test page should be enabled
+         * @return this builder
+         */
+        public Builder setDiagnosticsPageEnabled(boolean enabled) {
+            this.diagPageEnabled = enabled;
+            return this;
+        }
+    
+        /**
          * Constructs a new {@link GSIServer} with the specified parameters.
          *
          * @return a new {@link GSIServer} object
          */
         public GSIServer build() {
-            return new GSIServer(bindAddr, bindPort, authTokens, observers);
+            return new GSIServer(bindAddr, bindPort, authTokens, observers, diagPageEnabled);
         }
+    }
+    
+    
+    static class StateContainer {
+        volatile GameState latestState;
+        volatile GameStateContext latestContext;
+        final AtomicInteger stateCounter = new AtomicInteger();
+        final AtomicInteger stateRejectCounter = new AtomicInteger();
+        final Object lock = new Object(); // Used to synchronize state updates
     }
     
 }
