@@ -43,13 +43,13 @@ import java.util.concurrent.atomic.AtomicInteger;
  *
  *     // Configure server (port 1337, requiring password)
  *     GSIServer server = new GSIServer.Builder(1337)
- *             .addRequiredAuthToken("password", "Q79v5tcxVQ8u")
+ *             .requireAuthToken("password", "Q79v5tcxVQ8u")
  *             .registerObserver(observer) // Alternatively, you can call this on the GSIServer
  *             .build();
  *
  *     // Start server
  *     try {
- *         server.start(); // Start the server (runs in a separate thread)
+ *         server.start(); // Start the server (will run in a separate thread)
  *         System.out.println("Server started. Listening for state data...");
  *     } catch (IOException e) {
  *         System.out.println("Could not start server.");
@@ -96,6 +96,7 @@ public final class GSIServer {
      * @param requiredAuthTokens the authentication tokens required to accept state reports
      *
      * @deprecated Use inner builder class {@link Builder} to create {@link GSIServer} instances
+     * @see Builder
      */
     @Deprecated(forRemoval = true)
     public GSIServer(int port, InetAddress bindAddr, Map<String, String> requiredAuthTokens) {
@@ -125,6 +126,7 @@ public final class GSIServer {
      * @param requiredAuthTokens the authentication tokens required to accept state reports
      *
      * @deprecated Use inner builder class {@link Builder} to create {@link GSIServer} instances
+     * @see Builder
      */
     @Deprecated(forRemoval = true)
     public GSIServer(int port, Map<String, String> requiredAuthTokens) {
@@ -138,6 +140,7 @@ public final class GSIServer {
      * @param bindAddr the local address to bind to
      *
      * @deprecated Use inner builder class {@link Builder} to create {@link GSIServer} instances
+     * @see Builder
      */
     @Deprecated(forRemoval = true)
     public GSIServer(int port, InetAddress bindAddr) {
@@ -150,6 +153,7 @@ public final class GSIServer {
      * @param port the network port for the server to listen on
      *
      * @deprecated Use inner builder class {@link Builder} to create {@link GSIServer} instances
+     * @see Builder
      */
     @Deprecated(forRemoval = true)
     public GSIServer(int port) {
@@ -394,53 +398,32 @@ public final class GSIServer {
     
         /**
          * Creates a builder with the specified port, binding to all IP interfaces.
-         * @param bindAddr the socket IP address to bind to
+         * @param bindAddr the socket IP address to bind to, or null to bind to all
          * @param bindPort the socket port to bind to
          */
         public Builder(InetAddress bindAddr, int bindPort) {
+            if (bindPort <= 0 || bindPort > 65535)
+                throw new IllegalArgumentException("Port number out of range");
+            
             this.bindAddr = bindAddr;
             this.bindPort = bindPort;
         }
-    
-    
-        /**
-         * @return the port which the server will listen on
-         */
-        public int getBindPort() {
-            return bindPort;
-        }
+        
     
         /**
-         * @return the IP address the server will bind to
-         */
-        public InetAddress getBindAddress() {
-            return bindAddr;
-        }
-    
-        /**
-         * @return an immutable map of authentication tokens required
-         */
-        public Map<String, String> getRequiredAuthTokens() {
-            return Collections.unmodifiableMap(authTokens);
-        }
-    
-        /**
-         * Sets the map of authentication tokens which are required by the server. Any state updates which do not
+         * Adds a map of authentication tokens which are required by the server. Any state updates which do not
          * contain these key/value entries will be rejected.
          *
          * @param authTokens a map of auth tokens (case sensitive)
          * @return this builder
          */
-        public Builder setRequiredAuthTokens(Map<String, String> authTokens) {
-            if (authTokens != null) {
-                for (Map.Entry<String, String> key : authTokens.entrySet())
-                    if (key.getKey() == null || key.getValue() == null)
-                        throw new IllegalArgumentException("Auth token key or value cannot be null.");
-                this.authTokens.clear();
-                this.authTokens.putAll(authTokens);
-            } else {
-                this.authTokens.clear();
-            }
+        public Builder requireAuthTokens(Map<String, String> authTokens) {
+            if (authTokens == null)
+                throw new IllegalArgumentException("authTokens cannot be null.");
+            for (Map.Entry<String, String> key : authTokens.entrySet())
+                if (key.getKey() == null || key.getValue() == null)
+                    throw new IllegalArgumentException("Auth token key or value cannot be null.");
+            this.authTokens.putAll(authTokens);
             return this;
         }
     
@@ -452,20 +435,13 @@ public final class GSIServer {
          * @param value the value/password (case sensitive)
          * @return this builder
          */
-        public Builder addRequiredAuthToken(String key, String value) {
+        public Builder requireAuthToken(String key, String value) {
             if (key == null || value == null)
                 throw new IllegalArgumentException("Auth token key or value cannot be null.");
             authTokens.put(key, value);
             return this;
         }
-    
-        /**
-         * @return a collection of pre-registered observer instances
-         */
-        public Collection<GSIObserver> getObservers() {
-            return Collections.unmodifiableSet(observers);
-        }
-    
+        
         /**
          * Pre-registers an observer instance to listen to state updates.
          *
@@ -476,31 +452,13 @@ public final class GSIServer {
             observers.add(observer);
             return this;
         }
-    
+        
         /**
-         * Removes all pre-registered observers.
+         * Disables the HTTP diagnostics page.
          * @return this builder
          */
-        public Builder clearObservers() {
-            observers.clear();
-            return this;
-        }
-    
-        /**
-         * @return true if the test HTTP page is enabled
-         */
-        public boolean isDiagnosticsPageEnabled() {
-            return diagPageEnabled;
-        }
-    
-        /**
-         * Sets whether the test HTTP page should be enabled. This allows administrators to view debug information
-         * through a web browser.
-         * @param enabled true if the test page should be enabled
-         * @return this builder
-         */
-        public Builder setDiagnosticsPageEnabled(boolean enabled) {
-            this.diagPageEnabled = enabled;
+        public Builder disableDiagnosticsPage() {
+            this.diagPageEnabled = false;
             return this;
         }
     

@@ -71,7 +71,7 @@ GSIObserver observer = (state, context) -> {
 
 // Configure server (port 1337, requiring password)
 GSIServer server = new GSIServer.Builder(1337)
-        .addRequiredAuthToken("password", "Q79v5tcxVQ8u")
+        .requireAuthToken("password", "Q79v5tcxVQ8u")
         .registerObserver(observer) // Alternatively, you can call this on the GSIServer
         .build();
 

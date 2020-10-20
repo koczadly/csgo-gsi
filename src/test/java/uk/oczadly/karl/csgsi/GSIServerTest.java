@@ -26,9 +26,24 @@ public class GSIServerTest {
     
     
     @Test
+    public void testBuilder() {
+        InetAddress addr = InetAddress.getLoopbackAddress();
+        GSIServer srv = new GSIServer.Builder(addr, 1337)
+                .requireAuthToken("t3", "v3") // Single add
+                .requireAuthTokens(Map.of("t1", "v1", "t2", "v2")) // Multi add
+                .disableDiagnosticsPage()
+                .build();
+        
+        assertFalse(srv.diagPageEnabled);
+        assertEquals(1337, srv.getPort());
+        assertSame(addr, srv.getBindingAddress());
+        assertEquals(Map.of("t1", "v1", "t2", "v2", "t3", "v3"), srv.getRequiredAuthTokens());
+    }
+    
+    @Test
     public void testAuthTokensParse() throws Exception {
         TestObserver observer = new TestObserver();
-        GSIServer server = new GSIServer(1337);
+        GSIServer server = new GSIServer.Builder(1337).build();
         server.registerObserver(observer);
         
         server.handleStateUpdate(AUTH_TOKEN_JSON, "/", ADDRESS);
@@ -80,13 +95,13 @@ public class GSIServerTest {
     
     @Test
     public void testEmptyState() { //Ensure no exception
-        new GSIServer(1337).handleStateUpdate("{}", "/", ADDRESS);
+        new GSIServer.Builder(1337).build().handleStateUpdate("{}", "/", ADDRESS);
     }
     
     @Test
     public void testObserverNotification() throws Exception {
         TestObserver observer1 = new TestObserver(), observer2 = new TestObserver();
-        GSIServer server = new GSIServer(1337);
+        GSIServer server = new GSIServer.Builder(1337).build();
         server.registerObserver(observer1);
         server.registerObserver(observer2);
         
@@ -138,7 +153,7 @@ public class GSIServerTest {
     
     public boolean checkAuthValidation(Map<String, String> expectedTokens) throws Exception {
         TestObserver observer = new TestObserver();
-        GSIServer server = new GSIServer(1337, expectedTokens);
+        GSIServer server = new GSIServer.Builder(1337).requireAuthTokens(expectedTokens).build();
         server.registerObserver(observer);
         
         server.handleStateUpdate(AUTH_TOKEN_JSON, "/", ADDRESS);
