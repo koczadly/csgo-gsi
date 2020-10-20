@@ -1,6 +1,5 @@
 package uk.oczadly.karl.csgsi;
 
-import com.google.gson.Gson;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParseException;
 import com.google.gson.JsonParser;
@@ -67,8 +66,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 public final class GSIServer {
     
     private static final Logger LOGGER = LoggerFactory.getLogger(GSIServer.class);
-    private static final Gson GSON = Util.GSON;
-    private static final ExecutorService OBS_EXECUTOR = Executors.newCachedThreadPool();
+    private static final ExecutorService OBSERVER_EXECUTOR = Executors.newCachedThreadPool();
     
     final HTTPServer server;
     final Set<GSIObserver> observers = new CopyOnWriteArraySet<>();
@@ -225,7 +223,7 @@ public final class GSIServer {
         
         List<Future<?>> futures = new ArrayList<>(observers.size());
         for (GSIObserver observer : observers) {
-            futures.add(OBS_EXECUTOR.submit(() -> observer.update(state, context)));
+            futures.add(OBSERVER_EXECUTOR.submit(() -> observer.update(state, context)));
         }
         
         // Wait for all tasks to complete (and log any errors)
@@ -307,14 +305,6 @@ public final class GSIServer {
     
     
     /**
-     * Used for unit tests
-     */
-    ExecutorService getObserverExecutorService() {
-        return OBS_EXECUTOR;
-    }
-    
-    
-    /**
      * Handles a new JSON state and notifies the appropriate observers.
      */
     void handleStateUpdate(String json, String path, InetAddress address) {
@@ -336,7 +326,7 @@ public final class GSIServer {
         }
         
         // Parse the game state into an object
-        GameState state = GSON.fromJson(jsonObject, GameState.class);
+        GameState state = Util.GSON.fromJson(jsonObject, GameState.class);
     
         // Calculate information
         int counter;
@@ -362,7 +352,7 @@ public final class GSIServer {
     
     private Map<String, String> verifyStateAuth(JsonObject json) {
         // Parse auth tokens
-        Map<String, String> authTokens = GSON.fromJson(json.getAsJsonObject("auth"),
+        Map<String, String> authTokens = Util.GSON.fromJson(json.getAsJsonObject("auth"),
                 new TypeToken<Map<String, String>>() {}.getType());
         authTokens = (authTokens != null) ? authTokens : Collections.emptyMap();
         
