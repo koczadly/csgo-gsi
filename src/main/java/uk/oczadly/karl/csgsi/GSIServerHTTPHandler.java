@@ -88,7 +88,7 @@ class GSIServerHTTPHandler implements HTTPRequestHandler {
         sb.append("<b>Auth keys configured:</b> ").append(requiresAuth ? "Yes" : "No").append("<br>\n");
         // Observers
         sb.append("<b>Subscribed observers:</b> <span")
-                .append(gsi.observers.isEmpty() ? " style=\"color:red\">" : ">")
+                .append(gsi.observers.size() == 0 ? " style=\"color:red\">" : ">")
                 .append(gsi.observers.size()).append("</span><br>\n");
         // State counter
         sb.append("<b>State updates received:</b> ").append(String.format("%,d", stateCount))

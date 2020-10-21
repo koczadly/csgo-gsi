@@ -29,7 +29,7 @@ public class GSIServerTest {
     @Test
     public void testBuilder() {
         InetAddress addr = InetAddress.getLoopbackAddress();
-        GSIObserver observer = new TestObserver(null);
+        GSIObserver observer = new MockObserver(null);
         GSIServer srv = new GSIServer.Builder(addr, 1337)
                 .requireAuthToken("t3", "v3") // Single add
                 .requireAuthTokens(Map.of("t1", "v1", "t2", "v2")) // Multi add
@@ -40,13 +40,13 @@ public class GSIServerTest {
         assertEquals(1337, srv.getPort());
         assertSame(addr, srv.getBindingAddress());
         assertEquals(Map.of("t1", "v1", "t2", "v2", "t3", "v3"), srv.getRequiredAuthTokens());
-        assertEquals(Set.of(observer), srv.observers);
+        assertEquals(Set.of(observer), srv.observers.observers);
     }
     
     @Test
     public void testAuthTokensParse() throws Exception {
         CountDownLatch observerLatch = new CountDownLatch(1);
-        TestObserver observer = new TestObserver(observerLatch);
+        MockObserver observer = new MockObserver(observerLatch);
         GSIServer server = new GSIServer.Builder(1337).build();
         server.registerObserver(observer);
         
@@ -99,7 +99,7 @@ public class GSIServerTest {
     @Test
     public void testObserverNotification() throws Exception {
         CountDownLatch observerLatch = new CountDownLatch(2);
-        TestObserver observer1 = new TestObserver(observerLatch), observer2 = new TestObserver(observerLatch);
+        MockObserver observer1 = new MockObserver(observerLatch), observer2 = new MockObserver(observerLatch);
         GSIServer server = new GSIServer.Builder(1337)
                 .registerObserver(observer1)
                 .registerObserver(observer2).build();
@@ -115,7 +115,7 @@ public class GSIServerTest {
                 server, uriPath, previous, i1, i2, 43, address, authTokens, jsonObject, jsonString);
         
         // Notify observing object
-        server.notifyObservers(state, context);
+        server.observers.notify(state, context);
         assertTrue(observerLatch.await(OBSERVER_TIMEOUT, TimeUnit.MILLISECONDS)); // Wait for observers
         
         // Verify objects match
@@ -146,34 +146,14 @@ public class GSIServerTest {
     }
     
     
-    
     public boolean checkAuthValidation(Map<String, String> expectedTokens) throws Exception {
         CountDownLatch observerLatch = new CountDownLatch(1);
-        TestObserver observer = new TestObserver(observerLatch);
+        MockObserver observer = new MockObserver(observerLatch);
         GSIServer server = new GSIServer.Builder(1337)
                 .requireAuthTokens(expectedTokens)
                 .registerObserver(observer).build();
         server.handleStateUpdate(AUTH_TOKEN_JSON, "/", ADDRESS);
         return observerLatch.await(OBSERVER_TIMEOUT, TimeUnit.MILLISECONDS) && observer.called;
-    }
-    
-    private static class TestObserver implements GSIObserver {
-        CountDownLatch latch;
-        boolean called = false;
-        GameState state;
-        GameStateContext context;
-    
-        public TestObserver(CountDownLatch latch) {
-            this.latch = latch;
-        }
-    
-        @Override
-        public void update(GameState state, GameStateContext context) {
-            this.called = true;
-            this.state = state;
-            this.context = context;
-            if (latch != null) latch.countDown();
-        }
     }
 
 }

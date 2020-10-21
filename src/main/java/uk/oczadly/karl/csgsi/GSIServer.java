@@ -15,7 +15,6 @@ import java.io.IOException;
 import java.net.InetAddress;
 import java.time.Instant;
 import java.util.*;
-import java.util.concurrent.*;
 import java.util.concurrent.atomic.AtomicInteger;
 
 /**
@@ -66,10 +65,9 @@ import java.util.concurrent.atomic.AtomicInteger;
 public final class GSIServer {
     
     private static final Logger LOGGER = LoggerFactory.getLogger(GSIServer.class);
-    private static final ExecutorService OBSERVER_EXECUTOR = Executors.newCachedThreadPool();
     
     final HTTPServer server;
-    final Set<GSIObserver> observers = new CopyOnWriteArraySet<>();
+    final ObserverRegistry observers = new ObserverRegistry();
     final Map<String, String> requiredAuthTokens;
     final boolean diagPageEnabled;
     
@@ -81,7 +79,7 @@ public final class GSIServer {
               Collection<GSIObserver> observers, boolean diagPageEnabled) {
         this.server = new HTTPServer(port, bindAddr, new GSIServerHTTPHandler(this));
         this.requiredAuthTokens = Collections.unmodifiableMap(authTokens);
-        this.observers.addAll(observers);
+        this.observers.register(observers);
         this.diagPageEnabled = diagPageEnabled;
     }
     
@@ -181,11 +179,7 @@ public final class GSIServer {
      * @param observer the observer to register
      */
     public void registerObserver(GSIObserver observer) {
-        if (LOGGER.isDebugEnabled())
-            LOGGER.debug("New observer #{} registered for GSI server on port {}",
-                    Integer.toHexString(System.identityHashCode(observer)), server.getPort());
-        
-        observers.add(observer);
+        observers.register(observer);
     }
     
     /**
@@ -195,10 +189,6 @@ public final class GSIServer {
      * @param observer the observer to unsubscribe
      */
     public void removeObserver(GSIObserver observer) {
-        if (LOGGER.isDebugEnabled())
-            LOGGER.debug("Removing observer #{} from GSI server on port {}",
-                    Integer.toHexString(System.identityHashCode(observer)), server.getPort());
-        
         observers.remove(observer);
     }
     
@@ -206,36 +196,7 @@ public final class GSIServer {
      * Removes all subscribed observers from the registry.
      */
     public void clearObservers() {
-        if (LOGGER.isDebugEnabled())
-            LOGGER.debug("Removing all observers from GSI server on port {}", server.getPort());
         observers.clear();
-    }
-    
-    /**
-     * Notifies the registered observers of an updated state.
-     *
-     * @param state         the new game state information
-     * @param context       the game state and request context
-     */
-    protected void notifyObservers(GameState state, GameStateContext context) {
-        LOGGER.debug("Notifying {} observers of new GSI state from server on port {}",
-                observers.size(), server.getPort());
-        
-        List<Future<?>> futures = new ArrayList<>(observers.size());
-        for (GSIObserver observer : observers) {
-            futures.add(OBSERVER_EXECUTOR.submit(() -> observer.update(state, context)));
-        }
-        
-        // Wait for all tasks to complete (and log any errors)
-        for (Future<?> f : futures) {
-            try {
-                f.get();
-            } catch (InterruptedException ignored) {
-            } catch (ExecutionException e) {
-                LOGGER.error("Uncaught exception in GSIServer observer notification", e.getCause());
-            }
-        }
-        LOGGER.debug("Finished notifying state observers.");
     }
     
     
@@ -261,7 +222,9 @@ public final class GSIServer {
         serverStartTimestamp = Instant.now();
         
         server.start();
-        LOGGER.info("GSI server on port {} successfully started.", server.getPort());
+        LOGGER.info("GSI server successfully started.");
+        LOGGER.info("Port: {}, bind IP: {}, auth required: {}, diagnostics enabled: {}.",
+                server.getPort(), server.getBindAddress(), !requiredAuthTokens.isEmpty(), diagPageEnabled);
     }
     
     /**
@@ -347,7 +310,7 @@ public final class GSIServer {
         }
         
         // Notify observers
-        notifyObservers(state, context);
+        observers.notify(state, context);
     }
     
     private Map<String, String> verifyStateAuth(JsonObject json) {
