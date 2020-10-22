@@ -15,7 +15,7 @@ import java.util.concurrent.*;
  */
 class ObserverRegistry {
     
-    private static final Logger LOGGER = LoggerFactory.getLogger(GSIServer.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(ObserverRegistry.class);
     
     private static final ExecutorService OBSERVER_EXECUTOR = Executors.newCachedThreadPool();
     
