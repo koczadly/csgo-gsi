@@ -32,13 +32,14 @@ import java.util.regex.Pattern;
  * </pre>
  *
  * <p>Profiles can then be created and written to the system using the {@link #writeConfigFile(String)} method (refer to
- * method documentation).</p>
+ * method documentation). Service name strings must contain only standard letters and digits, and underscores. The
+ * length must not exceed 32 characters, and you should ensure it is unique to your specific service or application.</p>
  */
 public class GSIConfig {
     
     private static final Logger LOGGER = LoggerFactory.getLogger(GSIConfig.class);
     
-    private static final Pattern SERVICE_NAME_PATTERN = Pattern.compile("^[\\w ]{1,24}$");
+    private static final Pattern SERVICE_NAME_PATTERN = Pattern.compile("^\\w{1,32}$");
     private static final String DEFAULT_DESC = "Created using https://github.com/koczadly/csgo-gsi";
     
     
@@ -105,7 +106,6 @@ public class GSIConfig {
     public GSIConfig setURI(String uri) {
         if (uri == null)
             throw new NullPointerException("URI argument cannot be null.");
-        
         this.uri = uri;
         return this;
     }
@@ -170,11 +170,7 @@ public class GSIConfig {
      * @return this current object
      */
     public GSIConfig setDescription(String desc) {
-        if (desc == null) {
-            this.description = DEFAULT_DESC;
-        } else {
-            this.description = desc;
-        }
+        this.description = Objects.requireNonNullElse(desc, DEFAULT_DESC);
         return this;
     }
     
@@ -567,9 +563,7 @@ public class GSIConfig {
         if (Files.isDirectory(file))
             throw new IllegalArgumentException("Path was an existing directory, and not a file.");
         
-        if (LOGGER.isDebugEnabled())
-            LOGGER.debug("Attempting to create config file {}...", file.toString());
-        
+        LOGGER.debug("Attempting to create config file {}...", file.toString());
         try (BufferedWriter writer = Files.newBufferedWriter(file, StandardCharsets.UTF_8)) {
             export(writer);
         }
@@ -624,10 +618,7 @@ public class GSIConfig {
             throw new NotDirectoryException("Path must be a directory.");
         
         Path file = getConfigFile(dir, serviceName);
-        
-        if (LOGGER.isDebugEnabled())
-            LOGGER.debug("Attempting to remove config file {}...", file.toString());
-        
+        LOGGER.debug("Attempting to remove config file {}...", file.toString());
         return Files.deleteIfExists(file);
     }
     
@@ -704,7 +695,7 @@ public class GSIConfig {
         if (!SERVICE_NAME_PATTERN.matcher(serviceName).matches())
             throw new IllegalArgumentException("Invalid service name (can only include standard word characters, " +
                     "digits and underscores).");
-        String fName = "gamestate_integration_" + serviceName.toLowerCase().replace(' ', '_') + ".cfg";
+        String fName = "gamestate_integration_" + serviceName.toLowerCase() + ".cfg";
         return dir.resolve(fName);
     }
     
