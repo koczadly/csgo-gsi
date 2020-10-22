@@ -58,13 +58,9 @@ class GSIServerHTTPHandler implements HTTPRequestHandler {
         // Retrieve latest state information
         long now = System.currentTimeMillis();
         boolean requiresAuth = !gsi.getRequiredAuthTokens().isEmpty();
-        GameStateContext latestContext;
-        int stateCount, rejectCount;
-        synchronized (gsi.lastState.lock) {
-            latestContext = gsi.lastState.latestContext;
-            stateCount = gsi.lastState.stateCounter.intValue();
-            rejectCount = gsi.lastState.stateRejectCounter.intValue();
-        }
+        GameStateContext latestContext = gsi.state.latestContext;
+        int stateCount = gsi.state.stateCounter.intValue();
+        int rejectCount = gsi.state.stateRejectCounter.intValue();
         
         // Build HTML
         StringBuilder sb = new StringBuilder();
@@ -95,7 +91,7 @@ class GSIServerHTTPHandler implements HTTPRequestHandler {
                 .append(rejectCount == 0 ? " <i>(" : " <i style=\"color:red\">(")
                 .append(String.format("%,d", rejectCount)).append(" rejected)</i><br>\n");
         
-        if (gsi.lastState.latestContext != null) {
+        if (gsi.state.latestContext != null) {
             // Latest TS
             sb.append("<b>Latest state timestamp:</b> ")
                     .append(DateTimeFormatter.RFC_1123_DATE_TIME.format(
