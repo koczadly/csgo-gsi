@@ -41,7 +41,7 @@ class HTTPConnection implements Runnable {
             // Read start-line header
             String startLine = readLine(is);
             if (startLine == null) {
-                LOGGER.warn("HTTP stream returned null data.");
+                LOGGER.warn("Socket InputStream returned null data.");
                 return;
             }
             Matcher startMatcher = START_REGEX.matcher(startLine);
@@ -52,28 +52,31 @@ class HTTPConnection implements Runnable {
             
             // Read headers and body
             Map<String, String> headers = parseHeaders(is);
+            LOGGER.debug("Parsed {} headers from request.", headers.size());
             String body = null;
             if (headers.containsKey("content-length")) {
                 body = readBody(socket.getInputStream(), Integer.parseInt(headers.get("content-length")));
             }
-    
+            
             // Handle response
             HTTPResponse res;
             try {
-                res = handler.handle(socket.getInetAddress(),
-                        startMatcher.group(2), startMatcher.group(1), headers, body);
+                res = handler.handle(socket.getInetAddress(), startMatcher.group(2),
+                        startMatcher.group(1).toUpperCase(), headers, body);
             } catch (Exception e) {
-                LOGGER.error("HTTP handler threw uncaught exception.", e);
+                LOGGER.error("Handler threw uncaught exception.", e);
                 res = new HTTPResponse(500);
             }
 
             // Return header & body data
+            LOGGER.debug("Writing response data, status code: {}, body len: {}...",
+                    res.getStatusCode(), res.getBody() != null ? res.getBody().length() : 0);
             writeResponse(res, socket.getOutputStream());
 
             // Close socket
             os.flush();
         } catch (Exception e) {
-            LOGGER.warn("Failed to handle HTTP connection.", e);
+            LOGGER.error("Failed to handle HTTP connection.", e);
         } finally {
             //Close socket
             try {
@@ -100,32 +103,44 @@ class HTTPConnection implements Runnable {
     
     private String readBody(InputStream is, int length) throws IOException {
         byte[] buffer = new byte[length];
-        is.read(buffer, 0, length);
-        return new String(buffer, CHARSET);
+        int readLen = is.read(buffer, 0, length);
+        if (readLen == -1) {
+            LOGGER.debug("Read 0 bytes as stream has ended.");
+            return null;
+        }
+        return new String(buffer, 0, readLen, CHARSET);
     }
     
+    
     private void writeResponse(HTTPResponse res, OutputStream os) throws IOException {
-        // Always prints OK response message, even if not a 200 status code.
-        writeString(os, "HTTP/1.1 " + res.getStatusCode() + " OK\r\n");
+        writeString(os, "HTTP/1.1 " + res.getStatusCode());
+        if (res.getStatusCode() >= 200 && res.getStatusCode() < 300) {
+            writeString(os, " OK\r\n"); // 200 series
+        } else {
+            writeString(os, " Error\r\n"); // non-200 series
+        }
         if (res.getBody() != null) {
             byte[] body = res.getBody().getBytes(CHARSET);
+            writeString(os, "Connection: close\r\n");
             writeString(os, "Content-length: " + body.length + "\r\n");
             String contentType = res.getContentType() != null ? res.getContentType() : "text/plain";
-            writeString(os, "Content-type: " + contentType + "\r\n\r\n");
-            writeString(os, res.getBody());
+            writeString(os, "Content-type: " + contentType + "; charset=" + CHARSET.name() + "\r\n\r\n");
+            os.write(body);
         }
         os.close();
     }
     
+    /** Read a line without buffering/reading further */
     private String readLine(InputStream inputStream) throws IOException {
         ByteArrayOutputStream bos = new ByteArrayOutputStream();
         int c;
         for (c = inputStream.read(); c != '\n' && c != -1; c = inputStream.read())
             if (c != '\r') bos.write(c);
         if (c == -1 && bos.size() == 0) return null;
-        return bos.toString("UTF-8");
+        return new String(bos.toByteArray(), 0, bos.size(), CHARSET);
     }
     
+    /** Write a string in the correct char encoding */
     private void writeString(OutputStream os, String str) throws IOException {
         os.write(str.getBytes(CHARSET));
     }

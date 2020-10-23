@@ -16,13 +16,12 @@ public class HTTPServer {
     
     private static final Logger LOGGER = LoggerFactory.getLogger(HTTPServer.class);
     
+    private final int port;
+    private final InetAddress bindAddr;
+    private final HTTPRequestHandler handler;
     
-    private int port;
-    private InetAddress bindAddr;
-    private HTTPRequestHandler handler;
-    
-    private Thread thread;
-    private ServerSocket socket;
+    private volatile Thread thread;
+    private volatile ServerSocket socket;
     
     
     /**
@@ -66,7 +65,6 @@ public class HTTPServer {
             throw new IllegalStateException("Server is already running.");
         
         LOGGER.info("Starting HTTP server on port {}...", port);
-        
         socket = new ServerSocket(port, 50, bindAddr);
         thread = new Thread(new ConnectionAcceptorTask());
         thread.start();
@@ -86,8 +84,7 @@ public class HTTPServer {
         thread.interrupt();
         try {
             socket.close();
-        } catch (IOException ignored) {
-        }
+        } catch (IOException ignored) {}
     }
     
     
@@ -101,6 +98,7 @@ public class HTTPServer {
                     LOGGER.debug("Incoming HTTP request from {} on server port {}...",
                             conn.getInetAddress(), getPort());
                     new HTTPConnection(conn, handler).run();
+                    LOGGER.debug("HTTP exchange finished.");
                 } catch (Exception e) {
                     LOGGER.error("Exception occured while handling HTTP connection", e);
                 }
