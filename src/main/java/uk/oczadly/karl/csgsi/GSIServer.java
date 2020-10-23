@@ -360,6 +360,9 @@ public final class GSIServer {
          * Adds a map of authentication tokens which are required by the server. Any state updates which do not
          * contain these key/value entries will be rejected.
          *
+         * <p>This method will add to any existing required authentication tokens configured, and will not clear them.
+         * Any overlapping key entries will be overwritten.</p>
+         *
          * @param authTokens a map of auth tokens (case sensitive)
          * @return this builder
          */
@@ -376,6 +379,9 @@ public final class GSIServer {
         /**
          * Adds an authentication token which will be required by the server. Any state updates which do not contain
          * these key/value entries will be rejected.
+         *
+         * <p>This method may be called multiple times if multiple authentication tokens are required, and will not
+         * clear existing ones. If the key has already been used, then the existing entry will be overwritten.</p>
          *
          * @param key   the key (case sensitive)
          * @param value the value/password (case sensitive)
