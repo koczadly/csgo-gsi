@@ -5,6 +5,7 @@ import org.slf4j.LoggerFactory;
 
 import java.io.*;
 import java.net.Socket;
+import java.net.URLDecoder;
 import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
 import java.util.HashMap;
@@ -49,6 +50,8 @@ class HTTPConnection implements Runnable {
                 LOGGER.warn("Invalid HTTP start-line header \"{}\"!", startLine);
                 return;
             }
+            String reqMethod = startMatcher.group(1).toUpperCase();
+            String reqPath = URLDecoder.decode(startMatcher.group(2), CHARSET.name());
             
             // Read headers and body
             Map<String, String> headers = parseHeaders(is);
@@ -61,8 +64,7 @@ class HTTPConnection implements Runnable {
             // Handle response
             HTTPResponse res;
             try {
-                res = handler.handle(socket.getInetAddress(), startMatcher.group(2),
-                        startMatcher.group(1).toUpperCase(), headers, body);
+                res = handler.handle(socket.getInetAddress(), reqPath, reqMethod, headers, body);
             } catch (Exception e) {
                 LOGGER.error("Handler threw uncaught exception.", e);
                 res = new HTTPResponse(500);
@@ -80,14 +82,14 @@ class HTTPConnection implements Runnable {
         } finally {
             //Close socket
             try {
-                if (!socket.isClosed())
-                    socket.close();
+                if (!socket.isClosed()) socket.close();
             } catch (IOException ignored) {}
         }
     }
     
     
-    private Map<String, String> parseHeaders(InputStream is) throws IOException {
+    /** Parse a set of headers into a map */
+    private static Map<String, String> parseHeaders(InputStream is) throws IOException {
         Map<String, String> headers = new HashMap<>();
         String s;
         while ((s = readLine(is)) != null) {
@@ -101,7 +103,8 @@ class HTTPConnection implements Runnable {
         return headers;
     }
     
-    private String readBody(InputStream is, int length) throws IOException {
+    /** Read the body as a string */
+    private static String readBody(InputStream is, int length) throws IOException {
         byte[] buffer = new byte[length];
         int readLen = is.read(buffer, 0, length);
         if (readLen == -1) {
@@ -111,8 +114,8 @@ class HTTPConnection implements Runnable {
         return new String(buffer, 0, readLen, CHARSET);
     }
     
-    
-    private void writeResponse(HTTPResponse res, OutputStream os) throws IOException {
+    /** Write response message and server information */
+    private static void writeResponse(HTTPResponse res, OutputStream os) throws IOException {
         writeString(os, "HTTP/1.1 " + res.getStatusCode());
         if (res.getStatusCode() >= 200 && res.getStatusCode() < 300) {
             writeString(os, " OK\r\n"); // 200 series
@@ -131,7 +134,7 @@ class HTTPConnection implements Runnable {
     }
     
     /** Read a line without buffering/reading further */
-    private String readLine(InputStream inputStream) throws IOException {
+    private static String readLine(InputStream inputStream) throws IOException {
         ByteArrayOutputStream bos = new ByteArrayOutputStream();
         int c;
         for (c = inputStream.read(); c != '\n' && c != -1; c = inputStream.read())
@@ -141,7 +144,7 @@ class HTTPConnection implements Runnable {
     }
     
     /** Write a string in the correct char encoding */
-    private void writeString(OutputStream os, String str) throws IOException {
+    private static void writeString(OutputStream os, String str) throws IOException {
         os.write(str.getBytes(CHARSET));
     }
     

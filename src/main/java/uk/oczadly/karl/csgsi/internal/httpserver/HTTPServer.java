@@ -94,6 +94,7 @@ public class HTTPServer {
         public void run() {
             while (!Thread.currentThread().isInterrupted()) {
                 try {
+                    LOGGER.debug("Awaiting HTTP connection...");
                     Socket conn = socket.accept();
                     LOGGER.debug("Incoming HTTP request from {} on server port {}...",
                             conn.getInetAddress(), getPort());
