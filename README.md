@@ -69,10 +69,10 @@ GSIObserver observer = (state, context) -> {
     }
 };
 
-// Configure server (port 1337, requiring password)
-GSIServer server = new GSIServer.Builder(1337)
-        .requireAuthToken("password", "Q79v5tcxVQ8u")
-        .registerObserver(observer) // Alternatively, you can call this on the GSIServer
+// Configure server
+GSIServer server = new GSIServer.Builder(1337)        // Port 1337, on all network interfaces
+        .requireAuthToken("password", "Q79v5tcxVQ8u") // Require the specified password
+        .registerObserver(observer)                   // Alternatively, you can call this on the GSIServer dynamically
         .build();
 
 // Start server

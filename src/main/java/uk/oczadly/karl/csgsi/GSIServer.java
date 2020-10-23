@@ -39,10 +39,10 @@ import java.util.concurrent.atomic.AtomicInteger;
  *         }
  *     };
  *
- *     // Configure server (port 1337, requiring password)
- *     GSIServer server = new GSIServer.Builder(1337)
- *             .requireAuthToken("password", "Q79v5tcxVQ8u")
- *             .registerObserver(observer) // Alternatively, you can call this on the GSIServer
+ *     // Configure server
+ *     GSIServer server = new GSIServer.Builder(1337)        // Port 1337, on all network interfaces
+ *             .requireAuthToken("password", "Q79v5tcxVQ8u") // Require the specified password
+ *             .registerObserver(observer)                   // Alternatively, you can call this on the GSIServer
  *             .build();
  *
  *     // Start server
@@ -399,6 +399,8 @@ public final class GSIServer {
          *
          * @param observer the observer to register
          * @return this builder
+         * 
+         * @see GSIServer#registerObserver(GSIObserver)
          */
         public Builder registerObserver(GSIObserver observer) {
             observers.add(observer);
@@ -406,7 +408,8 @@ public final class GSIServer {
         }
         
         /**
-         * Disables the HTTP diagnostics page.
+         * Disables the HTTP diagnostics page, instead returning an HTTP error.
+         *
          * @return this builder
          */
         public Builder disableDiagnosticsPage() {
