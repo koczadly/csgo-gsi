@@ -61,4 +61,9 @@ public class Util {
             LOGGER.warn("Failed to read registry key {} at path {}", key, path);
         return value;
     }
+    
+    public static String refVal(Object o) {
+        return o.getClass().getSimpleName() + '@' + Integer.toHexString(System.identityHashCode(o));
+    }
+    
 }

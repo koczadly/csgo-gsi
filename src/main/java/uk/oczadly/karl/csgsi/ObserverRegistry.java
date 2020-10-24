@@ -2,6 +2,7 @@ package uk.oczadly.karl.csgsi;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import uk.oczadly.karl.csgsi.internal.Util;
 import uk.oczadly.karl.csgsi.state.GameState;
 
 import java.util.ArrayList;
@@ -27,7 +28,9 @@ class ObserverRegistry {
      * @param observer the observer to register
      */
     public void register(GSIObserver observer) {
-        LOGGER.debug("Registering observer #{}...", Integer.toHexString(System.identityHashCode(observer)));
+        if (observer == null) throw new IllegalArgumentException("Observer cannot be null.");
+        if (LOGGER.isDebugEnabled())
+            LOGGER.debug("Registering observer {}...", Util.refVal(observer));
         observers.add(observer);
     }
     
@@ -36,7 +39,8 @@ class ObserverRegistry {
      * @param observers the observers to register
      */
     public void register(Collection<GSIObserver> observers) {
-        LOGGER.debug("Registering multiple observers...");
+        if (observers == null) throw new IllegalArgumentException("Observers cannot be null.");
+        LOGGER.debug("Registering {} new observers...", observers.size());
         this.observers.addAll(observers);
     }
     
@@ -45,7 +49,9 @@ class ObserverRegistry {
      * @param observer the observer to remove
      */
     public void remove(GSIObserver observer) {
-        LOGGER.debug("Removing observer #{}...", Integer.toHexString(System.identityHashCode(observer)));
+        if (observer == null) throw new IllegalArgumentException("Observer cannot be null.");
+        if (LOGGER.isDebugEnabled())
+            LOGGER.debug("Removing observer {}...", Util.refVal(observer));
         observers.remove(observer);
     }
     
@@ -53,7 +59,7 @@ class ObserverRegistry {
      * Clears all observers from the registry.
      */
     public void clear() {
-        LOGGER.debug("Clearing observers list...");
+        LOGGER.debug("Clearing observers registry...");
         observers.clear();
     }
     
@@ -71,7 +77,7 @@ class ObserverRegistry {
      * @param state   the new game state information
      * @param context the game state and request context
      */
-    protected void notify(GameState state, GameStateContext context) {
+    public void notify(GameState state, GameStateContext context) {
         LOGGER.debug("Notifying {} observers of new GSI state...", observers.size());
         
         // Submit tasks and collect list of futures
@@ -86,7 +92,7 @@ class ObserverRegistry {
                 f.get();
             } catch (InterruptedException ignored) {
             } catch (ExecutionException e) {
-                LOGGER.error("Uncaught exception in GSIServer observer notification", e.getCause());
+                LOGGER.error("Unhandled exception in observer notification task", e.getCause());
             }
         }
         LOGGER.debug("Finished notifying state observers.");
