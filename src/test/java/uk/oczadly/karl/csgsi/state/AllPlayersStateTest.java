@@ -2,14 +2,15 @@ package uk.oczadly.karl.csgsi.state;
 
 import org.junit.Test;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
+import java.util.Map;
+
+import static org.junit.Assert.*;
 
 public class AllPlayersStateTest extends GameStateBaseTest {
     
     @Test
     public void testSize() {
-        GameState state = deserializeState("{\n" +
+        GameState gameState = deserializeState("{\n" +
                 "  \"allplayers\": {\n" +
                 "    \"76561197960265729\": {\n" +
                 "      \"name\": \"Wesley\",\n" +
@@ -56,12 +57,15 @@ public class AllPlayersStateTest extends GameStateBaseTest {
                 "    }\n" +
                 "  }\n" +
                 "}");
-        assertNotNull(state);
         
-        assertEquals(1, state.getAllPlayerStates().size());
-        assertNotNull(state.getAllPlayerStates().get("76561197960265729"));
+        assertNotNull(gameState);
+        assertTrue(gameState.getAllPlayers().isPresent());
+        Map<Long, PlayerState> state = gameState.getAllPlayers().get();
         
-        assertEquals("Wesley", state.getAllPlayerStates().get("76561197960265729").getName());
+        assertEquals(1, state.size());
+        assertNotNull(state.get(76561197960265729L));
+        
+        assertEquals("Wesley", state.get(76561197960265729L).getName());
     }
     
 }

@@ -17,22 +17,16 @@ public class ProviderStateTest extends GameStateBaseTest {
                 "  \"timestamp\": 1556199071\n" +
                 "  }\n" +
                 "}");
-        ProviderState state = gameState.getProviderDetails();
         
         assertNotNull(gameState);
-        assertNotNull(state);
+        assertTrue(gameState.getProvider().isPresent());
+        ProviderState state = gameState.getProvider().get();
     
         assertEquals("Counter-Strike: Global Offensive", state.getName());
         assertEquals(730, state.getAppId());
         assertEquals(13688, state.getVersion());
-        assertEquals("76561198050830377", state.getClientSteamId());
-        assertEquals(1556199071, state.getTimeStamp().getEpochSecond());
-    }
-    
-    @Test
-    public void testEmpty() {
-        GameState state = deserializeState("{}");
-        assertNull(state.getProviderDetails());
+        assertEquals(76561198050830377L, state.getClientSteamId());
+        assertEquals(1556199071, state.getTimestamp());
     }
 
 }

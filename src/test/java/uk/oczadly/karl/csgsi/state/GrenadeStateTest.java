@@ -3,14 +3,15 @@ package uk.oczadly.karl.csgsi.state;
 import org.junit.Test;
 import uk.oczadly.karl.csgsi.state.components.Coordinate;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
+import java.util.Map;
+
+import static org.junit.Assert.*;
 
 public class GrenadeStateTest extends GameStateBaseTest {
     
     @Test
     public void testDetails() {
-        GameState state = deserializeState("{\n" +
+        GameState gameState = deserializeState("{\n" +
                 "  \"grenades\": {\n" +
                 "    \"129\": {\n" +
                 "      \"owner\": 76561198050830377,\n" +
@@ -22,12 +23,13 @@ public class GrenadeStateTest extends GameStateBaseTest {
                 "    }\n" +
                 "  }\n" +
                 "}");
-        assertNotNull(state);
         
-        assertNotNull(state.getGrenadeStates());
-        assertEquals(1, state.getGrenadeStates().size());
+        assertNotNull(gameState);
+        assertTrue(gameState.getGrenades().isPresent());
+        Map<Integer, GrenadeState> state = gameState.getGrenades().get();
         
-        GrenadeState grenade = state.getGrenadeStates().get(129);
+        assertEquals(1, state.size());
+        GrenadeState grenade = state.get(129);
         assertEquals(new Coordinate(2499.41, 49.75, 1616.00), grenade.getPosition());
         assertEquals(new Coordinate(1d, 2d, 3d), grenade.getVelocity());
         assertEquals(6.9, grenade.getLifetime(), 1e-9);

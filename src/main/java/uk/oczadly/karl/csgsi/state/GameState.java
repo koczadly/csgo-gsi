@@ -5,32 +5,33 @@ import com.google.gson.annotations.SerializedName;
 import uk.oczadly.karl.csgsi.config.DataComponent;
 
 import java.util.Map;
+import java.util.Optional;
 
 public class GameState {
     
     @Expose @SerializedName("provider")
-    private ProviderState providerDetails;
+    private ProviderState provider;
     
     @Expose @SerializedName("map")
-    private MapState mapState;
+    private MapState map;
     
     @Expose @SerializedName("player")
-    private PlayerState playerState;
+    private PlayerState player;
     
     @Expose @SerializedName("round")
-    private RoundState roundState;
+    private RoundState round;
     
     @Expose @SerializedName("grenades")
-    private Map<Integer, GrenadeState> grenadeStates;
+    private Map<Integer, GrenadeState> grenades;
     
     @Expose @SerializedName("allplayers")
-    private Map<String, PlayerState> playerStates;
+    private Map<Long, PlayerState> players;
     
     @Expose @SerializedName("bomb")
-    private BombState bombState;
+    private BombState bomb;
     
     @Expose @SerializedName("phase_countdowns")
-    private PhaseCountdownState phaseCountdownState;
+    private PhaseCountdownState phaseCountdowns;
     
     
     /**
@@ -42,10 +43,10 @@ public class GameState {
      *     <li>{@link DataComponent#PROVIDER}</li>
      * </ul>
      *
-     * @return the game client provider information, or null if not sent
+     * @return the game client provider information
      */
-    public ProviderState getProviderDetails() {
-        return providerDetails;
+    public Optional<ProviderState> getProvider() {
+        return Optional.ofNullable(provider);
     }
     
     /**
@@ -58,10 +59,10 @@ public class GameState {
      *     <li>{@link DataComponent#MAP_ROUND_WINS}</li>
      * </ul>
      *
-     * @return the current map state data, or null if not sent
+     * @return the current map state data
      */
-    public MapState getMapState() {
-        return mapState;
+    public Optional<MapState> getMap() {
+        return Optional.ofNullable(map);
     }
     
     /**
@@ -77,10 +78,10 @@ public class GameState {
      *     <li>{@link DataComponent#PLAYER_WEAPONS}</li>
      * </ul>
      *
-     * @return the current player's state data, or null if not sent
+     * @return the current player's state data
      */
-    public PlayerState getPlayerState() {
-        return playerState;
+    public Optional<PlayerState> getPlayer() {
+        return Optional.ofNullable(player);
     }
     
     /**
@@ -92,10 +93,10 @@ public class GameState {
      *     <li>{@link DataComponent#ROUND}</li>
      * </ul>
      *
-     * @return the current round's state data, or null if not sent
+     * @return the current round's state data
      */
-    public RoundState getRoundState() {
-        return roundState;
+    public Optional<RoundState> getRound() {
+        return Optional.ofNullable(round);
     }
     
     /**
@@ -108,10 +109,10 @@ public class GameState {
      *     <li>{@link DataComponent#GRENADES} (spectating only)</li>
      * </ul>
      *
-     * @return the grenades on the map, or null if not sent
+     * @return the grenades on the map
      */
-    public Map<Integer, GrenadeState> getGrenadeStates() {
-        return grenadeStates;
+    public Optional<Map<Integer, GrenadeState>> getGrenades() {
+        return Optional.ofNullable(grenades);
     }
     
     /**
@@ -128,10 +129,10 @@ public class GameState {
      *     <li>{@link DataComponent#PLAYERS_WEAPONS} (spectating only)</li>
      * </ul>
      *
-     * @return a list of other players in the game, or null if not sent
+     * @return a list of other players in the game
      */
-    public Map<String, PlayerState> getAllPlayerStates() {
-        return playerStates;
+    public Optional<Map<Long, PlayerState>> getAllPlayers() {
+        return Optional.ofNullable(players);
     }
     
     /**
@@ -144,10 +145,10 @@ public class GameState {
      *     <li>{@link DataComponent#BOMB} (spectating only)</li>
      * </ul>
      *
-     * @return the state of the bomb on the map, or null if not sent
+     * @return the state of the bomb on the map
      */
-    public BombState getBombState() {
-        return bombState;
+    public Optional<BombState> getBomb() {
+        return Optional.ofNullable(bomb);
     }
     
     /**
@@ -160,10 +161,10 @@ public class GameState {
      *     <li>{@link DataComponent#PHASE_COUNTDOWNS} (spectating only)</li>
      * </ul>
      *
-     * @return the phase countdown state, or null if not sent
+     * @return the phase countdown state
      */
-    public PhaseCountdownState getPhaseCountdownState() {
-        return phaseCountdownState;
+    public Optional<PhaseCountdownState> getPhaseCountdowns() {
+        return Optional.ofNullable(phaseCountdowns);
     }
     
 }

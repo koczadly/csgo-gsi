@@ -4,42 +4,27 @@ import org.junit.BeforeClass;
 import org.junit.Test;
 import uk.oczadly.karl.csgsi.state.components.Coordinate;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.*;
 
 public class BombStateTest extends GameStateBaseTest {
     
-    static BombState bombState;
-    
     @BeforeClass
     public static void setUp() {
-        GameState state = deserializeState("{\n" +
+        GameState gameState = deserializeState("{\n" +
                 "  \"bomb\": {\n" +
                 "    \"state\": \"carried\",\n" +
                 "    \"position\": \"3084.00, 127.00, 1613.03\",\n" +
                 "    \"player\": 76561197960265734\n" +
                 "  }\n" +
                 "}");
-        assertNotNull(state);
-    
-        bombState = state.getBombState();
-        assertNotNull(bombState);
-    }
-    
-    
-    @Test
-    public void testStatus() {
-        assertEquals(BombState.BombStatus.CARRIED, bombState.getPhase().val());
-    }
-    
-    @Test
-    public void testPosition() {
-        assertEquals(new Coordinate(3084.00, 127.00, 1613.03), bombState.getPosition());
-    }
-    
-    @Test
-    public void testPlayer() {
-        assertEquals("76561197960265734", bombState.getPlayerId());
+        
+        assertNotNull(gameState);
+        assertTrue(gameState.getBomb().isPresent());
+        BombState state = gameState.getBomb().get();
+        
+        assertEquals(BombState.BombStatus.CARRIED, state.getPhase().val());
+        assertEquals(new Coordinate(3084.00, 127.00, 1613.03), state.getPosition());
+        assertEquals(76561197960265734L, state.getPlayerId());
     }
     
     

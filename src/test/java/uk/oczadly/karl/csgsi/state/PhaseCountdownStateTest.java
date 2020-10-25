@@ -3,36 +3,25 @@ package uk.oczadly.karl.csgsi.state;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.*;
 
 public class PhaseCountdownStateTest extends GameStateBaseTest {
     
-    static PhaseCountdownState phaseState;
-    
     @BeforeClass
     public static void setUp() {
-        GameState state = deserializeState("{\n" +
+        GameState gameState = deserializeState("{\n" +
                 "  \"phase_countdowns\": {\n" +
                 "    \"phase\": \"freezetime\",\n" +
                 "    \"phase_ends_in\": \"13.1\"\n" +
                 "  }\n" +
                 "}");
-        assertNotNull(state);
-    
-        phaseState = state.getPhaseCountdownState();
-        assertNotNull(phaseState);
-    }
-    
-    
-    @Test
-    public void testPhase() {
-        assertEquals(PhaseCountdownState.Phase.FREEZE_TIME, phaseState.getPhase().val());
-    }
-    
-    @Test
-    public void testTime() {
-        assertEquals(13.1d, phaseState.getRemainingTime(), 1e-9);
+        
+        assertNotNull(gameState);
+        assertTrue(gameState.getPhaseCountdowns().isPresent());
+        PhaseCountdownState state = gameState.getPhaseCountdowns().get();
+        
+        assertEquals(PhaseCountdownState.Phase.FREEZE_TIME, state.getPhase().val());
+        assertEquals(13.1d, state.getRemainingTime(), 1e-9);
     }
     
     

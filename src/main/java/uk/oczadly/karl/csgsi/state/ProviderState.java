@@ -17,10 +17,10 @@ public class ProviderState {
     private int version;
     
     @Expose @SerializedName("steamid")
-    private String steamId;
+    private long steamId;
     
     @Expose @SerializedName("timestamp")
-    private Instant timeStamp;
+    private long timestamp;
     
     
     /**
@@ -47,15 +47,15 @@ public class ProviderState {
     /**
      * @return the Steam ID of the player logged into the game client
      */
-    public String getClientSteamId() {
+    public long getClientSteamId() {
         return steamId;
     }
     
     /**
-     * @return the timestamp of the reported game state
+     * @return the Unix timestamp reported by the game client
      */
-    public Instant getTimeStamp() {
-        return timeStamp;
+    public long getTimestamp() {
+        return timestamp;
     }
     
 }

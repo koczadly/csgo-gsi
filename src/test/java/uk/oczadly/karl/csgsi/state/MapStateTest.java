@@ -3,8 +3,7 @@ package uk.oczadly.karl.csgsi.state;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.*;
 
 public class MapStateTest extends GameStateBaseTest {
     
@@ -12,7 +11,7 @@ public class MapStateTest extends GameStateBaseTest {
     
     @BeforeClass
     public static void setUp() {
-        GameState state = deserializeState("{\n" +
+        GameState gameState = deserializeState("{\n" +
                 "  \"map\": {\n" +
                 "    \"round_wins\": {\n" +
                 "      \"1\": \"t_win_bomb\",\n" +
@@ -41,10 +40,10 @@ public class MapStateTest extends GameStateBaseTest {
                 "    \"souvenirs_total\": 104\n" +
                 "  }\n" +
                 "}");
-        assertNotNull(state);
         
-        mapState = state.getMapState();
-        assertNotNull(mapState);
+        assertNotNull(gameState);
+        assertTrue(gameState.getMap().isPresent());
+        mapState = gameState.getMap().get();
     }
     
     

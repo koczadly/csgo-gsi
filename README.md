@@ -61,12 +61,12 @@ GSIObserver observer = (state, context) -> {
     // Access state information with the 'state' object...
     System.out.println("New state from game client address " + context.getAddress().getHostAddress());
     
-    if (state.getProviderDetails() != null) {
-        System.out.println("Client SteamID: " + state.getProviderDetails().getClientSteamId());
-    }
-    if (state.getMapState() != null) {
-        System.out.println("Current map: " + state.getMapState().getName());
-    }
+    state.getProvider().ifPresent(provider -> {
+        System.out.println("Client SteamID: " + provider.getClientSteamId());
+    });
+    state.getMap().ifPresent(map -> {
+        System.out.println("Current map: " + map.getName());
+    });
 };
 
 // Configure server

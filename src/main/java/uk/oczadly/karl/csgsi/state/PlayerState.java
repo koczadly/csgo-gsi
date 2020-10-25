@@ -51,8 +51,8 @@ public class PlayerState {
      * <p>This set of state information requires one or more of the following data components to be enabled in the
      * configuration:</p>
      * <ul>
-     *     <li>{@link DataComponent#PLAYER_ID} (when accessing from {@link GameState#getPlayerState()})</li>
-     *     <li>{@link DataComponent#PLAYERS_ID} (when accessing from {@link GameState#getAllPlayerStates()})</li>
+     *     <li>{@link DataComponent#PLAYER_ID} (when accessing from {@link GameState#getPlayer()})</li>
+     *     <li>{@link DataComponent#PLAYERS_ID} (when accessing from {@link GameState#getAllPlayers()})</li>
      * </ul>
      *
      * @return the Steam ID of the player
@@ -65,8 +65,8 @@ public class PlayerState {
      * <p>This set of state information requires one or more of the following data components to be enabled in the
      * configuration:</p>
      * <ul>
-     *     <li>{@link DataComponent#PLAYER_ID} (when accessing from {@link GameState#getPlayerState()})</li>
-     *     <li>{@link DataComponent#PLAYERS_ID} (when accessing from {@link GameState#getAllPlayerStates()})</li>
+     *     <li>{@link DataComponent#PLAYER_ID} (when accessing from {@link GameState#getPlayer()})</li>
+     *     <li>{@link DataComponent#PLAYERS_ID} (when accessing from {@link GameState#getAllPlayers()})</li>
      * </ul>
      *
      * @return the display name of the player
@@ -79,8 +79,8 @@ public class PlayerState {
      * <p>This set of state information requires one or more of the following data components to be enabled in the
      * configuration:</p>
      * <ul>
-     *     <li>{@link DataComponent#PLAYER_ID} (when accessing from {@link GameState#getPlayerState()})</li>
-     *     <li>{@link DataComponent#PLAYERS_ID} (when accessing from {@link GameState#getAllPlayerStates()})</li>
+     *     <li>{@link DataComponent#PLAYER_ID} (when accessing from {@link GameState#getPlayer()})</li>
+     *     <li>{@link DataComponent#PLAYERS_ID} (when accessing from {@link GameState#getAllPlayers()})</li>
      * </ul>
      *
      * @return the name of the player's nominated clan/Steam group
@@ -93,8 +93,8 @@ public class PlayerState {
      * <p>This set of state information requires one or more of the following data components to be enabled in the
      * configuration:</p>
      * <ul>
-     *     <li>{@link DataComponent#PLAYER_ID} (when accessing from {@link GameState#getPlayerState()})</li>
-     *     <li>{@link DataComponent#PLAYERS_ID} (when accessing from {@link GameState#getAllPlayerStates()})</li>
+     *     <li>{@link DataComponent#PLAYER_ID} (when accessing from {@link GameState#getPlayer()})</li>
+     *     <li>{@link DataComponent#PLAYERS_ID} (when accessing from {@link GameState#getAllPlayers()})</li>
      * </ul>
      *
      * @return the slot this player is using (associated numerical key to spectate), or null if they aren't a player
@@ -107,8 +107,8 @@ public class PlayerState {
      * <p>This set of state information requires one or more of the following data components to be enabled in the
      * configuration:</p>
      * <ul>
-     *     <li>{@link DataComponent#PLAYER_ID} (when accessing from {@link GameState#getPlayerState()})</li>
-     *     <li>{@link DataComponent#PLAYERS_ID} (when accessing from {@link GameState#getAllPlayerStates()})</li>
+     *     <li>{@link DataComponent#PLAYER_ID} (when accessing from {@link GameState#getPlayer()})</li>
+     *     <li>{@link DataComponent#PLAYERS_ID} (when accessing from {@link GameState#getAllPlayers()})</li>
      * </ul>
      *
      * @return which team this player is on (terrorist or counter-terrorist)
@@ -121,7 +121,7 @@ public class PlayerState {
      * <p>This set of state information requires one or more of the following data components to be enabled in the
      * configuration:</p>
      * <ul>
-     *     <li>{@link DataComponent#PLAYER_ID} (when accessing from {@link GameState#getPlayerState()})</li>
+     *     <li>{@link DataComponent#PLAYER_ID} (when accessing from {@link GameState#getPlayer()})</li>
      * </ul>
      *
      * @return this player's activity, or null if not the client
@@ -134,9 +134,9 @@ public class PlayerState {
      * <p>This set of state information requires one or more of the following data components to be enabled in the
      * configuration:</p>
      * <ul>
-     *     <li>{@link DataComponent#PLAYER_MATCH_STATS} (when accessing from {@link GameState#getPlayerState()})</li>
+     *     <li>{@link DataComponent#PLAYER_MATCH_STATS} (when accessing from {@link GameState#getPlayer()})</li>
      *     <li>{@link DataComponent#PLAYERS_MATCH_STATS} (when accessing from {@link
-     *     GameState#getAllPlayerStates()})</li>
+     *     GameState#getAllPlayers()})</li>
      * </ul>
      *
      * @return the current statistics for this player for this map
@@ -149,8 +149,8 @@ public class PlayerState {
      * <p>This set of state information requires one or more of the following data components to be enabled in the
      * configuration:</p>
      * <ul>
-     *     <li>{@link DataComponent#PLAYER_STATE} (when accessing from {@link GameState#getPlayerState()})</li>
-     *     <li>{@link DataComponent#PLAYERS_STATE} (when accessing from {@link GameState#getAllPlayerStates()})</li>
+     *     <li>{@link DataComponent#PLAYER_STATE} (when accessing from {@link GameState#getPlayer()})</li>
+     *     <li>{@link DataComponent#PLAYERS_STATE} (when accessing from {@link GameState#getAllPlayers()})</li>
      * </ul>
      *
      * @return state information relating to this player
@@ -163,8 +163,8 @@ public class PlayerState {
      * <p>This set of state information requires one or more of the following data components to be enabled in the
      * configuration:</p>
      * <ul>
-     *     <li>{@link DataComponent#PLAYER_WEAPONS} (when accessing from {@link GameState#getPlayerState()})</li>
-     *     <li>{@link DataComponent#PLAYERS_WEAPONS} (when accessing from {@link GameState#getAllPlayerStates()},
+     *     <li>{@link DataComponent#PLAYER_WEAPONS} (when accessing from {@link GameState#getPlayer()})</li>
+     *     <li>{@link DataComponent#PLAYERS_WEAPONS} (when accessing from {@link GameState#getAllPlayers()},
      *     spectating only)</li>
      * </ul>
      *
@@ -178,7 +178,7 @@ public class PlayerState {
      * <p>This set of state information requires one or more of the following data components to be enabled in the
      * configuration:</p>
      * <ul>
-     *     <li>{@link DataComponent#PLAYER_ID} (when accessing from {@link GameState#getPlayerState()},
+     *     <li>{@link DataComponent#PLAYER_ID} (when accessing from {@link GameState#getPlayer()},
      *     spectating only)</li>
      * </ul>
      *
@@ -192,10 +192,10 @@ public class PlayerState {
      * <p>This set of state information requires one or more of the following data components to be enabled in the
      * configuration:</p>
      * <ul>
-     *     <li>{@link DataComponent#PLAYER_POSITION} (when accessing from {@link GameState#getPlayerState()},
+     *     <li>{@link DataComponent#PLAYER_POSITION} (when accessing from {@link GameState#getPlayer()},
      *     spectating only)
      *     </li>
-     *     <li>{@link DataComponent#PLAYERS_POSITION} (when accessing from {@link GameState#getPlayerState()},
+     *     <li>{@link DataComponent#PLAYERS_POSITION} (when accessing from {@link GameState#getPlayer()},
      *     spectating only)</li>
      * </ul>
      *

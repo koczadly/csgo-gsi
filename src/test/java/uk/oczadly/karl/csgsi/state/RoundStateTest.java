@@ -15,20 +15,14 @@ public class RoundStateTest extends GameStateBaseTest {
                 "    \"bomb\": \"exploded\"\n" +
                 "  }\n" +
                 "}");
-        RoundState state = gameState.getRoundState();
-        
+    
         assertNotNull(gameState);
-        assertNotNull(state);
+        assertTrue(gameState.getRound().isPresent());
+        RoundState state = gameState.getRound().get();
     
         assertEquals(RoundState.RoundPhase.OVER, state.getPhase().val());
         assertEquals(Team.TERRORIST, state.getWinningTeam().val());
         assertEquals(RoundState.BombPhase.EXPLODED, state.getBombPhase().val());
-    }
-    
-    @Test
-    public void testEmpty() {
-        GameState state = deserializeState("{}");
-        assertNull(state.getRoundState());
     }
     
     @Test

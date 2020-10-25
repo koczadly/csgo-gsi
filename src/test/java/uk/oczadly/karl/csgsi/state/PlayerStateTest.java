@@ -13,7 +13,7 @@ public class PlayerStateTest extends GameStateBaseTest {
     
     @BeforeClass
     public static void setUp() {
-        GameState state = deserializeState("{\n" +
+        GameState gameState = deserializeState("{\n" +
                 "  \"player\": {\n" +
                 "    \"steamid\": \"76561198050830377\",\n" +
                 "    \"name\": \"PlayerName\",\n" +
@@ -69,10 +69,10 @@ public class PlayerStateTest extends GameStateBaseTest {
                 "    \"forward\": \"0.95, -0.30, 0.08\"\n" +
                 "  }\n" +
                 "}");
-        assertNotNull(state);
-    
-        playerState = state.getPlayerState();
-        assertNotNull(playerState);
+        
+        assertNotNull(gameState);
+        assertTrue(gameState.getPlayer().isPresent());
+        playerState = gameState.getPlayer().get();
     }
     
     

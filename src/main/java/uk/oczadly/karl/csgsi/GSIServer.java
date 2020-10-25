@@ -28,30 +28,32 @@ import java.util.concurrent.atomic.AtomicInteger;
  *
  * <p>The example below demonstrates how to use this class:</p>
  * <pre>
- *     // Create observer
- *     GSIObserver observer = (state, context) -> {
- *         System.out.println("New state from game client address " + context.getAddress().getHostAddress());
- *         if (state.getProviderDetails() != null) {
- *             System.out.println("Client SteamID: " + state.getProviderDetails().getClientSteamId());
- *         }
- *         if (state.getMapState() != null) {
- *             System.out.println("Current map: " + state.getMapState().getName());
- *         }
- *     };
+ *  // Create a new observer (for this example, using a lambda)
+ *  GSIObserver observer = (state, context) -> {
+ *      // Access state information with the 'state' object...
+ *      System.out.println("New state from game client address " + context.getAddress().getHostAddress());
  *
- *     // Configure server
- *     GSIServer server = new GSIServer.Builder(1337)        // Port 1337, on all network interfaces
- *             .requireAuthToken("password", "Q79v5tcxVQ8u") // Require the specified password
- *             .registerObserver(observer)                   // Alternatively, you can call this on the GSIServer
- *             .build();
+ *      state.getProvider().ifPresent(provider -> {
+ *          System.out.println("Client SteamID: " + provider.getClientSteamId());
+ *      });
+ *      state.getMap().ifPresent(map -> {
+ *          System.out.println("Current map: " + map.getName());
+ *      });
+ *  };
  *
- *     // Start server
- *     try {
- *         server.start(); // Start the server (will run in a separate thread)
- *         System.out.println("Server started. Listening for state data...");
- *     } catch (IOException e) {
- *         System.out.println("Could not start server.");
- *     }
+ *  // Configure server
+ *  GSIServer server = new GSIServer.Builder(1337)        // Port 1337, on all network interfaces
+ *          .requireAuthToken("password", "Q79v5tcxVQ8u") // Require the specified password
+ *          .registerObserver(observer)                   // Alternatively, you can call this on the GSIServer
+ *          .build();
+ *
+ *  // Start server
+ *  try {
+ *      server.start(); // Start the server (will run in a separate thread)
+ *      System.out.println("Server started. Listening for state data...");
+ *  } catch (IOException e) {
+ *      System.out.println("Could not start server.");
+ *  }
  * </pre>
  *
  * <p>If the diagnostics page is enabled (by default it is), then you can access the GSI server from a web browser
