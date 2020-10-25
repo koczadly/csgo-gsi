@@ -59,7 +59,7 @@ public final class GameStateContext {
     /**
      * Gets the previous game state object from the {@link GSIServer}.
      *
-     * @return the previous game state
+     * @return the previous game state, or null if it's the first state
      */
     public GameState getPreviousState() {
         return previousState;
@@ -91,7 +91,7 @@ public final class GameStateContext {
      * Gets the local timestamp of when the previous state was received. For the first received game state, this
      * value will return null.
      *
-     * @return the timestamp of the previous state, or null if the first state
+     * @return the timestamp of the previous state, or null if it's the first state
      */
     public Instant getPreviousTimestamp() {
         return prevTimestamp;
@@ -116,7 +116,7 @@ public final class GameStateContext {
     }
     
     /**
-     * Gets a map of the received authentication tokens (passwords) configured and received from the game client.
+     * Gets a map of the received authentication tokens (passwords) received from the game client.
      *
      * @return a map of received authentication tokens
      */
