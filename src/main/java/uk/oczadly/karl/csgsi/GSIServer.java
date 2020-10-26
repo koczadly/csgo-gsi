@@ -74,7 +74,7 @@ public final class GSIServer {
     final boolean diagPageEnabled;
     
     volatile Instant serverStartTimestamp;
-    final StateContainer state = new StateContainer();
+    final ServerStats stats = new ServerStats(); // Holds statistics on the server and state
     
     
     GSIServer(InetAddress bindAddr, int port, Map<String, String> authTokens,
@@ -163,14 +163,14 @@ public final class GSIServer {
      * @return the latest game state, or null if the server has yet to receive an update
      */
     public GameState getLatestGameState() {
-        return state.latestState;
+        return stats.latestState;
     }
     
     /**
      * @return true if the server has received at least one valid game state since starting
      */
     public boolean hasReceivedState() {
-        return state.latestState != null;
+        return stats.latestState != null;
     }
     
     
@@ -215,10 +215,10 @@ public final class GSIServer {
         
         LOGGER.debug("Attempting to start GSI server on port {}...", server.getPort());
         
-        state.latestState = null;
-        state.latestContext = null;
-        state.stateRejectCounter.set(0);
-        state.stateCounter.set(0);
+        stats.latestState = null;
+        stats.latestContext = null;
+        stats.stateRejectCounter.set(0);
+        stats.stateCounter.set(0);
         serverStartTimestamp = Instant.now();
         
         server.start();
@@ -283,7 +283,7 @@ public final class GSIServer {
         
         Map<String, String> authTokens = verifyStateAuth(jsonObject);
         if (authTokens == null) {
-            state.stateRejectCounter.incrementAndGet();
+            stats.stateRejectCounter.incrementAndGet();
             LOGGER.warn("GSI state update rejected due to auth token mismatch");
             return;
         }
@@ -292,17 +292,17 @@ public final class GSIServer {
         GameState state = Util.GSON.fromJson(jsonObject, GameState.class);
     
         // Calculate information
-        int counter = this.state.stateCounter.incrementAndGet();
+        int counter = this.stats.stateCounter.incrementAndGet();
         Instant now = Instant.now();
         
         // Create context object
-        GameStateContext context = new GameStateContext(this, path, this.state.latestState, now,
-                this.state.latestContext != null ? this.state.latestContext.getTimestamp() : null,
+        GameStateContext context = new GameStateContext(this, path, this.stats.latestState, now,
+                this.stats.latestContext != null ? this.stats.latestContext.getTimestamp() : null,
                 counter, address, authTokens, jsonObject, json);
         
         // Update latest state and timestamps
-        this.state.latestState = state;
-        this.state.latestContext = context;
+        this.stats.latestState = state;
+        this.stats.latestContext = context;
         
         // Notify observers
         observers.notify(state, context);
@@ -430,7 +430,7 @@ public final class GSIServer {
     }
     
     
-    static class StateContainer {
+    static class ServerStats {
         volatile GameState latestState;
         volatile GameStateContext latestContext;
         final AtomicInteger stateCounter = new AtomicInteger();
