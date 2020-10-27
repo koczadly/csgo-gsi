@@ -57,10 +57,10 @@ import java.util.concurrent.atomic.AtomicInteger;
  * </pre>
  *
  * <p>If the diagnostics page is enabled (by default it is), then you can access the GSI server from a web browser
- * through the HTTP protocol (eg. <a href="http://localhost:1337/">http://localhost:1337</a>). Information about the
- * {@link GSIServer} instance, along with miscellaneous state information will be displayed. If one or more
- * authentication keys are configured, then the latest state's JSON will not be viewable from the web panel (this is a
- * security measure).</p>
+ * through the HTTP protocol (eg. <a href="http://localhost:1337/">http://localhost:1337</a>
+ * for port 1337 running on the local machine). Information about the {@link GSIServer} instance, along with
+ * miscellaneous state information will be displayed. If one or more authentication keys are configured, then the latest
+ * state's JSON will not be viewable from the web panel (to prevent the auth keys from being publicly exposed).</p>
  *
  * @see GSIConfig
  */
