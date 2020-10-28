@@ -374,6 +374,7 @@ public final class GSIServer {
             for (Map.Entry<String, String> key : authTokens.entrySet())
                 if (key.getKey() == null || key.getValue() == null)
                     throw new IllegalArgumentException("Auth token key or value cannot be null.");
+            
             this.authTokens.putAll(authTokens);
             return this;
         }
@@ -392,6 +393,7 @@ public final class GSIServer {
         public Builder requireAuthToken(String key, String value) {
             if (key == null || value == null)
                 throw new IllegalArgumentException("Auth token key or value cannot be null.");
+            
             authTokens.put(key, value);
             return this;
         }

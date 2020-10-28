@@ -4,13 +4,10 @@ import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import uk.oczadly.karl.csgsi.config.SteamUtils;
-import uk.oczadly.karl.csgsi.internal.json.InstantAdapter;
 
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
-import java.time.Instant;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -20,12 +17,11 @@ public class Util {
     
     private static final Pattern REG_PATTERN = Pattern.compile(" {4}(\\S+) {4}\\S+ {4}(.*+)");
     
+    
     public static final String GITHUB_URL = "https://github.com/koczadly/csgo-gsi";
     
     public static final Gson GSON = new GsonBuilder()
-            .setLenient().excludeFieldsWithoutExposeAnnotation()
-            .registerTypeAdapter(Instant.class, new InstantAdapter())
-            .create();
+            .setLenient().excludeFieldsWithoutExposeAnnotation().create();
     
     
     public static String repeatChar(char c, int length) {

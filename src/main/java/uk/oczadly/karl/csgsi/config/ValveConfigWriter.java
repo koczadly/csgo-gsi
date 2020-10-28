@@ -3,7 +3,6 @@ package uk.oczadly.karl.csgsi.config;
 import uk.oczadly.karl.csgsi.internal.Util;
 
 import java.io.*;
-import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Stack;
@@ -16,8 +15,7 @@ public class ValveConfigWriter implements Closeable, Flushable {
     
     private final Writer out;
     private final String indent, newLine;
-    
-    private Stack<ObjectState> stack = new Stack<>();
+    private final Stack<ObjectState> stack = new Stack<>();
     
     public ValveConfigWriter(Writer out, int indentSize, String newLine) {
         this.out = out;
@@ -37,7 +35,6 @@ public class ValveConfigWriter implements Closeable, Flushable {
         writeKey(os.deferredKey, 0);
         write("{").write(newLine);
         os.deferredKey = null;
-//        os.hasContent = true;
         // Create new object on stack
         stack.add(new ObjectState());
         return this;
@@ -72,7 +69,6 @@ public class ValveConfigWriter implements Closeable, Flushable {
             throw new IllegalStateException("A key must be set before writing a value.");
         if (val != null) {
             os.deferredKV.put(os.deferredKey, val.toString());
-//            os.hasContent = true;
         }
         os.deferredKey = null;
         return this;
@@ -153,7 +149,6 @@ public class ValveConfigWriter implements Closeable, Flushable {
     private static class ObjectState {
         private final Map<String, String> deferredKV = new LinkedHashMap<>();
         private String deferredKey;
-//        private boolean hasContent;
     }
     
 }
