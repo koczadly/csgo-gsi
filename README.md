@@ -26,7 +26,8 @@ This project is hosted on Maven Central. To import this library, add the followi
 The latest Javadoc pages can be [viewed online through Javadoc.io](https://www.javadoc.io/doc/uk.oczadly.karl/csgo-gsi).
 
 ### Configuration generation
-To create a configuration file, use the [`GSIConfig`](https://www.javadoc.io/doc/uk.oczadly.karl/csgo-gsi/latest/uk/oczadly/karl/csgsi/config/GSIConfig.html)
+Creating the game state configuration file for the game client is an easy automated process. This can be accomplished
+ using the provided [`GSIConfig`](https://www.javadoc.io/doc/uk.oczadly.karl/csgo-gsi/latest/uk/oczadly/karl/csgsi/config/GSIConfig.html)
  class. The example below demonstrates how to use this utility:
 
 ```java
@@ -38,6 +39,7 @@ GSIConfig config = new GSIConfig(1337)
         .setAllDataComponents(); // You could also choose which using setDataComponents(...)
 
 try {
+    // Automatically locates the game directory and writes the file
     config.writeConfigFile("test_service");
     System.out.println("Config successfully created!");
 } catch (GameNotFoundException e) {
