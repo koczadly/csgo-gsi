@@ -11,7 +11,7 @@ import uk.oczadly.karl.csgsi.state.components.Team;
 public class PlayerState {
 
     @Expose @SerializedName("steamid")
-    private long steamId;
+    private Long steamId;
     
     @Expose @SerializedName("name")
     private String name;
@@ -57,7 +57,7 @@ public class PlayerState {
      *
      * @return the Steam ID of the player
      */
-    public long getSteamId() {
+    public Long getSteamId() {
         return steamId;
     }
     

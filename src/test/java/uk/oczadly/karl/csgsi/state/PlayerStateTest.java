@@ -78,7 +78,7 @@ public class PlayerStateTest extends GameStateBaseTest {
     
     @Test
     public void testSteamId() {
-        assertEquals(76561198050830377L, playerState.getSteamId());
+        assertEquals(76561198050830377L, (long)playerState.getSteamId());
     }
     
     @Test
