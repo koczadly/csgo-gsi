@@ -2,39 +2,39 @@ package uk.oczadly.karl.csgsi.state;
 
 import com.google.gson.annotations.Expose;
 import com.google.gson.annotations.SerializedName;
-import uk.oczadly.karl.csgsi.state.components.EnumValue;
+import uk.oczadly.karl.csgsi.state.components.OptionalEnum;
 import uk.oczadly.karl.csgsi.state.components.Team;
 
 public class RoundState {
     
     @Expose @SerializedName("phase")
-    private EnumValue<RoundPhase> phase;
+    private OptionalEnum<RoundPhase> phase;
     
     @Expose @SerializedName("win_team")
-    private EnumValue<Team> winningTeam;
+    private OptionalEnum<Team> winningTeam;
     
     @Expose @SerializedName("bomb")
-    private EnumValue<BombPhase> bomb;
+    private OptionalEnum<BombPhase> bomb;
     
     
     /**
      * @return the current status of the round
      */
-    public EnumValue<RoundPhase> getPhase() {
+    public OptionalEnum<RoundPhase> getPhase() {
         return phase;
     }
     
     /**
      * @return the winning team of the round
      */
-    public EnumValue<Team> getWinningTeam() {
+    public OptionalEnum<Team> getWinningTeam() {
         return winningTeam;
     }
     
     /**
      * @return the current status of the bomb
      */
-    public EnumValue<BombPhase> getBombPhase() {
+    public OptionalEnum<BombPhase> getBombPhase() {
         return bomb;
     }
     

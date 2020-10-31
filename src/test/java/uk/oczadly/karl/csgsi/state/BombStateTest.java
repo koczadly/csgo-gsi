@@ -22,7 +22,7 @@ public class BombStateTest extends GameStateBaseTest {
         assertTrue(gameState.getBomb().isPresent());
         BombState state = gameState.getBomb().get();
         
-        assertEquals(BombState.BombStatus.CARRIED, state.getPhase().val());
+        assertEquals(BombState.BombStatus.CARRIED, state.getPhase().get());
         assertEquals(new Coordinate(3084.00, 127.00, 1613.03), state.getPosition());
         assertEquals(76561197960265734L, state.getPlayerId());
     }

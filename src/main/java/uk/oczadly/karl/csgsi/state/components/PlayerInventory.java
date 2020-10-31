@@ -31,17 +31,17 @@ public class PlayerInventory {
         // Determine helper values
         List<ItemDetails> utilities = new ArrayList<>();
         for (ItemDetails item : items) {
-            if (activeWeapon == null && (item.getState().val() == WeaponState.ACTIVE
-                    || item.getState().val() == WeaponState.RELOADING))
+            if (activeWeapon == null && (item.getState().get() == WeaponState.ACTIVE
+                    || item.getState().get() == WeaponState.RELOADING))
                 activeWeapon = item;
-            if (knifeSlot == null && item.getType() != null && item.getType().val() == Weapon.Type.KNIFE)
+            if (knifeSlot == null && item.getType() != null && item.getType().get() == Weapon.Type.KNIFE)
                 knifeSlot = item;
-            if (item.getType() != null && item.getType().isResolved()) {
-                if (primarySlot == null && item.getType().val().isPrimaryWeapon())
+            if (item.getType() != null && item.getType().isPresent()) {
+                if (primarySlot == null && item.getType().get().isPrimaryWeapon())
                     primarySlot = item;
-                if (secondarySlot == null && item.getType().val().isSecondaryWeapon())
+                if (secondarySlot == null && item.getType().get().isSecondaryWeapon())
                     secondarySlot = item;
-                if (item.getType().val().isUtility())
+                if (item.getType().get().isUtility())
                     utilities.add(item);
             }
         }
@@ -126,7 +126,7 @@ public class PlayerInventory {
      */
     public ItemDetails getItem(Weapon weapon) {
         for (ItemDetails item : getItems()) {
-            if (item.getWeapon().val() == weapon)
+            if (item.getWeapon().get() == weapon)
                 return item;
         }
         return null;
@@ -148,13 +148,13 @@ public class PlayerInventory {
     
     public static class ItemDetails {
         @Expose @SerializedName("name")
-        private EnumValue<Weapon> weapon;
+        private OptionalEnum<Weapon> weapon;
         
         @Expose @SerializedName("paintkit")
         private String skin;
         
         @Expose @SerializedName("type")
-        private EnumValue<Weapon.Type> weaponType;
+        private OptionalEnum<Weapon.Type> weaponType;
         
         @Expose @SerializedName("ammo_clip")
         private int ammoClip;
@@ -166,13 +166,13 @@ public class PlayerInventory {
         private Integer ammoReserve;
         
         @Expose @SerializedName("state")
-        private EnumValue<WeaponState> state;
+        private OptionalEnum<WeaponState> state;
     
     
         /**
          * @return the weapon value
          */
-        public EnumValue<Weapon> getWeapon() {
+        public OptionalEnum<Weapon> getWeapon() {
             return weapon;
         }
     
@@ -193,7 +193,7 @@ public class PlayerInventory {
         /**
          * @return the weapon type/category
          */
-        public EnumValue<Weapon.Type> getType() {
+        public OptionalEnum<Weapon.Type> getType() {
             return weaponType;
         }
     
@@ -249,7 +249,7 @@ public class PlayerInventory {
         /**
          * @return the current holding state of the weapon
          */
-        public EnumValue<WeaponState> getState() {
+        public OptionalEnum<WeaponState> getState() {
             return state;
         }
         

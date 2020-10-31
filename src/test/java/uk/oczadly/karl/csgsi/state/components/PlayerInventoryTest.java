@@ -57,36 +57,36 @@ public class PlayerInventoryTest {
     
     @Test
     public void testGetItems() {
-        assertEquals(Weapon.KNIFE_T, inventory.getItems().get(0).getWeapon().val());
-        assertEquals(Weapon.GLOCK, inventory.getItems().get(1).getWeapon().val());
-        assertEquals(Weapon.C4, inventory.getItems().get(2).getWeapon().val());
-        assertEquals(Weapon.HE_GRENADE, inventory.getItems().get(3).getWeapon().val());
-        assertEquals(Weapon.AK_47, inventory.getItems().get(4).getWeapon().val());
+        assertEquals(Weapon.KNIFE_T, inventory.getItems().get(0).getWeapon().get());
+        assertEquals(Weapon.GLOCK, inventory.getItems().get(1).getWeapon().get());
+        assertEquals(Weapon.C4, inventory.getItems().get(2).getWeapon().get());
+        assertEquals(Weapon.HE_GRENADE, inventory.getItems().get(3).getWeapon().get());
+        assertEquals(Weapon.AK_47, inventory.getItems().get(4).getWeapon().get());
     }
     
     @Test
     public void testGetActiveItem() {
-        assertEquals(Weapon.C4, inventory.getActiveItem().getWeapon().val());
+        assertEquals(Weapon.C4, inventory.getActiveItem().getWeapon().get());
     }
     
     @Test
     public void testGetPrimarySlot() {
-        assertEquals(Weapon.AK_47, inventory.getPrimarySlot().getWeapon().val());
+        assertEquals(Weapon.AK_47, inventory.getPrimarySlot().getWeapon().get());
     }
     
     @Test
     public void testGetSecondarySlot() {
-        assertEquals(Weapon.GLOCK, inventory.getSecondarySlot().getWeapon().val());
+        assertEquals(Weapon.GLOCK, inventory.getSecondarySlot().getWeapon().get());
     }
     
     @Test
     public void testGetKnifeSlot() {
-        assertEquals(Weapon.KNIFE_T, inventory.getKnifeSlot().getWeapon().val());
+        assertEquals(Weapon.KNIFE_T, inventory.getKnifeSlot().getWeapon().get());
     }
     
     @Test
     public void testGetMainWeapon() {
-        assertEquals(Weapon.AK_47, inventory.getMainWeapon().getWeapon().val());
+        assertEquals(Weapon.AK_47, inventory.getMainWeapon().getWeapon().get());
     }
     
     @Test

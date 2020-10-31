@@ -4,7 +4,7 @@ import com.google.gson.annotations.Expose;
 import com.google.gson.annotations.SerializedName;
 import uk.oczadly.karl.csgsi.config.DataComponent;
 import uk.oczadly.karl.csgsi.state.components.Coordinate;
-import uk.oczadly.karl.csgsi.state.components.EnumValue;
+import uk.oczadly.karl.csgsi.state.components.OptionalEnum;
 import uk.oczadly.karl.csgsi.state.components.PlayerInventory;
 import uk.oczadly.karl.csgsi.state.components.Team;
 
@@ -23,10 +23,10 @@ public class PlayerState {
     private Byte observerSlot;
     
     @Expose @SerializedName("team")
-    private EnumValue<Team> team;
+    private OptionalEnum<Team> team;
     
     @Expose @SerializedName("activity")
-    private EnumValue<Activity> activity;
+    private OptionalEnum<Activity> activity;
     
     @Expose @SerializedName("match_stats")
     private MatchStats stats;
@@ -113,7 +113,7 @@ public class PlayerState {
      *
      * @return which team this player is on (terrorist or counter-terrorist)
      */
-    public EnumValue<Team> getTeam() {
+    public OptionalEnum<Team> getTeam() {
         return team;
     }
     
@@ -126,7 +126,7 @@ public class PlayerState {
      *
      * @return this player's activity, or null if not the client
      */
-    public EnumValue<Activity> getActivity() {
+    public OptionalEnum<Activity> getActivity() {
         return activity;
     }
     

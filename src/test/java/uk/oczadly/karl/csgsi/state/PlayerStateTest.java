@@ -98,12 +98,12 @@ public class PlayerStateTest extends GameStateBaseTest {
     
     @Test
     public void testTeam() {
-        assertEquals(Team.TERRORIST, playerState.getTeam().val());
+        assertEquals(Team.TERRORIST, playerState.getTeam().get());
     }
     
     @Test
     public void testActivity() {
-        assertEquals(PlayerState.Activity.PLAYING, playerState.getActivity().val());
+        assertEquals(PlayerState.Activity.PLAYING, playerState.getActivity().get());
     }
     
     @Test
