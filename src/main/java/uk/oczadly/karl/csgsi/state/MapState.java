@@ -199,53 +199,45 @@ public class MapState {
         /**
          * Represents a T win from the bomb exploding.
          */
-        @SerializedName("t_win_bomb")
-        T_BOMB_EXPLODE(Team.TERRORIST),
+        @SerializedName("t_win_bomb")         T_BOMB_EXPLODE(Team.TERRORIST),
         
         /**
          * Represents a T win from elimination of the opposing team.
          */
-        @SerializedName("t_win_elimination")
-        T_ELIMINATION(Team.TERRORIST),
+        @SerializedName("t_win_elimination")  T_ELIMINATION(Team.TERRORIST),
         
         /**
          * Represents a T win from the timer reaching zero.
          */
-        @SerializedName("t_win_time")
-        T_TIME(Team.TERRORIST),
+        @SerializedName("t_win_time")         T_TIME(Team.TERRORIST),
         
         /**
          * Represents a CT win from elimination of the opposing team.
          */
-        @SerializedName("ct_win_elimination")
-        CT_ELIMINATION(Team.COUNTER_TERRORIST),
+        @SerializedName("ct_win_elimination") CT_ELIMINATION(Team.COUNTER_TERRORIST),
         
         /**
          * Represents a CT win from the timer reaching zero.
          */
-        @SerializedName("ct_win_time")
-        CT_TIME(Team.COUNTER_TERRORIST),
+        @SerializedName("ct_win_time")        CT_TIME(Team.COUNTER_TERRORIST),
         
         /**
          * Represents a CT win from a bomb defuse.
          */
-        @SerializedName("ct_win_defuse")
-        CT_DEFUSE(Team.COUNTER_TERRORIST),
+        @SerializedName("ct_win_defuse")      CT_DEFUSE(Team.COUNTER_TERRORIST),
         
         /**
          * Represents a CT win from a hostage rescue.
          */
-        @SerializedName("ct_win_rescue")
-        CT_RESCUE(Team.COUNTER_TERRORIST),
+        @SerializedName("ct_win_rescue")      CT_RESCUE(Team.COUNTER_TERRORIST),
         
         /**
          * Represents a skipped round with no winner.
          */
-        @SerializedName("")
-        SKIPPED(null);
+        @SerializedName("")                   SKIPPED(null);
         
         
-        private Team winningTeam;
+        private final Team winningTeam;
         
         RoundOutcome(Team winningTeam) {
             this.winningTeam = winningTeam;
