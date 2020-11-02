@@ -17,7 +17,7 @@ public class BombState {
     private Double countdown;
     
     @Expose @SerializedName("player")
-    private long playerId;
+    private Long playerId;
     
     
     /**
@@ -42,9 +42,9 @@ public class BombState {
     }
     
     /**
-     * @return the ID of the player interacting with the bomb
+     * @return the ID of the player interacting with the bomb, or null if no player is interacting with the bomb
      */
-    public long getPlayerId() {
+    public Long getPlayerId() {
         return playerId;
     }
     
