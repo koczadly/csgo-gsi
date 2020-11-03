@@ -4,6 +4,7 @@ import com.google.gson.annotations.Expose;
 import com.google.gson.annotations.SerializedName;
 import uk.oczadly.karl.csgsi.state.components.Coordinate;
 import uk.oczadly.karl.csgsi.state.components.OptionalEnum;
+import uk.oczadly.karl.csgsi.state.components.PlayerSteamID;
 
 public class BombState {
     
@@ -17,7 +18,7 @@ public class BombState {
     private Double countdown;
     
     @Expose @SerializedName("player")
-    private Long playerId;
+    private PlayerSteamID playerId;
     
     
     /**
@@ -44,7 +45,7 @@ public class BombState {
     /**
      * @return the ID of the player interacting with the bomb, or null if no player is interacting with the bomb
      */
-    public Long getPlayerId() {
+    public PlayerSteamID getPlayerId() {
         return playerId;
     }
     

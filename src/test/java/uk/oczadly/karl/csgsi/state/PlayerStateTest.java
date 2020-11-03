@@ -3,6 +3,7 @@ package uk.oczadly.karl.csgsi.state;
 import org.junit.BeforeClass;
 import org.junit.Test;
 import uk.oczadly.karl.csgsi.state.components.Coordinate;
+import uk.oczadly.karl.csgsi.state.components.PlayerSteamID;
 import uk.oczadly.karl.csgsi.state.components.Team;
 
 import static org.junit.Assert.*;
@@ -78,7 +79,7 @@ public class PlayerStateTest extends GameStateBaseTest {
     
     @Test
     public void testSteamId() {
-        assertEquals(76561198050830377L, (long)playerState.getSteamId());
+        assertEquals(PlayerSteamID.fromId64("76561198050830377"), playerState.getSteamId());
     }
     
     @Test
@@ -143,7 +144,7 @@ public class PlayerStateTest extends GameStateBaseTest {
     @Test
     public void testSpecTarget() {
         assertNotNull(playerState.getSpectatorTarget());
-        assertEquals(76561198050830377L, (long)playerState.getSpectatorTarget());
+        assertEquals(PlayerSteamID.fromId64("76561198050830377"), playerState.getSpectatorTarget());
     }
     
     @Test

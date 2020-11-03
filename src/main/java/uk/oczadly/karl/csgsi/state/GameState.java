@@ -3,6 +3,7 @@ package uk.oczadly.karl.csgsi.state;
 import com.google.gson.annotations.Expose;
 import com.google.gson.annotations.SerializedName;
 import uk.oczadly.karl.csgsi.config.DataComponent;
+import uk.oczadly.karl.csgsi.state.components.PlayerSteamID;
 
 import java.util.Map;
 import java.util.Optional;
@@ -25,7 +26,7 @@ public class GameState {
     private Map<Integer, GrenadeState> grenades;
     
     @Expose @SerializedName("allplayers")
-    private Map<Long, PlayerState> players;
+    private Map<PlayerSteamID, PlayerState> players;
     
     @Expose @SerializedName("bomb")
     private BombState bomb;
@@ -131,7 +132,7 @@ public class GameState {
      *
      * @return a list of other players in the game
      */
-    public Optional<Map<Long, PlayerState>> getAllPlayers() {
+    public Optional<Map<PlayerSteamID, PlayerState>> getAllPlayers() {
         return Optional.ofNullable(players);
     }
     

@@ -1,6 +1,7 @@
 package uk.oczadly.karl.csgsi.state;
 
 import org.junit.Test;
+import uk.oczadly.karl.csgsi.state.components.PlayerSteamID;
 
 import static org.junit.Assert.*;
 
@@ -25,7 +26,7 @@ public class ProviderStateTest extends GameStateBaseTest {
         assertEquals("Counter-Strike: Global Offensive", state.getName());
         assertEquals(730, state.getAppId());
         assertEquals(13688, state.getVersion());
-        assertEquals(76561198050830377L, state.getClientSteamId());
+        assertEquals(PlayerSteamID.fromId64("76561198050830377"), state.getClientSteamId());
         assertEquals(1556199071, state.getTimestamp());
     }
 

@@ -4,11 +4,12 @@ import com.google.gson.annotations.Expose;
 import com.google.gson.annotations.SerializedName;
 import uk.oczadly.karl.csgsi.state.components.Coordinate;
 import uk.oczadly.karl.csgsi.state.components.OptionalEnum;
+import uk.oczadly.karl.csgsi.state.components.PlayerSteamID;
 
 public class GrenadeState {
     
     @Expose @SerializedName("owner")
-    private long ownerId;
+    private PlayerSteamID ownerId;
     
     @Expose @SerializedName("position")
     private Coordinate position;
@@ -29,7 +30,7 @@ public class GrenadeState {
     /**
      * @return the ID of the player who threw the grenade
      */
-    public long getOwnerId() {
+    public PlayerSteamID getOwnerId() {
         return ownerId;
     }
     

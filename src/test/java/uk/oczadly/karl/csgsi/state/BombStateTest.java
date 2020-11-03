@@ -3,6 +3,7 @@ package uk.oczadly.karl.csgsi.state;
 import org.junit.BeforeClass;
 import org.junit.Test;
 import uk.oczadly.karl.csgsi.state.components.Coordinate;
+import uk.oczadly.karl.csgsi.state.components.PlayerSteamID;
 
 import static org.junit.Assert.*;
 
@@ -24,7 +25,7 @@ public class BombStateTest extends GameStateBaseTest {
         
         assertEquals(BombState.BombStatus.CARRIED, state.getPhase().get());
         assertEquals(new Coordinate(3084.00, 127.00, 1613.03), state.getPosition());
-        assertEquals(76561197960265734L, (long)state.getPlayerId());
+        assertEquals(PlayerSteamID.fromId64("76561197960265734"), state.getPlayerId());
     }
     
     

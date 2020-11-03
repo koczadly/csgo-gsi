@@ -2,6 +2,7 @@ package uk.oczadly.karl.csgsi.state;
 
 import com.google.gson.annotations.Expose;
 import com.google.gson.annotations.SerializedName;
+import uk.oczadly.karl.csgsi.state.components.PlayerSteamID;
 
 import java.time.Instant;
 
@@ -17,7 +18,7 @@ public class ProviderState {
     private int version;
     
     @Expose @SerializedName("steamid")
-    private long steamId;
+    private PlayerSteamID steamId;
     
     @Expose @SerializedName("timestamp")
     private long timestamp;
@@ -47,7 +48,7 @@ public class ProviderState {
     /**
      * @return the Steam ID of the player logged into the game client
      */
-    public long getClientSteamId() {
+    public PlayerSteamID getClientSteamId() {
         return steamId;
     }
     

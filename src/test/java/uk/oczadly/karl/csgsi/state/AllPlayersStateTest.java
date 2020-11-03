@@ -1,6 +1,7 @@
 package uk.oczadly.karl.csgsi.state;
 
 import org.junit.Test;
+import uk.oczadly.karl.csgsi.state.components.PlayerSteamID;
 
 import java.util.Map;
 
@@ -60,12 +61,11 @@ public class AllPlayersStateTest extends GameStateBaseTest {
         
         assertNotNull(gameState);
         assertTrue(gameState.getAllPlayers().isPresent());
-        Map<Long, PlayerState> state = gameState.getAllPlayers().get();
+        Map<PlayerSteamID, PlayerState> state = gameState.getAllPlayers().get();
         
         assertEquals(1, state.size());
-        assertNotNull(state.get(76561197960265729L));
-        
-        assertEquals("Wesley", state.get(76561197960265729L).getName());
+        assertNotNull(state.get(PlayerSteamID.fromId64("76561197960265729")));
+        assertEquals("Wesley", state.get(PlayerSteamID.fromId64("76561197960265729")).getName());
     }
     
 }

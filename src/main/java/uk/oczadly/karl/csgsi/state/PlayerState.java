@@ -3,15 +3,12 @@ package uk.oczadly.karl.csgsi.state;
 import com.google.gson.annotations.Expose;
 import com.google.gson.annotations.SerializedName;
 import uk.oczadly.karl.csgsi.config.DataComponent;
-import uk.oczadly.karl.csgsi.state.components.Coordinate;
-import uk.oczadly.karl.csgsi.state.components.OptionalEnum;
-import uk.oczadly.karl.csgsi.state.components.PlayerInventory;
-import uk.oczadly.karl.csgsi.state.components.Team;
+import uk.oczadly.karl.csgsi.state.components.*;
 
 public class PlayerState {
 
     @Expose @SerializedName("steamid")
-    private Long steamId;
+    private PlayerSteamID steamId;
     
     @Expose @SerializedName("name")
     private String name;
@@ -38,7 +35,7 @@ public class PlayerState {
     private PlayerInventory inventory;
     
     @Expose @SerializedName("spectarget")
-    private Long specTarget;
+    private PlayerSteamID specTarget;
     
     @Expose @SerializedName("position")
     private Coordinate position;
@@ -57,7 +54,7 @@ public class PlayerState {
      *
      * @return the Steam ID of the player
      */
-    public Long getSteamId() {
+    public PlayerSteamID getSteamId() {
         return steamId;
     }
     
@@ -184,7 +181,7 @@ public class PlayerState {
      *
      * @return the ID of the player being spectated, or null if not spectating
      */
-    public Long getSpectatorTarget() {
+    public PlayerSteamID getSpectatorTarget() {
         return specTarget;
     }
     
