@@ -26,23 +26,39 @@ public final class PlayerSteamID {
     
     
     /**
-     * @return this Steam ID, as a {@code SteamID 64}, represented by an unsigned long
+     * @return this Steam ID, as a {@code SteamID64}, represented by an unsigned long
      */
-    public long getAs64Long() {
+    public long getAsID64Long() {
         return longVal;
     }
     
     /**
-     * @return this Steam ID, as a {@code SteamID 64} string representation
+     * @return this Steam ID, as a {@code SteamID64} string representation (eg. {@code 76561198050830377})
      */
-    public String getAs64() {
+    public String getAsID64() {
         return Long.toUnsignedString(longVal);
+    }
+    
+    /**
+     * @return this Steam ID, as a standard {@code SteamID} string representation (eg. {@code STEAM_1:1:45282324})
+     */
+    public String getAsID() {
+        return "STEAM_" + (longVal >> 56) +             // Universe
+                ':' + (longVal & 0b1L) +                // Account digit
+                ':' + ((longVal >> 1) & 0x7FFFFFFFL);   // Account no.
+    }
+    
+    /**
+     * @return this Steam ID, as a {@code SteamID3} string representation (eg. {@code [U:1:90564649]})
+     */
+    public String getAsID3() {
+        return "[U:1:" + (longVal - 76561197960265728L) + "]";
     }
     
     
     @Override
     public String toString() {
-        return getAs64();
+        return getAsID64();
     }
     
     @Override
@@ -60,7 +76,7 @@ public final class PlayerSteamID {
     
     
     /**
-     * Constructs a new {@link PlayerSteamID} from the given {@code SteamID 64} representation.
+     * Constructs a new {@link PlayerSteamID} from the given {@code SteamID64} representation.
      * @param id the Steam ID
      * @return an instance representing the given ID
      * @throws NumberFormatException if the value is not a valid 64-bit unsigned integer
@@ -70,7 +86,7 @@ public final class PlayerSteamID {
     }
     
     /**
-     * Constructs a new {@link PlayerSteamID} from the given {@code SteamID 64} representation.
+     * Constructs a new {@link PlayerSteamID} from the given {@code SteamID64} representation.
      * @param id the Steam ID
      * @return an instance representing the given ID
      */
