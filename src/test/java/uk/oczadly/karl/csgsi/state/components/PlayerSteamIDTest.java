@@ -15,8 +15,25 @@ public class PlayerSteamIDTest {
         PlayerSteamID id = PlayerSteamID.fromId64("76561198050830377");
         assertEquals("76561198050830377", id.getAsID64());
         assertEquals(76561198050830377L, id.getAsID64Long());
-        assertEquals("STEAM_1:1:45282324", id.getAsID());
+        assertEquals("STEAM_1:1:45282324", id.getAsID2());
         assertEquals("[U:1:90564649]", id.getAsID3());
+    }
+    
+    @Test
+    public void testParse64() {
+        assertEquals(76561198050830377L, PlayerSteamID.fromId64("76561198050830377").getAsID64Long());
+        assertEquals(76561198050830377L, PlayerSteamID.fromId64(76561198050830377L).getAsID64Long());
+    }
+    
+    @Test
+    public void testParse2() {
+        assertEquals(76561198050830377L, PlayerSteamID.fromId2("STEAM_1:1:45282324").getAsID64Long());
+    }
+    
+    @Test
+    public void testParse3() {
+        assertEquals(76561198050830377L, PlayerSteamID.fromId3("[U:1:90564649]").getAsID64Long());
+        assertEquals(76561198050830377L, PlayerSteamID.fromId3("U:1:90564649").getAsID64Long());
     }
     
     @Test
