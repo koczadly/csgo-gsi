@@ -26,13 +26,13 @@ import java.util.Objects;
  *
  * @see #get()
  */
-@JsonAdapter(OptionalEnum.DeserializerFactory.class)
-public class OptionalEnum<E extends Enum<E>> {
+@JsonAdapter(EnumValue.DeserializerFactory.class)
+public class EnumValue<E extends Enum<E>> {
     
     private final E enumVal;
     private final String rawVal;
     
-    public OptionalEnum(E enumVal, String rawVal) {
+    public EnumValue(E enumVal, String rawVal) {
         if (rawVal == null)
             throw new IllegalArgumentException("The raw string value cannot be null.");
         
@@ -66,7 +66,7 @@ public class OptionalEnum<E extends Enum<E>> {
      * null value and {@link #getString()} should be used instead.
      * @return true if the value is resolved
      */
-    public boolean isPresent() {
+    public boolean isResolved() {
         return enumVal != null;
     }
     
@@ -78,7 +78,7 @@ public class OptionalEnum<E extends Enum<E>> {
      */
     @Override
     public String toString() {
-        return isPresent() ? get().toString() : getString();
+        return isResolved() ? get().toString() : getString();
     }
     
     
@@ -86,7 +86,7 @@ public class OptionalEnum<E extends Enum<E>> {
     public boolean equals(Object o) {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
-        OptionalEnum<?> that = (OptionalEnum<?>)o;
+        EnumValue<?> that = (EnumValue<?>)o;
         return enumVal == that.enumVal &&
                 Objects.equals(rawVal, that.rawVal);
     }
@@ -102,7 +102,7 @@ public class OptionalEnum<E extends Enum<E>> {
         public <T> TypeAdapter<T> create(Gson gson, TypeToken<T> type) {
             Class<? super T> rawType = type.getRawType();
             
-            if (rawType.isAssignableFrom(OptionalEnum.class)) {
+            if (rawType.isAssignableFrom(EnumValue.class)) {
                 Type enumType = ((ParameterizedType)type.getType()).getActualTypeArguments()[0];
                 TypeAdapter<?> enumAdapter = gson.getAdapter(TypeToken.get(enumType));
                 
@@ -114,7 +114,7 @@ public class OptionalEnum<E extends Enum<E>> {
         }
     }
     
-    static class Deserializer<E extends Enum<E>> extends TypeAdapter<OptionalEnum<E>> {
+    static class Deserializer<E extends Enum<E>> extends TypeAdapter<EnumValue<E>> {
         TypeAdapter<E> enumAdapter;
         
         Deserializer(TypeAdapter<E> enumAdapter) {
@@ -123,15 +123,15 @@ public class OptionalEnum<E extends Enum<E>> {
         
         
         @Override
-        public OptionalEnum<E> read(JsonReader in) throws IOException {
+        public EnumValue<E> read(JsonReader in) throws IOException {
             String val = in.nextString();
             E enumVal = enumAdapter.read(new JsonReader(new StringReader("\"" + val + "\"")));
-            return new OptionalEnum<>(enumVal, val);
+            return new EnumValue<>(enumVal, val);
         }
         
         @Override
-        public void write(JsonWriter out, OptionalEnum<E> value) throws IOException {
-            if (value.isPresent()) {
+        public void write(JsonWriter out, EnumValue<E> value) throws IOException {
+            if (value.isResolved()) {
                 enumAdapter.write(out, value.get());
             } else {
                 out.value(value.getString());

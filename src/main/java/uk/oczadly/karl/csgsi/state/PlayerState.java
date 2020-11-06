@@ -20,10 +20,10 @@ public class PlayerState {
     private Byte observerSlot;
     
     @Expose @SerializedName("team")
-    private OptionalEnum<Team> team;
+    private EnumValue<Team> team;
     
     @Expose @SerializedName("activity")
-    private OptionalEnum<Activity> activity;
+    private EnumValue<Activity> activity;
     
     @Expose @SerializedName("match_stats")
     private MatchStats stats;
@@ -110,7 +110,7 @@ public class PlayerState {
      *
      * @return which team this player is on (terrorist or counter-terrorist)
      */
-    public OptionalEnum<Team> getTeam() {
+    public EnumValue<Team> getTeam() {
         return team;
     }
     
@@ -123,7 +123,7 @@ public class PlayerState {
      *
      * @return this player's activity, or null if not the client
      */
-    public OptionalEnum<Activity> getActivity() {
+    public EnumValue<Activity> getActivity() {
         return activity;
     }
     

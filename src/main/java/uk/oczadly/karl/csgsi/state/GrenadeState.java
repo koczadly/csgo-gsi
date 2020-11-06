@@ -3,7 +3,7 @@ package uk.oczadly.karl.csgsi.state;
 import com.google.gson.annotations.Expose;
 import com.google.gson.annotations.SerializedName;
 import uk.oczadly.karl.csgsi.state.components.Coordinate;
-import uk.oczadly.karl.csgsi.state.components.OptionalEnum;
+import uk.oczadly.karl.csgsi.state.components.EnumValue;
 import uk.oczadly.karl.csgsi.state.components.PlayerSteamID;
 
 public class GrenadeState {
@@ -21,7 +21,7 @@ public class GrenadeState {
     private Double lifetime;
     
     @Expose @SerializedName("type")
-    private OptionalEnum<Type> type;
+    private EnumValue<Type> type;
     
     @Expose @SerializedName("effecttime")
     private Double effectTime;
@@ -58,7 +58,7 @@ public class GrenadeState {
     /**
      * @return the type of grenade
      */
-    public OptionalEnum<Type> getType() {
+    public EnumValue<Type> getType() {
         return type;
     }
     

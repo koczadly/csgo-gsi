@@ -36,7 +36,7 @@ public class PlayerInventory {
                 activeWeapon = item;
             if (knifeSlot == null && item.getType() != null && item.getType().get() == Weapon.Type.KNIFE)
                 knifeSlot = item;
-            if (item.getType() != null && item.getType().isPresent()) {
+            if (item.getType() != null && item.getType().isResolved()) {
                 if (primarySlot == null && item.getType().get().isPrimaryWeapon())
                     primarySlot = item;
                 if (secondarySlot == null && item.getType().get().isSecondaryWeapon())
@@ -148,13 +148,13 @@ public class PlayerInventory {
     
     public static class ItemDetails {
         @Expose @SerializedName("name")
-        private OptionalEnum<Weapon> weapon;
+        private EnumValue<Weapon> weapon;
         
         @Expose @SerializedName("paintkit")
         private String skin;
         
         @Expose @SerializedName("type")
-        private OptionalEnum<Weapon.Type> weaponType;
+        private EnumValue<Weapon.Type> weaponType;
         
         @Expose @SerializedName("ammo_clip")
         private int ammoClip;
@@ -166,13 +166,13 @@ public class PlayerInventory {
         private Integer ammoReserve;
         
         @Expose @SerializedName("state")
-        private OptionalEnum<WeaponState> state;
+        private EnumValue<WeaponState> state;
     
     
         /**
          * @return the weapon value
          */
-        public OptionalEnum<Weapon> getWeapon() {
+        public EnumValue<Weapon> getWeapon() {
             return weapon;
         }
     
@@ -193,7 +193,7 @@ public class PlayerInventory {
         /**
          * @return the weapon type/category
          */
-        public OptionalEnum<Weapon.Type> getType() {
+        public EnumValue<Weapon.Type> getType() {
             return weaponType;
         }
     
@@ -249,7 +249,7 @@ public class PlayerInventory {
         /**
          * @return the current holding state of the weapon
          */
-        public OptionalEnum<WeaponState> getState() {
+        public EnumValue<WeaponState> getState() {
             return state;
         }
         
