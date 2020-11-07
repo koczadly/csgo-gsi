@@ -86,5 +86,11 @@ try {
 }
 ```
 
+### Accessing the diagnostics page
+If not disabled (by calling `disableDiagnosticsPage()` in the `GSIServer` builder), you can access the server as a
+ standard webpage, revealing information about the server and game state information being received.
+![image](https://user-images.githubusercontent.com/1368580/98445604-686b7c00-2110-11eb-9cc9-44886371eae2.png)
+
+
 ## Development
 If you experience an issue or think the library is missing some functionality, please submit an issue or pull request.
