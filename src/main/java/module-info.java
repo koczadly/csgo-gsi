@@ -10,6 +10,6 @@ module uk.oczadly.karl.csgogsi {
     
     //Dependencies
     requires transitive com.google.gson;
-    requires slf4j.api;
+    requires org.slf4j;
     
 }
