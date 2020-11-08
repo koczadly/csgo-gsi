@@ -81,7 +81,7 @@ public class ValveConfigWriter implements Closeable, Flushable {
         if (stack.size() > 1)
             throw new IllegalStateException("Unclosed object(s).");
         if (os.deferredKey != null)
-            throw new IllegalStateException("Dangling key not followe by an object or value.");
+            throw new IllegalStateException("Dangling key not followed by an object or value.");
         stack.empty();
         out.close();
     }
