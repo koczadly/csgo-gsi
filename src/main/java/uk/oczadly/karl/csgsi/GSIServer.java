@@ -29,14 +29,14 @@ import java.util.concurrent.atomic.AtomicInteger;
  * <p>The example below demonstrates how to use this class:</p>
  * <pre>
  *  // Create a new observer (for this example, using a lambda)
- *  GSIObserver observer = (state, context) -> {
+ *  GSIObserver observer = (state, context) -&gt; {
  *      // Access state information with the 'state' object...
  *      System.out.println("New state from game client address " + context.getAddress().getHostAddress());
  *
- *      state.getProvider().ifPresent(provider -> {
+ *      state.getProvider().ifPresent(provider -&gt; {
  *          System.out.println("Client SteamID: " + provider.getClientSteamId());
  *      });
- *      state.getMap().ifPresent(map -> {
+ *      state.getMap().ifPresent(map -&gt; {
  *          System.out.println("Current map: " + map.getName());
  *      });
  *  };

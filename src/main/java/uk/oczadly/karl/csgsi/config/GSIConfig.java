@@ -313,6 +313,7 @@ public class GSIConfig {
      * Sets the number of decimal places to be sent for values containing a measurement of time. Use a value of null
      * if you wish to use the default client value.
      *
+     * @param precisionTime the number of decimal places for time units, or null for default
      * @return this current object
      *
      * @see <a href="https://developer.valvesoftware.com/wiki/Counter-Strike:_Global_Offensive_Game_State_Integration">
@@ -335,6 +336,7 @@ public class GSIConfig {
      * Sets the number of decimal places to be sent for values containing a units of position (coordinates). Use a value
      * of null if you wish to use the default client value.
      *
+     * @param precisionPosition the number of decimal places for position units, or null for default
      * @return this current object
      *
      * @see <a href="https://developer.valvesoftware.com/wiki/Counter-Strike:_Global_Offensive_Game_State_Integration">
@@ -357,6 +359,7 @@ public class GSIConfig {
      * Sets the number of decimal places to be sent for values containing a vector. Use a value of null if you wish to
      * use the default client value.
      *
+     * @param precisionVector the number of decimal places for vector units, or null for default
      * @return this current object
      *
      * @see <a href="https://developer.valvesoftware.com/wiki/Counter-Strike:_Global_Offensive_Game_State_Integration">
@@ -430,6 +433,9 @@ public class GSIConfig {
      * Generates a valid profile configuration from the current set parameter values and writes it to the provided
      * {@link Writer} object.
      *
+     * <p>This method uses the built-in {@link ValveConfigWriter} class to generate and write the configuration file
+     * contents.</p>
+     *
      * @param writer the writer instance to write the configuration data to
      *
      * @throws IOException if an I/O error occurs when writing to the writer
@@ -439,22 +445,22 @@ public class GSIConfig {
         conf.key(this.getDescription()).beginObject();
         
         // Values
-        conf.key("uri").value(this.getURI())
-            .key("timeout").value(this.getTimeoutPeriod())
-            .key("buffer").value(this.getBufferPeriod())
-            .key("throttle").value(this.getThrottlePeriod())
-            .key("heartbeat").value(this.getHeartbeatPeriod());
+        conf.key("uri").value(getURI())
+            .key("timeout").value(getTimeoutPeriod())
+            .key("buffer").value(getBufferPeriod())
+            .key("throttle").value(getThrottlePeriod())
+            .key("heartbeat").value(getHeartbeatPeriod());
     
         // Output precision
         conf.key("output").beginObject()
-            .key("precision_time").value(this.getPrecisionTime())
-            .key("precision_position").value(this.getPrecisionPosition())
-            .key("precision_vector").value(this.getPrecisionVector())
+            .key("precision_time").value(getPrecisionTime())
+            .key("precision_position").value(getPrecisionPosition())
+            .key("precision_vector").value(getPrecisionVector())
             .endObject();
         
         // Auth tokens
         conf.key("auth").beginObject();
-        for (Map.Entry<String, String> token : this.getAuthTokens().entrySet()) {
+        for (Map.Entry<String, String> token : getAuthTokens().entrySet()) {
             conf.key(token.getKey()).value(token.getValue());
         }
         conf.endObject();
@@ -463,10 +469,9 @@ public class GSIConfig {
         conf.key("data").beginObject();
         for (DataComponent type : DataComponent.values()) {
             conf.key(type.getConfigName())
-                    .value(this.getDataComponents().contains(type) ? "1" : "0");
+                    .value(getDataComponents().contains(type) ? "1" : "0");
         }
-        conf.endObject().endObject();
-        conf.close();
+        conf.endObject().endObject().close();
     }
     
     
@@ -645,6 +650,7 @@ public class GSIConfig {
     /**
      * Checks whether a configuration file currently exists with the specified service name in the given directory.
      *
+     * @param dir         the directory containing the potential configuration file
      * @param serviceName the identifying name of your application/service (no special characters, and excluding
      *                    {@code .cfg} suffix)
      *
@@ -683,6 +689,7 @@ public class GSIConfig {
      * Returns the path of the configuration file with the given service name. This method will not create any files,
      * nor will it perform any checks as to whether the configuration file actually exists on the system.
      *
+     * @param dir         the directory containing the configuration file
      * @param serviceName the identifying name of your application/service (no special characters, and excluding
      *                    {@code .cfg} suffix)
      *
