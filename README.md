@@ -52,14 +52,14 @@ try {
 
 ### Listening for state information
 To listen for new game state information, a [`GSIServer`](https://www.javadoc.io/doc/uk.oczadly.karl/csgo-gsi/latest/uk/oczadly/karl/csgsi/GSIServer.html)
-object must be created, and an instance which implements [`GSIObserver`](https://www.javadoc.io/doc/uk.oczadly.karl/csgo-gsi/latest/uk/oczadly/karl/csgsi/GSIObserver.html)
+object must be created, and an instance which implements [`GSIListener`](https://www.javadoc.io/doc/uk.oczadly.karl/csgo-gsi/latest/uk/oczadly/karl/csgsi/GSIListener.html)
 must be registered to the server object. The example below demonstrates a basic listener which prints the client's
  Steam ID and current map name (if in a game) to the console.
 
 *Note that you **must** check that state objects are not null before accessing their member methods.*
 ```java
-// Create a new observer (for this example, using a lambda)
-GSIObserver observer = (state, context) -> {
+// Create a new listener (using a lambda for this example)
+GSIListener listener = (state, context) -> {
     // Access state information with the 'state' object...
     System.out.println("New state from game client address " + context.getAddress().getHostAddress());
     
@@ -74,7 +74,7 @@ GSIObserver observer = (state, context) -> {
 // Configure server
 GSIServer server = new GSIServer.Builder(1337)        // Port 1337, on all network interfaces
         .requireAuthToken("password", "Q79v5tcxVQ8u") // Require the specified password
-        .registerObserver(observer)                   // Alternatively, you can call this on the GSIServer dynamically
+        .registerListener(listener)                   // Alternatively, you can call this on the GSIServer dynamically
         .build();
 
 // Start server

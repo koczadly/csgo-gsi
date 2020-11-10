@@ -7,18 +7,18 @@ import java.util.concurrent.CountDownLatch;
 /**
  * @author Karl Oczadly
  */
-public class MockObserver implements GSIObserver {
+public class MockListener implements GSIListener {
     
     CountDownLatch latch;
     boolean called = false;
     GameState state;
     GameStateContext context;
     
-    public MockObserver() {
+    public MockListener() {
         this(null);
     }
     
-    public MockObserver(CountDownLatch latch) {
+    public MockListener(CountDownLatch latch) {
         this.latch = latch;
     }
     

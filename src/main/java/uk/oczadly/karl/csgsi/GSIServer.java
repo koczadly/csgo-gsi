@@ -22,14 +22,14 @@ import java.util.concurrent.atomic.AtomicInteger;
  *
  * <p>The class can be constructed using the provided {@link Builder} class, where you can set the listening port and
  * other configuration details for the {@link GSIServer} through the setter methods. The server can be started using the
- * {@link #start()} method, and observers can be registered through the {@link #registerObserver(GSIObserver)} method,
- * which subscribes the observer to new game state information as it is received. Observers may be registered while
+ * {@link #start()} method, and listeners can be registered through the {@link #registerListener(GSIListener)} method,
+ * which subscribes the listener to new game state information as it is received. Listeners may be registered while
  * the server is active.</p>
  *
  * <p>The example below demonstrates how to use this class:</p>
  * <pre>
- *  // Create a new observer (for this example, using a lambda)
- *  GSIObserver observer = (state, context) -&gt; {
+ *  // Create a new listener (for this example, using a lambda)
+ *  GSIListener listener = (state, context) -&gt; {
  *      // Access state information with the 'state' object...
  *      System.out.println("New state from game client address " + context.getAddress().getHostAddress());
  *
@@ -44,7 +44,7 @@ import java.util.concurrent.atomic.AtomicInteger;
  *  // Configure server
  *  GSIServer server = new GSIServer.Builder(1337)        // Port 1337, on all network interfaces
  *          .requireAuthToken("password", "Q79v5tcxVQ8u") // Require the specified password
- *          .registerObserver(observer)                   // Alternatively, you can call this on the GSIServer
+ *          .registerListener(listener)                   // Alternatively, you can call this on the GSIServer
  *          .build();
  *
  *  // Start server
@@ -69,7 +69,7 @@ public final class GSIServer {
     private static final Logger LOGGER = LoggerFactory.getLogger(GSIServer.class);
     
     final HTTPServer server;
-    final ObserverRegistry observers = new ObserverRegistry();
+    final ListenerRegistry listeners = new ListenerRegistry();
     final Map<String, String> requiredAuthTokens;
     final boolean diagPageEnabled;
     
@@ -78,10 +78,10 @@ public final class GSIServer {
     
     
     GSIServer(InetAddress bindAddr, int port, Map<String, String> authTokens,
-              Collection<GSIObserver> observers, boolean diagPageEnabled) {
+              Collection<GSIListener> listeners, boolean diagPageEnabled) {
         this.server = new HTTPServer(port, bindAddr, new GSIServerHTTPHandler(this));
         this.requiredAuthTokens = Collections.unmodifiableMap(authTokens);
-        this.observers.register(observers);
+        this.listeners.register(listeners);
         this.diagPageEnabled = diagPageEnabled;
     }
     
@@ -175,30 +175,30 @@ public final class GSIServer {
     
     
     /**
-     * Subscribes a new observer to receive game state information when sent by the game client. New observers can be
+     * Subscribes a new listener to receive game state information when sent by the game client. New listeners can be
      * registered regardless of the running state of the server.
      *
-     * @param observer the observer to register
+     * @param listener the listener to register
      */
-    public void registerObserver(GSIObserver observer) {
-        observers.register(observer);
+    public void registerListener(GSIListener listener) {
+        listeners.register(listener);
     }
     
     /**
-     * Removes an observer from the list, and will no longer receive updates. Observers can be removed while the server
+     * Removes a listener from the list, and will no longer receive updates. Listeners can be removed while the server
      * is running, although they may still receive updates for a short period while being removed.
      *
-     * @param observer the observer to unsubscribe
+     * @param listener the listener to unsubscribe
      */
-    public void removeObserver(GSIObserver observer) {
-        observers.remove(observer);
+    public void removeListener(GSIListener listener) {
+        listeners.remove(listener);
     }
     
     /**
-     * Removes all subscribed observers from the registry.
+     * Removes all subscribed listeners from the registry.
      */
-    public void clearObservers() {
-        observers.clear();
+    public void removeAllListeners() {
+        listeners.clear();
     }
     
     
@@ -268,7 +268,7 @@ public final class GSIServer {
     
     
     /**
-     * Handles a new JSON state and notifies the appropriate observers.
+     * Handles a new JSON state and notifies the appropriate listeners.
      */
     void handleStateUpdate(String json, String path, InetAddress address) {
         LOGGER.debug("Handling new state update on server running on port {}...", getPort());
@@ -304,8 +304,8 @@ public final class GSIServer {
         this.stats.latestState = state;
         this.stats.latestContext = context;
         
-        // Notify observers
-        observers.notify(state, context);
+        // Notify listeners
+        listeners.notify(state, context);
     }
     
     private Map<String, String> verifyStateAuth(JsonObject json) {
@@ -332,7 +332,7 @@ public final class GSIServer {
         private final int bindPort;
         private final InetAddress bindAddr;
         private final Map<String, String> authTokens = new HashMap<>();
-        private final Set<GSIObserver> observers = new HashSet<>();
+        private final Set<GSIListener> listeners = new HashSet<>();
         private boolean diagPageEnabled = true;
     
     
@@ -399,15 +399,15 @@ public final class GSIServer {
         }
         
         /**
-         * Pre-registers an observer instance to listen to state updates.
+         * Pre-registers a listener instance to listen to state updates.
          *
-         * @param observer the observer to register
+         * @param listener the listener to register
          * @return this builder
          * 
-         * @see GSIServer#registerObserver(GSIObserver)
+         * @see GSIServer#registerListener(GSIListener)
          */
-        public Builder registerObserver(GSIObserver observer) {
-            observers.add(observer);
+        public Builder registerListener(GSIListener listener) {
+            listeners.add(listener);
             return this;
         }
         
@@ -427,7 +427,7 @@ public final class GSIServer {
          * @return a new {@link GSIServer} object
          */
         public GSIServer build() {
-            return new GSIServer(bindAddr, bindPort, authTokens, observers, diagPageEnabled);
+            return new GSIServer(bindAddr, bindPort, authTokens, listeners, diagPageEnabled);
         }
     }
     
