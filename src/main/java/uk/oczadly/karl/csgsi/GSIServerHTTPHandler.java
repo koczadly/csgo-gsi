@@ -64,7 +64,7 @@ class GSIServerHTTPHandler implements HTTPRequestHandler {
         
         // Build HTML
         StringBuilder sb = new StringBuilder();
-        sb.append("<DOCTYPE html>\n\n");
+        sb.append("<!DOCTYPE html>\n\n");
         sb.append("<head><meta charset=\"UTF-8\"><meta http-equiv=\"expires\" content=\"0\" />")
                 .append("<script src=\"https://cdn.jsdelivr.net/gh/google/code-prettify@master/loader/")
                 .append("run_prettify.js\"></script></head>\n");
