@@ -4,8 +4,7 @@ import com.google.gson.Gson;
 import org.junit.Test;
 import uk.oczadly.karl.csgsi.internal.Util;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotEquals;
+import static org.junit.Assert.*;
 
 public class CoordinateTest {
     
@@ -43,6 +42,14 @@ public class CoordinateTest {
         assertEquals(coord.getX(), -1.1, 1e-10);
         assertEquals(coord.getY(), -2.2, 1e-10);
         assertEquals(coord.getZ(), -3.3, 1e-10);
+    }
+    
+    @Test
+    public void testIsZero() {
+        assertTrue(new Coordinate(0, 0, 0).isZero());
+        assertFalse(new Coordinate(1, 0, 0).isZero());
+        assertFalse(new Coordinate(0, 1, 0).isZero());
+        assertFalse(new Coordinate(0, 0, 1).isZero());
     }
     
 }

@@ -41,6 +41,13 @@ public class Coordinate {
         return z;
     }
     
+    /**
+     * @return true if all {@code X}, {@code Y} and {@code Z} values are zero.
+     */
+    public boolean isZero() {
+        return x == 0 && y == 0 && z == 0;
+    }
+    
     
     @Override
     public int hashCode() {
