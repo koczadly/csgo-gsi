@@ -27,7 +27,7 @@ import java.util.Objects;
  * @see #get()
  */
 @JsonAdapter(EnumValue.DeserializerFactory.class)
-public class EnumValue<E extends Enum<E>> {
+public class EnumValue<E> {
     
     private final E enumVal;
     private final String rawVal;
