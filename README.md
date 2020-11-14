@@ -56,7 +56,6 @@ object must be created, and an instance which implements [`GSIListener`](https:/
 must be registered to the server object. The example below demonstrates a basic listener which prints the client's
  Steam ID and current map name (if in a game) to the console.
 
-*Note that you **must** check that state objects are not null before accessing their member methods.*
 ```java
 // Create a new listener (using a lambda for this example)
 GSIListener listener = (state, context) -> {
@@ -87,8 +86,8 @@ try {
 ```
 
 ### Accessing the diagnostics page
-If not disabled (by calling `disableDiagnosticsPage()` in the `GSIServer` builder), you can access the server as a
- standard webpage, revealing information about the server and game state information being received.
+If enabled (by default it is), you can access the server as a standard webpage, revealing information about the
+ server and game state information being received.
 ![image](https://user-images.githubusercontent.com/1368580/98445604-686b7c00-2110-11eb-9cc9-44886371eae2.png)
 
 
