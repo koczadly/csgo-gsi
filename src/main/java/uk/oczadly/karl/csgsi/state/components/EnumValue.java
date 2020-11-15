@@ -7,12 +7,15 @@ import com.google.gson.annotations.JsonAdapter;
 import com.google.gson.reflect.TypeToken;
 import com.google.gson.stream.JsonReader;
 import com.google.gson.stream.JsonWriter;
+import uk.oczadly.karl.csgsi.internal.Util;
 
 import java.io.IOException;
 import java.io.StringReader;
 import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
 import java.util.Objects;
+import java.util.Optional;
+import java.util.function.Consumer;
 
 /**
  * This class is a wrapper for {@code Enum} values, allowing for cases where the corresponding enum constant cannot be
@@ -71,6 +74,15 @@ public class EnumValue<E> {
     }
     
     /**
+     * If the value is resolved, then execute the given function.
+     * @param consumer the consumer function to execute
+     */
+    public void ifResolved(Consumer<? super E> consumer) {
+        if (isResolved())
+            consumer.accept(get());
+    }
+    
+    /**
      * Returns a string value of the contained object. If the enum can be resolved, then the {@link Enum#toString()}
      * value of the enum will be returned — if not, then the raw string value will be used instead.
      *
@@ -97,6 +109,27 @@ public class EnumValue<E> {
     }
     
     
+    /**
+     * Returns an {@link EnumValue} object containing the raw string, and value if resolved.
+     * @param strVal the raw string value
+     * @param clazz  the parsed object/enum class type
+     * @param gson   the {@link Gson} object used to parse the value
+     * @param <T>    the parsed object/enum type
+     * @return an {@link EnumValue} containing the object
+     */
+    public static <T> EnumValue<T> of(String strVal, Class<T> clazz, Gson gson) {
+        return of(strVal, gson.getAdapter(clazz));
+    }
+    
+    private static <T> EnumValue<T> of(String strVal, TypeAdapter<T> adapter) {
+        T val = null;
+        try {
+            val = adapter.read(new JsonReader(new StringReader("\"" + strVal + "\"")));
+        } catch (IOException ignored) {}
+        return new EnumValue<>(val, strVal);
+    }
+    
+    
     static class DeserializerFactory implements TypeAdapterFactory {
         @Override
         public <T> TypeAdapter<T> create(Gson gson, TypeToken<T> type) {
@@ -112,31 +145,29 @@ public class EnumValue<E> {
             }
             return null;
         }
-    }
     
-    static class Deserializer<E extends Enum<E>> extends TypeAdapter<EnumValue<E>> {
-        TypeAdapter<E> enumAdapter;
+        static class Deserializer<E extends Enum<E>> extends TypeAdapter<EnumValue<E>> {
+            TypeAdapter<E> enumAdapter;
         
-        Deserializer(TypeAdapter<E> enumAdapter) {
-            this.enumAdapter = enumAdapter;
-        }
+            Deserializer(TypeAdapter<E> enumAdapter) {
+                this.enumAdapter = enumAdapter;
+            }
         
         
-        @Override
-        public EnumValue<E> read(JsonReader in) throws IOException {
-            String val = in.nextString();
-            E enumVal = enumAdapter.read(new JsonReader(new StringReader("\"" + val + "\"")));
-            return new EnumValue<>(enumVal, val);
-        }
+            @Override
+            public EnumValue<E> read(JsonReader in) throws IOException {
+                return of(in.nextString(), enumAdapter);
+            }
         
-        @Override
-        public void write(JsonWriter out, EnumValue<E> value) throws IOException {
-            if (value.isResolved()) {
-                enumAdapter.write(out, value.get());
-            } else {
-                out.value(value.getString());
+            @Override
+            public void write(JsonWriter out, EnumValue<E> value) throws IOException {
+                if (value.isResolved()) {
+                    enumAdapter.write(out, value.get());
+                } else {
+                    out.value(value.getString());
+                }
             }
         }
     }
-
+    
 }

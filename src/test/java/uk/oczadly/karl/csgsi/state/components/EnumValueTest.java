@@ -16,19 +16,19 @@ public class EnumValueTest {
     
     
     @Test
-    public void test() {
+    public void testDeserialize() {
         TestContainer vals = gson.fromJson("{\"standard\": \"B\", \"named\": \"BB\", \"deserializer\": \"VAL_B\"" +
                 ", \"notFound\": \"D\", \"list\": [\"A\",\"B\",\"D\"]}", TestContainer.class);
-    
+        
         assertSame(Enum.B, vals.standard.get());
         assertEquals("B", vals.standard.getString());
         
         assertSame(EnumWithNames.B, vals.named.get());
         assertEquals("BB", vals.named.getString());
-    
+        
         assertSame(EnumWithDeserializer.B, vals.deserializer.get());
         assertEquals("VAL_B", vals.deserializer.getString());
-    
+        
         assertSame(null, vals.notFound.get());
         assertEquals("D", vals.notFound.getString());
         
@@ -36,6 +36,21 @@ public class EnumValueTest {
         assertSame(Enum.A, vals.list.get(0).get());
         assertSame(Enum.B, vals.list.get(1).get());
         assertNull(vals.list.get(2).get());
+    }
+    
+    @Test
+    public void testOf() {
+        // Valid
+        EnumValue<EnumWithNames> val1 = EnumValue.of("BB", EnumWithNames.class, gson);
+        assertNotNull(val1);
+        assertEquals(EnumWithNames.B, val1.get());
+        assertEquals("BB", val1.getString());
+    
+        // Invalid
+        EnumValue<EnumWithNames> val2 = EnumValue.of("DD", EnumWithNames.class, gson);
+        assertNotNull(val2);
+        assertNull(val2.get());
+        assertEquals("DD", val2.getString());
     }
     
     
