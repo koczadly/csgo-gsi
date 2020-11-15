@@ -8,6 +8,11 @@ import com.google.gson.annotations.JsonAdapter;
 
 import java.lang.reflect.Type;
 
+/**
+ * This class can be used to represent a set of 3 floating point values, labelled {@code X}, {@code Y} and {@code Z}.
+ * <p>When used as a coordinate, the X and Y values represent a position on the map, while the Z value represents
+ * the vertical height of the location.</p>
+ */
 @JsonAdapter(Coordinate.Deserializer.class)
 public class Coordinate {
     
@@ -21,21 +26,21 @@ public class Coordinate {
     
     
     /**
-     * @return the X coordinate or vector
+     * @return the X coordinate
      */
     public double getX() {
         return x;
     }
     
     /**
-     * @return the Y coordinate or vector
+     * @return the Y coordinate
      */
     public double getY() {
         return y;
     }
     
     /**
-     * @return the Z coordinate or vector
+     * @return the Z coordinate
      */
     public double getZ() {
         return z;
