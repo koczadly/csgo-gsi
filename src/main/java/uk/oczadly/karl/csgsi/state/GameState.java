@@ -10,29 +10,14 @@ import java.util.Optional;
 
 public class GameState {
     
-    @Expose @SerializedName("provider")
-    private ProviderState provider;
-    
-    @Expose @SerializedName("map")
-    private MapState map;
-    
-    @Expose @SerializedName("player")
-    private PlayerState player;
-    
-    @Expose @SerializedName("round")
-    private RoundState round;
-    
-    @Expose @SerializedName("grenades")
-    private Map<Integer, GrenadeState> grenades;
-    
-    @Expose @SerializedName("allplayers")
-    private Map<PlayerSteamID, PlayerState> players;
-    
-    @Expose @SerializedName("bomb")
-    private BombState bomb;
-    
-    @Expose @SerializedName("phase_countdowns")
-    private PhaseCountdownState phaseCountdowns;
+    @Expose @SerializedName("provider") private ProviderState provider;
+    @Expose @SerializedName("map") private MapState map;
+    @Expose @SerializedName("player") private PlayerState player;
+    @Expose @SerializedName("round") private RoundState round;
+    @Expose @SerializedName("grenades") private GrenadeState grenades;
+    @Expose @SerializedName("allplayers") private Map<PlayerSteamID, PlayerState> players;
+    @Expose @SerializedName("bomb") private BombState bomb;
+    @Expose @SerializedName("phase_countdowns") private PhaseCountdownState phaseCountdowns;
     
     
     /**
@@ -101,8 +86,7 @@ public class GameState {
     }
     
     /**
-     * Returns a list of grenades on the map. The key represents a unique ID, which is generated and sent by the game
-     * client. This information is only available if the client is spectating, otherwise null will be returned.
+     * Returns all the grenades which currently exist on the map.
      *
      * <p>This set of state information requires one or more of the following data components to be enabled in the
      * configuration:</p>
@@ -112,7 +96,7 @@ public class GameState {
      *
      * @return the grenades on the map
      */
-    public Optional<Map<Integer, GrenadeState>> getGrenades() {
+    public Optional<GrenadeState> getGrenades() {
         return Optional.ofNullable(grenades);
     }
     

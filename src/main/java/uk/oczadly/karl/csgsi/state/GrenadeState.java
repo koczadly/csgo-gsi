@@ -1,82 +1,68 @@
 package uk.oczadly.karl.csgsi.state;
 
-import com.google.gson.annotations.Expose;
-import com.google.gson.annotations.SerializedName;
-import uk.oczadly.karl.csgsi.state.components.Coordinate;
-import uk.oczadly.karl.csgsi.state.components.EnumValue;
+import com.google.gson.*;
+import com.google.gson.annotations.JsonAdapter;
+import com.google.gson.reflect.TypeToken;
+import uk.oczadly.karl.csgsi.state.components.Grenade;
 import uk.oczadly.karl.csgsi.state.components.PlayerSteamID;
 
+import java.lang.reflect.Type;
+import java.util.*;
+
+/**
+ * This state object represents a set of grenades which currently exist on the map.
+ *
+ * <p>Grenade classes can exist in the following types, which can be casted to access the specific attributes.</p>
+ * <ul>
+ *     <li>{@link Grenade} (base)</li>
+ *     <li>{@link Grenade.ProjectileGrenade}</li>
+ *     <li>{@link Grenade.EffectGrenade}</li>
+ *     <li>{@link Grenade.IncendiaryGrenade}</li>
+ * </ul>
+ */
+@JsonAdapter(GrenadeState.Adapter.class)
 public class GrenadeState {
     
-    @Expose @SerializedName("owner")
-    private PlayerSteamID ownerId;
+    private final Map<Integer, Grenade> grenades;
     
-    @Expose @SerializedName("position")
-    private Coordinate position;
-    
-    @Expose @SerializedName("velocity")
-    private Coordinate velocity;
-    
-    @Expose @SerializedName("lifetime")
-    private Double lifetime;
-    
-    @Expose @SerializedName("type")
-    private EnumValue<Type> type;
-    
-    @Expose @SerializedName("effecttime")
-    private Double effectTime;
-    
-    
-    /**
-     * @return the ID of the player who threw the grenade
-     */
-    public PlayerSteamID getOwnerId() {
-        return ownerId;
-    }
-    
-    /**
-     * @return the current position of the grenade on the map
-     */
-    public Coordinate getPosition() {
-        return position;
-    }
-    
-    /**
-     * @return the velocity of the grenade
-     */
-    public Coordinate getVelocity() {
-        return velocity;
-    }
-    
-    /**
-     * @return the current age of the grenade in seconds
-     */
-    public Double getLifetime() {
-        return lifetime;
-    }
-    
-    /**
-     * @return the type of grenade
-     */
-    public EnumValue<Type> getType() {
-        return type;
-    }
-    
-    /**
-     * @return the number of seconds left until the effect ends
-     */
-    public Double getEffectTime() {
-        return effectTime;
+    private GrenadeState(Map<Integer, Grenade> grenades) {
+        this.grenades = grenades;
     }
     
     
-    public enum Type {
-        @SerializedName("smoke") SMOKE,
-        @SerializedName("decoy") DECOY,
-        @SerializedName("inferno") INCENDIARY,
-        @SerializedName("firebomb") MOLOTOV,
-        @SerializedName("flashbang") FLASHBANG,
-        @SerializedName("frag") FRAG
+    public Map<Integer, Grenade> getAll() {
+        return grenades;
+    }
+    
+    public Grenade getById(int id) {
+        return grenades.get(id);
+    }
+    
+    public Map<Integer, Grenade> getByType(Grenade.Type type) {
+        Map<Integer, Grenade> matches = new HashMap<>();
+        for (Map.Entry<Integer, Grenade> g : grenades.entrySet()) {
+            if (g.getValue().getType().get() == type)
+                matches.put(g.getKey(), g.getValue());
+        }
+        return Collections.unmodifiableMap(matches);
+    }
+    
+    public Map<Integer, Grenade> getByOwner(PlayerSteamID playerId) {
+        Map<Integer, Grenade> matches = new HashMap<>();
+        for (Map.Entry<Integer, Grenade> g : grenades.entrySet()) {
+            if (g.getValue().getOwner().equals(playerId))
+                matches.put(g.getKey(), g.getValue());
+        }
+        return Collections.unmodifiableMap(matches);
+    }
+    
+    
+    static class Adapter implements JsonDeserializer<GrenadeState> {
+        @Override
+        public GrenadeState deserialize(JsonElement json, Type typeOfT, JsonDeserializationContext context)
+                throws JsonParseException {
+            return new GrenadeState(context.deserialize(json, new TypeToken<Map<Integer, Grenade>>() {}.getType()));
+        }
     }
     
 }
