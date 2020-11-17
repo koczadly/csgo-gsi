@@ -59,7 +59,7 @@ public class GameState {
      * <ul>
      *     <li>{@link DataComponent#PLAYER_ID}</li>
      *     <li>{@link DataComponent#PLAYER_MATCH_STATS}</li>
-     *     <li>{@link DataComponent#PLAYER_POSITION} (spectating only)</li>
+     *     <li>{@link DataComponent#PLAYER_POSITION} (spectator only)</li>
      *     <li>{@link DataComponent#PLAYER_STATE}</li>
      *     <li>{@link DataComponent#PLAYER_WEAPONS}</li>
      * </ul>
@@ -91,7 +91,7 @@ public class GameState {
      * <p>This set of state information requires one or more of the following data components to be enabled in the
      * configuration:</p>
      * <ul>
-     *     <li>{@link DataComponent#GRENADES} (spectating only)</li>
+     *     <li>{@link DataComponent#GRENADES} (spectator only)</li>
      * </ul>
      *
      * @return the grenades on the map
@@ -102,16 +102,16 @@ public class GameState {
     
     /**
      * The key represents the Steam ID of the player, and the value the associated player state information. This
-     * information is only available if the client is spectating, otherwise null will be returned.
+     * information is only available if the client is spectating.
      *
      * <p>This set of state information requires one or more of the following data components to be enabled in the
      * configuration:</p>
      * <ul>
-     *     <li>{@link DataComponent#PLAYERS_ID} (spectating only)</li>
-     *     <li>{@link DataComponent#PLAYERS_MATCH_STATS} (spectating only)</li>
-     *     <li>{@link DataComponent#PLAYERS_POSITION} (spectating only)</li>
-     *     <li>{@link DataComponent#PLAYERS_STATE} (spectating only)</li>
-     *     <li>{@link DataComponent#PLAYERS_WEAPONS} (spectating only)</li>
+     *     <li>{@link DataComponent#PLAYERS_ID} (spectator only)</li>
+     *     <li>{@link DataComponent#PLAYERS_MATCH_STATS} (spectator only)</li>
+     *     <li>{@link DataComponent#PLAYERS_POSITION} (spectator only)</li>
+     *     <li>{@link DataComponent#PLAYERS_STATE} (spectator only)</li>
+     *     <li>{@link DataComponent#PLAYERS_WEAPONS} (spectator only)</li>
      * </ul>
      *
      * @return a list of other players in the game
@@ -122,12 +122,12 @@ public class GameState {
     
     /**
      * Returns the current bomb state and positional information. This information is only available if the client is
-     * spectating, otherwise null will be returned.
+     * spectating.
      *
      * <p>This set of state information requires one or more of the following data components to be enabled in the
      * configuration:</p>
      * <ul>
-     *     <li>{@link DataComponent#BOMB} (spectating only)</li>
+     *     <li>{@link DataComponent#BOMB} (spectator only)</li>
      * </ul>
      *
      * @return the state of the bomb on the map
@@ -143,7 +143,7 @@ public class GameState {
      * <p>This set of state information requires one or more of the following data components to be enabled in the
      * configuration:</p>
      * <ul>
-     *     <li>{@link DataComponent#PHASE_COUNTDOWNS} (spectating only)</li>
+     *     <li>{@link DataComponent#PHASE_COUNTDOWNS} (spectator only)</li>
      * </ul>
      *
      * @return the phase countdown state
