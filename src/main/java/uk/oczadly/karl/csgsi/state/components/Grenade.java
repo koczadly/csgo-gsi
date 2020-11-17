@@ -46,6 +46,15 @@ public abstract class Grenade {
         return lifetime;
     }
     
+    @Override
+    public String toString() {
+        return getClass().getSimpleName() + "{" +
+                "type=" + type +
+                ", owner=" + owner +
+                ", lifetime=" + lifetime +
+                '}';
+    }
+    
     
     /**
      * Represents an unknown grenade type.
