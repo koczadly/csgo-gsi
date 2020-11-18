@@ -6,6 +6,7 @@ import com.google.gson.annotations.JsonAdapter;
 import com.google.gson.annotations.SerializedName;
 import uk.oczadly.karl.csgsi.internal.Util;
 
+import java.util.Collections;
 import java.util.Map;
 
 /**
@@ -59,7 +60,9 @@ public abstract class Grenade {
     /**
      * Represents an unknown grenade type.
      */
-    public static class BasicGrenade extends Grenade {}
+    public static class BasicGrenade extends Grenade {
+        private BasicGrenade() {}
+    }
     
     /**
      * Represents a standard projectile grenade, with a position and velocity.
@@ -67,6 +70,8 @@ public abstract class Grenade {
     public static class ProjectileGrenade extends Grenade {
         @Expose private Coordinate position;
         @Expose private Coordinate velocity;
+    
+        private ProjectileGrenade() {}
     
         /**
          * @return the current position on the map
@@ -89,6 +94,8 @@ public abstract class Grenade {
     public static class EffectGrenade extends ProjectileGrenade {
         @Expose @SerializedName("effecttime") private double effectTime;
     
+        private EffectGrenade() {}
+        
         /**
          * @return the number of seconds the effect has been active for
          */
@@ -106,13 +113,15 @@ public abstract class Grenade {
         private volatile Coordinate approxPos = null;
         private volatile double approxSize = 0;
     
+        private IncendiaryGrenade() {}
+    
         /**
          * Returns a map of all the individual flames. The key is a unique identifier of the flame, and the
          * value is the positional coordinate of the flame effect.
          * @return the flames from this grenade
          */
         public Map<String, Coordinate> getFlames() {
-            return flames;
+            return Collections.unmodifiableMap(flames);
         }
     
         /**
@@ -145,11 +154,11 @@ public abstract class Grenade {
                         minZ = Math.min(c.getZ(), minZ);
                         maxZ = Math.max(c.getZ(), minZ);
                     }
-                    this.approxPos = new Coordinate(
+                    this.approxPos = new Coordinate( // Center of outer boundaries
                             minX + ((maxX - minX) / 2),
                             minY + ((maxY - minY) / 2),
                             minZ + ((maxZ - minZ) / 2));
-                    this.approxSize = Math.max(maxX - minX, maxY - minY) + 32;
+                    this.approxSize = Math.max(maxX - minX, maxY - minY) + 32; // Diameter of outer boundaries
                 }
             }
         }
@@ -169,9 +178,10 @@ public abstract class Grenade {
         /** A smoke grenade. */
         @SerializedName("smoke")     SMOKE                  (EffectGrenade.class),
         /** A molotov/incendiary grenade projectile. */
-        @SerializedName("firebomb")  MOLOTOV(ProjectileGrenade.class),
+        @SerializedName("firebomb")  MOLOTOV                (ProjectileGrenade.class),
         /** A molotov/incendiary grenade on the ground in flames. */
         @SerializedName("inferno")   MOLOTOV_FLAMES         (IncendiaryGrenade.class);
+        
         
         private final Class<? extends Grenade> objClass;
         
@@ -190,14 +200,16 @@ public abstract class Grenade {
         public Grenade deserialize(JsonElement json, java.lang.reflect.Type typeOfT, JsonDeserializationContext context)
                 throws JsonParseException {
             JsonObject obj = json.getAsJsonObject();
+            
+            // Get type
             EnumValue<Grenade.Type> gType = EnumValue.of(
                     obj.get("type").getAsString(), Grenade.Type.class, Util.GSON);
             
             // Deserialize grenade
-            Class<? extends Grenade> classType = BasicGrenade.class;
-            if (gType.isResolved()) classType = gType.get().getObjectClass();
+            Class<? extends Grenade> classType =
+                    gType.isResolved() ? gType.get().getObjectClass() : BasicGrenade.class;
             Grenade grenade = context.deserialize(obj, classType);
-            grenade.type = gType; // Set type
+            grenade.type = gType; // Fill type field
             return grenade;
         }
     }
