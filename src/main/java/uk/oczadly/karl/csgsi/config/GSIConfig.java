@@ -441,7 +441,7 @@ public class GSIConfig {
      * @throws IOException if an I/O error occurs when writing to the writer
      */
     public void export(Writer writer) throws IOException {
-        ValveConfigWriter conf = new ValveConfigWriter(writer, 4, System.lineSeparator());
+        ValveConfigWriter conf = new ValveConfigWriter(writer);
         conf.key(this.getDescription()).beginObject();
         
         // Values

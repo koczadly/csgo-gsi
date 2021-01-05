@@ -8,19 +8,23 @@ import java.util.Map;
 import java.util.Stack;
 
 /**
- * Helper class for writing valve configuration files.
+ * Helper class for writing Valve configuration files (JSON-like).
  */
-// TODO: don't write empty objects?
+// TODO: discard empty objects without writing
 public class ValveConfigWriter implements Closeable, Flushable {
     
     private final Writer out;
-    private final String indent, newLine;
+    private final String indentChar, newLineChar;
     private final Stack<ObjectState> stack = new Stack<>();
+    
+    public ValveConfigWriter(Writer out) {
+        this(out, 4, System.lineSeparator());
+    }
     
     public ValveConfigWriter(Writer out, int indentSize, String newLine) {
         this.out = out;
-        this.indent = Util.repeatChar(' ', indentSize);
-        this.newLine = newLine;
+        this.indentChar = Util.repeatChar(' ', indentSize);
+        this.newLineChar = newLine;
         this.stack.add(new ObjectState());
     }
     
@@ -33,7 +37,7 @@ public class ValveConfigWriter implements Closeable, Flushable {
         // Write opening key
         writeIndent();
         writeKey(os.deferredKey, 0);
-        write("{").write(newLine);
+        write("{").write(newLineChar);
         os.deferredKey = null;
         // Create new object on stack
         stack.add(new ObjectState());
@@ -48,11 +52,11 @@ public class ValveConfigWriter implements Closeable, Flushable {
         stack.pop(); // Remove object from stack
         // Write closing brace
         writeIndent();
-        write("}").write(newLine);
+        write("}").write(newLineChar);
         return this;
     }
     
-    public ValveConfigWriter key(String key) throws IOException {
+    public ValveConfigWriter key(String key) {
         ObjectState os = peekStack();
         if (key == null) key = "";
         if (os.deferredKey != null)
@@ -63,13 +67,12 @@ public class ValveConfigWriter implements Closeable, Flushable {
         return this;
     }
     
-    public ValveConfigWriter value(Object val) throws IOException {
+    public ValveConfigWriter value(Object val) {
         ObjectState os = peekStack();
         if (os.deferredKey == null)
             throw new IllegalStateException("A key must be set before writing a value.");
-        if (val != null) {
+        if (val != null) // Ignore null values
             os.deferredKV.put(os.deferredKey, val.toString());
-        }
         os.deferredKey = null;
         return this;
     }
@@ -94,10 +97,10 @@ public class ValveConfigWriter implements Closeable, Flushable {
     
     
     private void writeKeyValues(Map<String, String> kvs) throws IOException {
-        // Determine max key length
-        int maxLen = 0;
-        for (String key : kvs.keySet())
-            maxLen = Math.max(key.length(), maxLen);
+        // Determine max key length (for padding)
+        int maxLen = kvs.keySet().stream()
+                .mapToInt(String::length)
+                .max().orElse(0);
         // Write values
         for (Map.Entry<String, String> kv : kvs.entrySet()) {
             writeIndent();
@@ -107,20 +110,21 @@ public class ValveConfigWriter implements Closeable, Flushable {
     }
     
     private void writeIndent() throws IOException {
-        for (int i=0; i<stack.size()-1; i++)
-            write(this.indent);
+        for (int i = 1; i < stack.size(); i++)
+            write(this.indentChar);
     }
     
     private void writeKey(String key, int maxKeyLen) throws IOException {
-        write("\"").write(sanitizeValue(key)).write("\" ");
+        writeField(key).write(" ");
         
         // Spacers
-        int spacePadding = Math.max(0, maxKeyLen - key.length());
-        for (int i=0; i<spacePadding; i++) write(" ");
+        int padding = Math.max(0, maxKeyLen - key.length());
+        for (int i = 0; i < padding; i++)
+            write(" ");
     }
     
     private void writeValue(String value) throws IOException {
-        write("\"").write(sanitizeValue(value)).write("\"").write(newLine);
+        writeField(value).write(newLineChar);
     }
     
     private void flushObject(ObjectState os) throws IOException {
@@ -141,8 +145,10 @@ public class ValveConfigWriter implements Closeable, Flushable {
         return this;
     }
     
-    private static String sanitizeValue(String val) {
-        return val.replace("\\", "\\\\").replace("\"", "\\\"");
+    private ValveConfigWriter writeField(String str) throws IOException {
+        return write("\"")
+                .write(str.replace("\\", "\\\\").replace("\"", "\\\""))
+                .write("\"");
     }
     
     
