@@ -43,7 +43,7 @@ public class GSIConfig {
     private static final String DEFAULT_DESC = "Created using https://github.com/koczadly/csgo-gsi";
     
     
-    private String uri, description;
+    private String uri, description = DEFAULT_DESC;
     private Map<String, String> authData = new HashMap<>();
     private Double timeout, buffer, throttle, heartbeat;
     private Integer precisionTime, precisionPosition, precisionVector;
@@ -57,7 +57,6 @@ public class GSIConfig {
      * @param port the port of the server
      */
     public GSIConfig(int port) {
-        this();
         setURI(port);
     }
     
@@ -69,7 +68,6 @@ public class GSIConfig {
      * @throws NullPointerException if the provided {@code uri} argument is null
      */
     public GSIConfig(String uri) {
-        this();
         setURI(uri);
     }
     
@@ -77,9 +75,7 @@ public class GSIConfig {
      * Constructs a new GSI configuration object. Refer to class documentation and setter methods for configuring
      * properties.
      */
-    public GSIConfig() {
-        this.description = DEFAULT_DESC;
-    }
+    public GSIConfig() {}
     
     
     /**
@@ -572,6 +568,7 @@ public class GSIConfig {
         try (BufferedWriter writer = Files.newBufferedWriter(file, StandardCharsets.UTF_8)) {
             export(writer);
         }
+        LOGGER.info("Written game state config file {}", file.toString());
     }
     
     
