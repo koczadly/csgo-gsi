@@ -20,10 +20,10 @@ public class SteamUtils {
     
     private static final Logger LOGGER = LoggerFactory.getLogger(SteamUtils.class);
     
-    private static final Pattern STEAM_VDF_PATTERN = Pattern.compile("\\s+\"(?:\\d+)\"\\s+\"(.+)\"");
-    private static final Pattern STEAM_ACF_PATTERN = Pattern.compile("\\s+\"installdir\"\\s+\"(.+)\"");
+    private static final Pattern STEAM_VDF_PATTERN = Pattern.compile("^\\s+\"\\d+\"\\s+\"(.+)\"$");
+    private static final Pattern STEAM_ACF_PATTERN = Pattern.compile("^\\s+\"installdir\"\\s+\"(.+)\"$");
     
-    private static volatile Path CSGO_CFG_CACHE;
+    private static volatile Path cachedCsgoConfigPath;
     
     
     /** The CS:GO Steam app ID number. */
@@ -55,57 +55,48 @@ public class SteamUtils {
      * @throws SteamNotFoundException if a Steam installation couldn't be found or there was an error in the process
      */
     public static Path getSteamInstallDirectory() throws SteamNotFoundException {
-        String os = System.getProperty("os.name").toLowerCase(); //Obtain current OS name
+        String os = System.getProperty("os.name").toLowerCase(); // Obtain current OS name
         String homePath = System.getProperty("user.home");
         
-        Set<Path> candidatePaths = new LinkedHashSet<>(); //Ordered set of potential installation dirs
+        Set<Path> candidatePaths = new LinkedHashSet<>(); // Ordered set of potential installation dirs
         try {
             if (os.contains("linux")) { // Linux, TODO: untested
                 candidatePaths.add(Paths.get(homePath, ".local/share/Steam"));
                 candidatePaths.add(Paths.get(homePath, ".steam"));
             } else if (os.contains("win")) { // Windows
-                //Attempt to read from registry
+                // Attempt to read from registry
                 String regVal = Util.readWinRegValue("HKCU\\Software\\Valve\\Steam", "SteamPath");
                 if (regVal != null) {
-                    if (LOGGER.isDebugEnabled())
-                        LOGGER.debug("Obtained Steam installation dir from registry ({})", regVal);
+                    LOGGER.debug("Obtained Steam installation dir from registry ({})", regVal);
                     candidatePaths.add(Paths.get(regVal));
                 }
                 
-                //Common installation directories
-                candidatePaths.add(Paths.get("C:\\Program Files (x86)\\Steam")); //64 bit
-                candidatePaths.add(Paths.get("C:\\Program Files\\Steam")); //32 bit
+                // Common installation directories
+                candidatePaths.add(Paths.get("C:\\Program Files (x86)\\Steam"));
+                candidatePaths.add(Paths.get("C:\\Program Files\\Steam"));
             } else if (os.contains("mac")) { // Mac TODO: untested
                 candidatePaths.add(Paths.get(homePath, "Library/Application Support/Steam"));
-            } else { //Unknown OS type
+            } else { // Unknown OS type
                 throw new SteamNotFoundException("Unknown or unsupported operating system.");
             }
         } catch (InvalidPathException e) {
             throw new SteamNotFoundException("Expected Steam path was rejected by the filesystem.", e);
         }
         
-        if (LOGGER.isDebugEnabled())
-            LOGGER.debug("Located a total of {} possible Steam installation candidates", candidatePaths.size());
+        LOGGER.debug("Located a total of {} possible Steam installation candidates", candidatePaths.size());
         
         // Search for valid path
-        SecurityException caughtEx = null;
         for (Path p : candidatePaths) {
             try {
                 if (Files.isDirectory(p))
                     return p; // Exists!
             } catch (SecurityException e) {
                 LOGGER.warn("Could not read potential Steam directory file {}", p.toAbsolutePath(), e);
-                if (caughtEx == null)
-                    caughtEx = e;
             }
         }
         
-        //No suitable path found by this point
-        if (caughtEx != null) {
-            throw new SteamNotFoundException("The Steam installation directory could not be found.", caughtEx);
-        } else {
-            throw new SteamNotFoundException("The Steam installation directory could not be found.");
-        }
+        // No suitable path found by this point
+        throw new SteamNotFoundException("The Steam installation directory could not be found.");
     }
     
     
@@ -223,14 +214,14 @@ public class SteamUtils {
      * @throws SecurityException     if the security manager disallows access to the directory
      */
     public static Path locateCsgoConfigFolder() throws GameNotFoundException {
-        if (CSGO_CFG_CACHE == null || !Files.isDirectory(CSGO_CFG_CACHE)) { // Not cached or no longer exists
+        if (cachedCsgoConfigPath == null || !Files.isDirectory(cachedCsgoConfigPath)) { // Not cached or no longer exists
             synchronized (SteamUtils.class) {
                 if (LOGGER.isDebugEnabled())
                     LOGGER.debug("Attempting to locate CSGO configuration directory...");
-                CSGO_CFG_CACHE = findGameDirectoryById(CSGO_STEAM_ID).resolve(CSGO_CONFIG_PATH);
+                cachedCsgoConfigPath = findGameDirectoryById(CSGO_STEAM_ID).resolve(CSGO_CONFIG_PATH);
             }
         }
-        return CSGO_CFG_CACHE;
+        return cachedCsgoConfigPath;
     }
     
     
