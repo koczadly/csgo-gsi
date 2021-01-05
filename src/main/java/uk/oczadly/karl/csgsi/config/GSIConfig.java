@@ -579,6 +579,9 @@ public class GSIConfig {
             throw new IllegalArgumentException("Path was an existing directory, and not a file.");
         
         LOGGER.debug("Attempting to create config file {}...", file.toString());
+        if (dataComponents.isEmpty())
+            LOGGER.warn("No data components are enabled in the profile! The client won't return any information.");
+        
         try (BufferedWriter writer = Files.newBufferedWriter(file, StandardCharsets.UTF_8)) {
             export(writer);
         }
@@ -715,6 +718,15 @@ public class GSIConfig {
                     "digits and underscores).");
         String fName = "gamestate_integration_" + serviceName.toLowerCase() + ".cfg";
         return dir.resolve(fName);
+    }
+    
+    
+    public static void main(String[] args) throws Exception {
+        GSIConfig conf = new GSIConfig();
+        
+        conf.setAuthToken("slugg", "hi");
+    
+        System.out.println(conf.export());
     }
     
 }
