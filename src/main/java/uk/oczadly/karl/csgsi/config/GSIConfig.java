@@ -426,11 +426,25 @@ public class GSIConfig {
     
     
     /**
-     * Generates a valid profile configuration from the current set parameter values and writes it to the provided
+     * Generates a configuration profile from the current set parameter values and returns it as a String value.
+     *
+     * <p>This method uses the built-in {@link ValveConfigWriter} class to generate and write the configuration file
+     * contents. New lines will be separated by the value returned by {@link System#lineSeparator()}.</p>
+     *
+     * @throws IOException if an I/O error occurs when writing to the writer
+     */
+    public String export() throws IOException {
+        StringWriter sw = new StringWriter();
+        export(sw);
+        return sw.toString();
+    }
+    
+    /**
+     * Generates a configuration profile from the current set parameter values and writes it to the provided
      * {@link Writer} object.
      *
      * <p>This method uses the built-in {@link ValveConfigWriter} class to generate and write the configuration file
-     * contents.</p>
+     * contents. New lines will be separated by the value returned by {@link System#lineSeparator()}.</p>
      *
      * @param writer the writer instance to write the configuration data to
      *
@@ -439,28 +453,28 @@ public class GSIConfig {
     public void export(Writer writer) throws IOException {
         ValveConfigWriter conf = new ValveConfigWriter(writer);
         conf.key(this.getDescription()).beginObject();
-        
+    
         // Values
         conf.key("uri").value(getURI())
-            .key("timeout").value(getTimeoutPeriod())
-            .key("buffer").value(getBufferPeriod())
-            .key("throttle").value(getThrottlePeriod())
-            .key("heartbeat").value(getHeartbeatPeriod());
+                .key("timeout").value(getTimeoutPeriod())
+                .key("buffer").value(getBufferPeriod())
+                .key("throttle").value(getThrottlePeriod())
+                .key("heartbeat").value(getHeartbeatPeriod());
     
         // Output precision
         conf.key("output").beginObject()
-            .key("precision_time").value(getPrecisionTime())
-            .key("precision_position").value(getPrecisionPosition())
-            .key("precision_vector").value(getPrecisionVector())
-            .endObject();
-        
+                .key("precision_time").value(getPrecisionTime())
+                .key("precision_position").value(getPrecisionPosition())
+                .key("precision_vector").value(getPrecisionVector())
+                .endObject();
+    
         // Auth tokens
         conf.key("auth").beginObject();
         for (Map.Entry<String, String> token : getAuthTokens().entrySet()) {
             conf.key(token.getKey()).value(token.getValue());
         }
         conf.endObject();
-        
+    
         // Data components
         conf.key("data").beginObject();
         for (DataComponent type : DataComponent.values()) {
