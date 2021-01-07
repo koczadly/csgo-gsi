@@ -500,7 +500,7 @@ public class GSIConfig {
      *  GSIConfig profile = ... // Create profile here
      *
      *  try {
-     *      profile.writeConfigFile("MyService");
+     *      profile.writeConfigFile("my_service");
      *      System.out.println("Profile successfully created!");
      *  } catch (GameNotFoundException e) {
      *      System.out.println("Couldn't locate CSGO or Steam installation directories.");
@@ -537,7 +537,7 @@ public class GSIConfig {
      *  try {
      *      Path configPath = SteamUtils.locateCsgoConfigFolder();
      *
-     *      profile.writeConfigFile("MyService", configPath);
+     *      profile.writeConfigFile("my_service", configPath);
      *      System.out.println("Profile successfully created!");
      *  } catch (GameNotFoundException e) {
      *      System.out.println("Couldn't locate CSGO or Steam installation directories.");
