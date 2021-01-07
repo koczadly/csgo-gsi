@@ -32,8 +32,11 @@ import java.util.regex.Pattern;
  * </pre>
  *
  * <p>Profiles can then be created and written to the system using the {@link #writeConfigFile(String)} method (refer to
- * method documentation). Service name strings must contain only standard letters and digits, and underscores. The
- * length must not exceed 32 characters, and you should ensure it is unique to your specific service or application.</p>
+ * method documentation).</p>
+ *
+ * <p>Your applications service name should be unique, and can only contain standard english word and digit
+ * characters, as well as underscores, and must be between 1 and 32 characters in length. The name must
+ * <em>not</em> include the {@code gamestate_integration_} prefix or the {@code .cfg} file extension suffix.</p>
  */
 public class GSIConfig {
     
@@ -489,12 +492,12 @@ public class GSIConfig {
      * Creates or replaces an existing configuration file within the located game directory.
      *
      * <p>This method automatically locates the game directory using the {@link SteamUtils#locateCsgoConfigFolder()}
-     * utility method. If neither the Steam or game directory can be identified, then a
-     * {@link GameNotFoundException} will be raised.</p>
+     * utility method. If neither the Steam or game directory can be identified, then a {@link GameNotFoundException}
+     * will be raised.</p>
      *
-     * <p>The provided service name should be unique and represent your application or organisation, and must  conform
-     * with universal file naming standards (ie. no special characters). This value will have no impact on the API,
-     * but allows you to update or remove the configuration file at a later date.</p>
+     * <p>Your applications service name should be unique, and can only contain standard english word and digit
+     * characters, as well as underscores, and must be between 1 and 32 characters in length. The name must
+     * <em>not</em> include the {@code gamestate_integration_} prefix or the {@code .cfg} file extension suffix.</p>
      *
      * <pre>
      *  GSIConfig profile = ... // Create profile here
@@ -512,7 +515,7 @@ public class GSIConfig {
      * @param serviceName the identifying name of your application/service (eg: {@code test_service})
      *
      * @throws IOException           if the file cannot be written to
-     * @throws GameNotFoundException if the Steam or CSGO directories could not be located
+     * @throws GameNotFoundException if the Steam or CSGO installation could not be located
      * @throws SecurityException     if the security manager doesn't permit access to the file
      */
     public void writeConfigFile(String serviceName) throws GameNotFoundException, IOException {
@@ -522,9 +525,9 @@ public class GSIConfig {
     /**
      * Creates or replaces an existing configuration file within the specified game directory.
      *
-     * <p>The provided service name should be unique and represent your application or organisation, and must  conform
-     * with universal file naming standards (ie. no special characters). This value will have no impact on the API,
-     * but allows you to update or remove the configuration file at a later date.</p>
+     * <p>Your applications service name should be unique, and can only contain standard english word and digit
+     * characters, as well as underscores, and must be between 1 and 32 characters in length. The name must
+     * <em>not</em> include the {@code gamestate_integration_} prefix or the {@code .cfg} file extension suffix.</p>
      *
      * <p>The {@code dir} parameter can be passed the value returned from {@link SteamUtils#locateCsgoConfigFolder()},
      * which will automatically locate this folder on the current system for you. Be aware that the utility method can
@@ -598,7 +601,7 @@ public class GSIConfig {
      *
      * @return true if the file was successfully removed, false if it didn't exist
      *
-     * @throws GameNotFoundException if the Steam or CSGO directories could not be located
+     * @throws GameNotFoundException if the Steam or CSGO installation could not be located
      * @throws IOException           if the file could not be removed
      * @throws SecurityException     if the security manager disallows access to the file
      * @throws FileNotFoundException if the given path argument is not an existing directory
@@ -649,7 +652,7 @@ public class GSIConfig {
      *
      * @return true if a configuration file already exists
      *
-     * @throws GameNotFoundException if the Steam or CSGO directories could not be located
+     * @throws GameNotFoundException if the Steam or CSGO installation could not be located
      * @throws SecurityException     if the security manager disallows access to the file
      */
     public static boolean configFileExists(String serviceName) throws GameNotFoundException {
@@ -682,11 +685,15 @@ public class GSIConfig {
      * utility method. If neither the Steam or game directory can be identified, then a {@link GameNotFoundException}
      * will be raised.</p>
      *
+     * <p>Your applications service name should be unique, and can only contain standard english word and digit
+     * characters, as well as underscores, and must be between 1 and 32 characters in length. The name must
+     * <em>not</em> include the {@code gamestate_integration_} prefix or the {@code .cfg} file extension suffix.</p>
+     *
      * @param serviceName the identifying name of your application/service (eg: {@code test_service})
      *
      * @return the configuration file for the given service
      *
-     * @throws GameNotFoundException if the Steam or CSGO directories could not be located
+     * @throws GameNotFoundException if the Steam or CSGO installation could not be located
      */
     public static Path getConfigFile(String serviceName) throws GameNotFoundException {
         return getConfigFile(SteamUtils.locateCsgoConfigFolder(), serviceName);
@@ -696,16 +703,15 @@ public class GSIConfig {
      * Returns the path of the configuration file with the given service name. This method will not create any files,
      * nor will it perform any checks as to whether the configuration file actually exists on the system.
      *
-     * <p>Your service name can only contain standard word and digit characters, as well as underscores, and must be
-     * between 1 and 32 characters in length. This value must <em>not</em> include the {@code gamestate_integration_}
-     * prefix or the {@code .cfg} file type suffix.</p>
+     * <p>Your applications service name should be unique, and can only contain standard english word and digit
+     * characters, as well as underscores, and must be between 1 and 32 characters in length. The name must
+     * <em>not</em> include the {@code gamestate_integration_} prefix or the {@code .cfg} file extension suffix.</p>
      *
      * @param dir         the directory containing the configuration file
      * @param serviceName the identifying name of your application/service (eg: {@code test_service})
      *
      * @return the configuration file for the given service
      *
-     * @see SteamUtils#locateCsgoConfigFolder()
      * @see #getConfigFile(String) 
      */
     public static Path getConfigFile(Path dir, String serviceName) {
