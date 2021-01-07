@@ -720,13 +720,4 @@ public class GSIConfig {
         return dir.resolve(fName);
     }
     
-    
-    public static void main(String[] args) throws Exception {
-        GSIConfig conf = new GSIConfig();
-        
-        conf.setAuthToken("slugg", "hi");
-    
-        System.out.println(conf.export());
-    }
-    
 }
