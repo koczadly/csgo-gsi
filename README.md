@@ -3,11 +3,9 @@
 A Java library for retrieving real-time game information and statistics from *Counter-Strike: Global Offensive* using
 the built-in game state integration service.
 
-This project is in active development, and will receive updates as changes are made to the game and it's state schema.
-
 ## Features
-This library provides simple access to 3 main features:
-- Automated location of the game directory
+This library provides access to 3 main features:
+- Automated location of the game's installation directory
 - The creation and deletion of game state service configurations
 - A server which listens for updates and parses the game state data
 
@@ -86,10 +84,10 @@ try {
 ```
 
 ### Accessing the diagnostics page
-If enabled (by default it is), you can access the server as a standard webpage, revealing information about the
- server and game state information being received.
+If not disabled (using the GSIServer builder), you can access the server as a standard webpage, revealing information
+ about the server and the game state information being received.
 ![image](https://user-images.githubusercontent.com/1368580/98445604-686b7c00-2110-11eb-9cc9-44886371eae2.png)
 
 
 ## Development
-If you experience an issue or think the library is missing some functionality, please submit an issue or pull request.
+If you experience a bug or think the library is missing some functionality, please submit an issue or pull request.
