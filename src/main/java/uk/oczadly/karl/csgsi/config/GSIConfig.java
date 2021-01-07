@@ -509,8 +509,7 @@ public class GSIConfig {
      *  }
      * </pre>
      *
-     * @param serviceName the identifying name of your application/service (no special characters, and excluding
-     *                    {@code .cfg} suffix)
+     * @param serviceName the identifying name of your application/service (eg: {@code test_service})
      *
      * @throws IOException           if the file cannot be written to
      * @throws GameNotFoundException if the Steam or CSGO directories could not be located
@@ -547,8 +546,7 @@ public class GSIConfig {
      *  }
      * </pre>
      *
-     * @param serviceName the identifying name of your application/service (no special characters, and excluding
-     *                    {@code .cfg} suffix)
+     * @param serviceName the identifying name of your application/service (eg: {@code test_service})
      * @param dir         the directory in which the file is created
      *
      * @throws IOException           if the file cannot be written to
@@ -596,8 +594,7 @@ public class GSIConfig {
      * utility method. If neither the Steam or game directory can be identified, then a {@link GameNotFoundException}
      * will be raised.</p>
      *
-     * @param serviceName the identifying name of your application/service (no special characters, and excluding
-     *                    {@code .cfg} suffix)
+     * @param serviceName the identifying name of your application/service (eg: {@code test_service})
      *
      * @return true if the file was successfully removed, false if it didn't exist
      *
@@ -617,8 +614,7 @@ public class GSIConfig {
      * which will attempt to automatically locate the directory for you.</p>
      *
      * @param dir         the directory which the configuration file resides in
-     * @param serviceName the identifying name of your application/service (no special characters, and excluding
-     *                    {@code .cfg} suffix)
+     * @param serviceName the identifying name of your application/service (eg: {@code test_service})
      *
      * @return true if the file was successfully removed, false if it didn't exist
      *
@@ -649,8 +645,7 @@ public class GSIConfig {
      * utility method. If neither the Steam or game directory can be identified, then a {@link GameNotFoundException}
      * will be raised.</p>
      *
-     * @param serviceName the identifying name of your application/service (no special characters, and excluding
-     *                    {@code .cfg} suffix)
+     * @param serviceName the identifying name of your application/service (eg: {@code test_service})
      *
      * @return true if a configuration file already exists
      *
@@ -665,8 +660,7 @@ public class GSIConfig {
      * Checks whether a configuration file currently exists with the specified service name in the given directory.
      *
      * @param dir         the directory containing the potential configuration file
-     * @param serviceName the identifying name of your application/service (no special characters, and excluding
-     *                    {@code .cfg} suffix)
+     * @param serviceName the identifying name of your application/service (eg: {@code test_service})
      *
      * @return true if a configuration file already exists
      *
@@ -688,8 +682,7 @@ public class GSIConfig {
      * utility method. If neither the Steam or game directory can be identified, then a {@link GameNotFoundException}
      * will be raised.</p>
      *
-     * @param serviceName the identifying name of your application/service (no special characters, and excluding
-     *                    {@code .cfg} suffix)
+     * @param serviceName the identifying name of your application/service (eg: {@code test_service})
      *
      * @return the configuration file for the given service
      *
@@ -703,9 +696,12 @@ public class GSIConfig {
      * Returns the path of the configuration file with the given service name. This method will not create any files,
      * nor will it perform any checks as to whether the configuration file actually exists on the system.
      *
+     * <p>Your service name can only contain standard word and digit characters, as well as underscores, and must be
+     * between 1 and 32 characters in length. This value must <em>not</em> include the {@code gamestate_integration_}
+     * prefix or the {@code .cfg} file type suffix.</p>
+     *
      * @param dir         the directory containing the configuration file
-     * @param serviceName the identifying name of your application/service (no special characters, and excluding
-     *                    {@code .cfg} suffix)
+     * @param serviceName the identifying name of your application/service (eg: {@code test_service})
      *
      * @return the configuration file for the given service
      *
@@ -714,10 +710,8 @@ public class GSIConfig {
      */
     public static Path getConfigFile(Path dir, String serviceName) {
         if (!SERVICE_NAME_PATTERN.matcher(serviceName).matches())
-            throw new IllegalArgumentException("Invalid service name (can only include standard word characters, " +
-                    "digits and underscores).");
-        String fName = "gamestate_integration_" + serviceName.toLowerCase() + ".cfg";
-        return dir.resolve(fName);
+            throw new IllegalArgumentException("Invalid service name.");
+        return dir.resolve("gamestate_integration_" + serviceName.toLowerCase() + ".cfg");
     }
     
 }
