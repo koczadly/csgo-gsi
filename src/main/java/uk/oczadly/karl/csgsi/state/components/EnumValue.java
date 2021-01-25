@@ -1,6 +1,7 @@
 package uk.oczadly.karl.csgsi.state.components;
 
 import com.google.gson.Gson;
+import com.google.gson.JsonPrimitive;
 import com.google.gson.TypeAdapter;
 import com.google.gson.TypeAdapterFactory;
 import com.google.gson.annotations.JsonAdapter;
@@ -122,10 +123,7 @@ public class EnumValue<E> {
     }
     
     private static <T> EnumValue<T> of(String strVal, TypeAdapter<T> adapter) {
-        T val = null;
-        try {
-            val = adapter.read(new JsonReader(new StringReader("\"" + strVal + "\"")));
-        } catch (IOException ignored) {}
+        T val = adapter.fromJsonTree(new JsonPrimitive(strVal));
         return new EnumValue<>(val, strVal);
     }
     
