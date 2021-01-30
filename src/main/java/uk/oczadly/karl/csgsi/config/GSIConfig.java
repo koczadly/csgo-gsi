@@ -433,13 +433,15 @@ public class GSIConfig {
      *
      * <p>This method uses the built-in {@link ValveConfigWriter} class to generate and write the configuration file
      * contents. New lines will be separated by the value returned by {@link System#lineSeparator()}.</p>
-     *
-     * @throws IOException if an I/O error occurs when writing to the writer
      */
-    public String export() throws IOException {
-        StringWriter sw = new StringWriter();
-        export(sw);
-        return sw.toString();
+    public String export() {
+        try {
+            StringWriter sw = new StringWriter();
+            export(sw);
+            return sw.toString();
+        } catch (IOException e) {
+           throw new AssertionError(e);
+        }
     }
     
     /**
