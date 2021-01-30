@@ -433,6 +433,8 @@ public class GSIConfig {
      *
      * <p>This method uses the built-in {@link ValveConfigWriter} class to generate and write the configuration file
      * contents. New lines will be separated by the value returned by {@link System#lineSeparator()}.</p>
+     * 
+     * @see #export(Writer)
      */
     public String export() {
         try {
@@ -452,8 +454,9 @@ public class GSIConfig {
      * contents. New lines will be separated by the value returned by {@link System#lineSeparator()}.</p>
      *
      * @param writer the writer instance to write the configuration data to
-     *
      * @throws IOException if an I/O error occurs when writing to the writer
+     *
+     * @see #writeConfigFile(String)
      */
     public void export(Writer writer) throws IOException {
         ValveConfigWriter conf = new ValveConfigWriter(writer);
