@@ -64,6 +64,17 @@ public class GSIConfig {
     }
     
     /**
+     * Constructs a new GSI configuration object with the URI as localhost on the specified port. Refer to class
+     * documentation and setter methods for configuring other properties.
+     *
+     * @param host the hostname or address of the server (eg. "{@code 127.0.0.1}")
+     * @param port the port of the server
+     */
+    public GSIConfig(String host, int port) {
+        setURI(host, port);
+    }
+    
+    /**
      * Constructs a new GSI configuration object with the specified URI. Refer to class documentation and setter methods
      * for configuring other properties.
      *
@@ -82,7 +93,8 @@ public class GSIConfig {
     
     
     /**
-     * Sets the URI of the server to the local machine ({@code 127.0.0.1}) on the specified port.
+     * Sets the URI of the server to the local machine ({@code 127.0.0.1}) on the specified port, using the {@code
+     * HTTP} URI.
      *
      * @param port the port of the server
      * @return this current object
@@ -94,7 +106,7 @@ public class GSIConfig {
     }
     
     /**
-     * Sets the URI of the server to localhost on the specified port.
+     * Sets the URI of the server to the specified host and port, using the {@code HTTP} URI.
      *
      * @param host the hostname or address of the server (eg. "{@code 127.0.0.1}")
      * @param port the port of the server
