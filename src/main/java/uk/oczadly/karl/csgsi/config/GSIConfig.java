@@ -31,7 +31,7 @@ import java.util.regex.Pattern;
  *                 DataComponent.ROUND);
  * </pre>
  *
- * <p>Profiles can then be created and written to the system using the {@link #writeConfigFile(String)} method (refer to
+ * <p>Profiles can then be created and written to the system using the {@link #writeFile(String)} method (refer to
  * method documentation).</p>
  *
  * <p>Your applications service name should be unique, and can only contain standard english word and digit
@@ -462,7 +462,7 @@ public class GSIConfig {
      */
     public String export() {
         try {
-            StringWriter sw = new StringWriter();
+            Writer sw = new StringWriter();
             export(sw);
             return sw.toString();
         } catch (IOException e) {
@@ -480,7 +480,7 @@ public class GSIConfig {
      * @param writer the writer instance to write the configuration data to
      * @throws IOException if an I/O error occurs when writing to the writer
      *
-     * @see #writeConfigFile(String)
+     * @see #writeFile(String)
      */
     public void export(Writer writer) throws IOException {
         ValveConfigWriter conf = new ValveConfigWriter(writer);
@@ -547,8 +547,8 @@ public class GSIConfig {
      * @throws GameNotFoundException if the Steam or CSGO installation could not be located
      * @throws SecurityException     if the security manager doesn't permit access to the file
      */
-    public void writeConfigFile(String serviceName) throws GameNotFoundException, IOException {
-        writeConfigFile(getConfigFile(serviceName));
+    public void writeFile(String serviceName) throws GameNotFoundException, IOException {
+        writeFile(getFile(serviceName));
     }
     
     /**
@@ -586,12 +586,12 @@ public class GSIConfig {
      * @throws SecurityException     if the security manager doesn't permit access to the file
      *
      * @see SteamUtils#locateCsgoConfigFolder()
-     * @see #writeConfigFile(String)
+     * @see #writeFile(String)
      */
-    public void writeConfigFile(String serviceName, Path dir) throws IOException {
+    public void writeFile(String serviceName, Path dir) throws IOException {
         if (!Files.isDirectory(dir))
             throw new NotDirectoryException("Path must be a directory.");
-        writeConfigFile(getConfigFile(dir, serviceName));
+        writeFile(getFile(dir, serviceName));
     }
     
     /**
@@ -602,9 +602,9 @@ public class GSIConfig {
      * @throws IOException       if the file cannot be written to
      * @throws SecurityException if the security manager doesn't permit access to the file
      *
-     * @see #writeConfigFile(String)
+     * @see #writeFile(String)
      */
-    public void writeConfigFile(Path file) throws IOException {
+    public void writeFile(Path file) throws IOException {
         if (Files.isDirectory(file))
             throw new IllegalArgumentException("Path was an existing directory, and not a file.");
         
@@ -635,8 +635,8 @@ public class GSIConfig {
      * @throws SecurityException     if the security manager disallows access to the file
      * @throws FileNotFoundException if the given path argument is not an existing directory
      */
-    public static boolean removeConfigFile(String serviceName) throws GameNotFoundException, IOException {
-        return removeConfigFile(SteamUtils.locateCsgoConfigFolder(), serviceName);
+    public static boolean removeFile(String serviceName) throws GameNotFoundException, IOException {
+        return removeFile(SteamUtils.locateCsgoConfigFolder(), serviceName);
     }
     
     /**
@@ -656,15 +656,15 @@ public class GSIConfig {
      * @throws NotDirectoryException if the given path argument is not a directory
      *
      * @see SteamUtils#locateCsgoConfigFolder()
-     * @see #removeConfigFile(String)
+     * @see #removeFile(String)
      */
-    public static boolean removeConfigFile(Path dir, String serviceName) throws IOException {
+    public static boolean removeFile(Path dir, String serviceName) throws IOException {
         if (!Files.exists(dir))
             throw new FileNotFoundException("Path argument is not an existing directory.");
         if (!Files.isDirectory(dir))
             throw new NotDirectoryException("Path must be a directory.");
         
-        Path file = getConfigFile(dir, serviceName);
+        Path file = getFile(dir, serviceName);
         LOGGER.debug("Attempting to remove config file {}...", file.toString());
         return Files.deleteIfExists(file);
     }
@@ -684,8 +684,8 @@ public class GSIConfig {
      * @throws GameNotFoundException if the Steam or CSGO installation could not be located
      * @throws SecurityException     if the security manager disallows access to the file
      */
-    public static boolean configFileExists(String serviceName) throws GameNotFoundException {
-        return Files.isRegularFile(getConfigFile(serviceName));
+    public static boolean fileExists(String serviceName) throws GameNotFoundException {
+        return Files.isRegularFile(getFile(serviceName));
     }
     
     /**
@@ -699,10 +699,10 @@ public class GSIConfig {
      * @throws SecurityException     if the security manager disallows access to the file
      *
      * @see SteamUtils#locateCsgoConfigFolder()
-     * @see #configFileExists(String)
+     * @see #fileExists(String)
      */
-    public static boolean configFileExists(Path dir, String serviceName) {
-        return Files.isRegularFile(getConfigFile(dir, serviceName));
+    public static boolean fileExists(Path dir, String serviceName) {
+        return Files.isRegularFile(getFile(dir, serviceName));
     }
     
     
@@ -724,8 +724,8 @@ public class GSIConfig {
      *
      * @throws GameNotFoundException if the Steam or CSGO installation could not be located
      */
-    public static Path getConfigFile(String serviceName) throws GameNotFoundException {
-        return getConfigFile(SteamUtils.locateCsgoConfigFolder(), serviceName);
+    public static Path getFile(String serviceName) throws GameNotFoundException {
+        return getFile(SteamUtils.locateCsgoConfigFolder(), serviceName);
     }
     
     /**
@@ -741,9 +741,9 @@ public class GSIConfig {
      *
      * @return the configuration file for the given service
      *
-     * @see #getConfigFile(String) 
+     * @see #getFile(String)
      */
-    public static Path getConfigFile(Path dir, String serviceName) {
+    public static Path getFile(Path dir, String serviceName) {
         if (!SERVICE_NAME_PATTERN.matcher(serviceName).matches())
             throw new IllegalArgumentException("Invalid service name.");
         return dir.resolve("gamestate_integration_" + serviceName.toLowerCase() + ".cfg");
