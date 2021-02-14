@@ -19,10 +19,10 @@ import java.util.regex.Pattern;
  * the appropriate setter methods (which return the current instance). Mandatory parameters (callback URI) are passed
  * within the class constructor.</p>
  *
- * <p>The following example demonstrates how to configure a profile with a local receiver on port 80 with a timeout of
+ * <p>The following example demonstrates how to configure a profile with a local server on port 80 with a timeout of
  * 1 second, a buffer of 500ms, an authentication value "password", and receives the provider and round components:
  * <pre>
- *  GSIConfig profile = new GSIConfig("http://127.0.0.1:80")
+ *  GSIConfig config = new GSIConfig(80) // localhost:80
  *          .setTimeoutPeriod(1.0)
  *          .setBufferPeriod(0.5)
  *          .withAuthToken("password", "Q79v5tcxVQ8u")
@@ -464,12 +464,21 @@ public final class GSIConfig {
     }
     
     
+    private void validateState() {
+        if (uri == null)
+            throw new IllegalStateException("No URI is set.");
+        if (dataComponents.isEmpty())
+            throw new IllegalStateException("No data components are specified.");
+    }
+    
     /**
      * Generates a configuration profile from the current set parameter values and returns it as a String value.
      *
      * <p>This method uses the built-in {@link ValveConfigWriter} class to generate and write the configuration file
      * contents. New lines will be separated by the value returned by {@link System#lineSeparator()}.</p>
-     * 
+     *
+     * @throws IllegalStateException if one or more configuration values aren't set or are invalid
+     *
      * @see #export(Writer)
      */
     public String export() {
@@ -491,15 +500,12 @@ public final class GSIConfig {
      *
      * @param writer the writer instance to write the configuration data to
      * @throws IOException if an I/O error occurs when writing to the writer
+     * @throws IllegalStateException if one or more configuration values aren't set or are invalid
      *
      * @see #writeFile(String)
      */
     public void export(Writer writer) throws IOException {
-        // Validate state
-        if (uri == null)
-            throw new IllegalStateException("No URI is set.");
-        if (dataComponents.isEmpty())
-            throw new IllegalStateException("No data components are specified.");
+        validateState();
         
         ValveConfigWriter conf = new ValveConfigWriter(writer);
         conf.key(description != null ? description : DEFAULT_DESC).beginObject();
@@ -546,11 +552,11 @@ public final class GSIConfig {
      * <em>not</em> include the {@code gamestate_integration_} prefix or the {@code .cfg} file extension suffix.</p>
      *
      * <pre>
-     *  GSIConfig profile = ... // Create profile here
+     *  GSIConfig config = ... // Create config here
      *
      *  try {
-     *      profile.writeConfigFile("my_service");
-     *      System.out.println("Profile successfully created!");
+     *      config.writeFile("my_service");
+     *      System.out.println("config successfully created!");
      *  } catch (GameNotFoundException e) {
      *      System.out.println("Couldn't locate CSGO or Steam installation directories.");
      *  } catch (IOException e) {
@@ -558,12 +564,13 @@ public final class GSIConfig {
      *  }
      * </pre>
      *
-     * @param serviceName the identifying name of your application/service (eg: {@code test_service})
+     * @param serviceName the identifying name of your application or service, eg: {@code test_service}
      * @return the configuration file path which was written
      *
      * @throws IOException           if the file cannot be written to
      * @throws GameNotFoundException if the Steam or CSGO installation could not be located
      * @throws SecurityException     if the security manager doesn't permit access to the file
+     * @throws IllegalStateException if one or more configuration values aren't set or are invalid
      */
     public Path writeFile(String serviceName) throws GameNotFoundException, IOException {
         Path file = getFile(serviceName);
@@ -584,13 +591,13 @@ public final class GSIConfig {
      * installation can be found on the system. The following example demonstrates how to create and write a
      * configuration file to the system:</p>
      * <pre>
-     *  GSIConfig profile = ... // Create profile here
+     *  GSIConfig config = ... // Create config here
      *
      *  try {
      *      Path configPath = SteamUtils.locateCsgoConfigFolder();
      *
-     *      profile.writeConfigFile("my_service", configPath);
-     *      System.out.println("Profile successfully created!");
+     *      config.writeFile("my_service", configPath);
+     *      System.out.println("Config successfully created!");
      *  } catch (GameNotFoundException e) {
      *      System.out.println("Couldn't locate CSGO or Steam installation directories.");
      *  } catch (IOException e) {
@@ -598,12 +605,13 @@ public final class GSIConfig {
      *  }
      * </pre>
      *
-     * @param serviceName the identifying name of your application/service (eg: {@code test_service})
+     * @param serviceName the identifying name of your application or service, eg: {@code test_service}
      * @param dir         the directory in which the file is created
      *
      * @throws IOException           if the file cannot be written to
      * @throws NotDirectoryException if the given path argument is not a directory
      * @throws SecurityException     if the security manager doesn't permit access to the file
+     * @throws IllegalStateException if one or more configuration values aren't set or are invalid
      *
      * @see SteamUtils#locateCsgoConfigFolder()
      * @see #writeFile(String)
@@ -621,17 +629,16 @@ public final class GSIConfig {
      *
      * @throws IOException       if the file cannot be written to
      * @throws SecurityException if the security manager doesn't permit access to the file
+     * @throws IllegalStateException if one or more configuration values aren't set or are invalid
      *
      * @see #writeFile(String)
      */
     public void writeFile(Path file) throws IOException {
+        validateState();
         if (Files.isDirectory(file))
             throw new IllegalArgumentException("Path was an existing directory, and not a file.");
         
-        LOGGER.debug("Attempting to create config file {}...", file.toString());
-        if (dataComponents.isEmpty())
-            LOGGER.warn("No data components are enabled in the profile! The client won't return any information.");
-        
+        LOGGER.debug("Attempting to write config file {}...", file.toString());
         try (BufferedWriter writer = Files.newBufferedWriter(file, StandardCharsets.UTF_8)) {
             export(writer);
         }
@@ -646,7 +653,7 @@ public final class GSIConfig {
      * utility method. If neither the Steam or game directory can be identified, then a {@link GameNotFoundException}
      * will be raised.</p>
      *
-     * @param serviceName the identifying name of your application/service (eg: {@code test_service})
+     * @param serviceName the identifying name of your application or service, eg: {@code test_service}
      *
      * @return true if the file was successfully removed, false if it didn't exist
      *
@@ -666,7 +673,7 @@ public final class GSIConfig {
      * which will attempt to automatically locate the directory for you.</p>
      *
      * @param dir         the directory which the configuration file resides in
-     * @param serviceName the identifying name of your application/service (eg: {@code test_service})
+     * @param serviceName the identifying name of your application or service, eg: {@code test_service}
      *
      * @return true if the file was successfully removed, false if it didn't exist
      *
@@ -697,7 +704,7 @@ public final class GSIConfig {
      * utility method. If neither the Steam or game directory can be identified, then a {@link GameNotFoundException}
      * will be raised.</p>
      *
-     * @param serviceName the identifying name of your application/service (eg: {@code test_service})
+     * @param serviceName the identifying name of your application or service, eg: {@code test_service}
      *
      * @return true if a configuration file already exists
      *
@@ -712,7 +719,7 @@ public final class GSIConfig {
      * Checks whether a configuration file currently exists with the specified service name in the given directory.
      *
      * @param dir         the directory containing the potential configuration file
-     * @param serviceName the identifying name of your application/service (eg: {@code test_service})
+     * @param serviceName the identifying name of your application or service, eg: {@code test_service}
      *
      * @return true if a configuration file already exists
      *
@@ -738,7 +745,7 @@ public final class GSIConfig {
      * characters, as well as underscores, and must be between 1 and 32 characters in length. The name must
      * <em>not</em> include the {@code gamestate_integration_} prefix or the {@code .cfg} file extension suffix.</p>
      *
-     * @param serviceName the identifying name of your application/service (eg: {@code test_service})
+     * @param serviceName the identifying name of your application or service, eg: {@code test_service}
      *
      * @return the configuration file for the given service
      *
@@ -757,7 +764,7 @@ public final class GSIConfig {
      * <em>not</em> include the {@code gamestate_integration_} prefix or the {@code .cfg} file extension suffix.</p>
      *
      * @param dir         the directory containing the configuration file
-     * @param serviceName the identifying name of your application/service (eg: {@code test_service})
+     * @param serviceName the identifying name of your application or service, eg: {@code test_service}
      *
      * @return the configuration file for the given service
      *
