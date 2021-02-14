@@ -20,13 +20,13 @@ import java.util.regex.Pattern;
  * within the class constructor.</p>
  *
  * <p>The following example demonstrates how to configure a profile with a local receiver on port 80 with a timeout of
- * 1 second, a buffer of 500ms, an authentication value "password", and receives all supported data components:
+ * 1 second, a buffer of 500ms, an authentication value "password", and receives the provider and round components:
  * <pre>
  *  GSIConfig profile = new GSIConfig("http://127.0.0.1:80")
  *          .setTimeoutPeriod(1.0)
  *          .setBufferPeriod(0.5)
- *          .setAuthToken("password", "Q79v5tcxVQ8u")
- *          .setDataComponents(
+ *          .withAuthToken("password", "Q79v5tcxVQ8u")
+ *          .withDataComponents(
  *                 DataComponent.PROVIDER,
  *                 DataComponent.ROUND);
  * </pre>
@@ -38,18 +38,17 @@ import java.util.regex.Pattern;
  * characters, as well as underscores, and must be between 1 and 32 characters in length. The name must
  * <em>not</em> include the {@code gamestate_integration_} prefix or the {@code .cfg} file extension suffix.</p>
  */
-public class GSIConfig {
+public final class GSIConfig {
     
     private static final Logger LOGGER = LoggerFactory.getLogger(GSIConfig.class);
     
     private static final Pattern SERVICE_NAME_PATTERN = Pattern.compile("^\\w{1,32}$");
-    private static final String DEFAULT_DESC = "Created using https://github.com/koczadly/csgo-gsi";
-    
+    private static final String DEFAULT_DESC = "Created with https://github.com/koczadly/csgo-gsi";
     
     private String uri, description = DEFAULT_DESC;
-    private Map<String, String> authData = new HashMap<>();
     private Double timeout, buffer, throttle, heartbeat;
     private Integer precisionTime, precisionPosition, precisionVector;
+    private final Map<String, String> authTokens = new HashMap<>();
     private Set<DataComponent> dataComponents = EnumSet.noneOf(DataComponent.class);
     
     
@@ -60,7 +59,7 @@ public class GSIConfig {
      * @param port the port of the server
      */
     public GSIConfig(int port) {
-        setURI(port);
+        setLocalURI(port);
     }
     
     /**
@@ -93,24 +92,24 @@ public class GSIConfig {
     
     
     /**
-     * Sets the URI of the server to the local machine ({@code 127.0.0.1}) on the specified port, using the {@code
-     * HTTP} URI.
+     * Sets the URI of the server to the local machine ({@code localhost}) on the specified port, using the
+     * {@code HTTP} protocol.
      *
      * @param port the port of the server
-     * @return this current object
+     * @return this GSIConfig instance
      *
      * @throws NullPointerException if the provided {@code uri} argument is null
      */
-    public GSIConfig setURI(int port) {
-        return setURI("127.0.0.1", port);
+    public GSIConfig setLocalURI(int port) {
+        return setURI("localhost", port);
     }
     
     /**
-     * Sets the URI of the server to the specified host and port, using the {@code HTTP} URI.
+     * Sets the URI of the server to the specified host and port, using the {@code HTTP} protocol.
      *
      * @param host the hostname or address of the server (eg. "{@code 127.0.0.1}")
      * @param port the port of the server
-     * @return this current object
+     * @return this GSIConfig instance
      *
      * @throws NullPointerException if the provided {@code uri} argument is null
      */
@@ -122,7 +121,7 @@ public class GSIConfig {
     
     /**
      * @param uri the URI (including protocol and port) of the server
-     * @return this current object
+     * @return this GSIConfig instance
      *
      * @throws NullPointerException if the provided {@code uri} argument is null
      */
@@ -142,17 +141,26 @@ public class GSIConfig {
     
     
     /**
-     * Sets the auth token to a specified map of {@link String} elements. The map will be copied when calling this
-     * method, so future changes to the provided map won't change the state of this object. If a null value is passed,
-     * the method will generate an empty {@link Map} instance.
+     * Sets the authentication tokens to a specified map of {@link String} elements.
      *
-     * @param authData the new map of auth tokens, or null
-     * @return this current object
+     * @param authTokens the new map of auth tokens, or null
+     * @return this GSIConfig instance
      */
-    public GSIConfig setAuthTokens(Map<String, String> authData) {
-        this.authData = authData == null
-                ? new HashMap<>() //Ensure stored value isn't null
-                : new HashMap<>(authData); //Clone map
+    public GSIConfig setAuthTokens(Map<String, String> authTokens) {
+        this.authTokens.clear();
+        if (authTokens != null)
+            this.authTokens.putAll(authTokens);
+        return this;
+    }
+    
+    /**
+     * Adds all of the the specified authentication tokens to the current map.
+     *
+     * @param authTokens the new map of auth tokens, or null
+     * @return this GSIConfig instance
+     */
+    public GSIConfig withAuthTokens(Map<String, String> authTokens) {
+        this.authTokens.putAll(authTokens);
         return this;
     }
     
@@ -160,19 +168,19 @@ public class GSIConfig {
      * Adds the authentication token to the current map of values.
      *
      * @param key   the key of the authentication token
-     * @param token the associated value, or null to remove the key
-     * @return this current object
+     * @param tokenValue the associated value, or null to remove the key
+     * @return this GSIConfig instance
      *
      * @throws NullPointerException if the key value is null
      */
-    public GSIConfig setAuthToken(String key, String token) {
+    public GSIConfig withAuthToken(String key, String tokenValue) {
         if (key == null)
             throw new NullPointerException("Auth token key cannot be null");
         
-        if (token == null) {
-            this.authData.remove(key);
+        if (tokenValue == null) {
+            this.authTokens.remove(key);
         } else {
-            this.authData.put(key, token);
+            this.authTokens.put(key, tokenValue);
         }
         return this;
     }
@@ -181,7 +189,7 @@ public class GSIConfig {
      * @return the current map of authentication data to be sent by the client
      */
     public Map<String, String> getAuthTokens() {
-        return authData;
+        return Collections.unmodifiableMap(authTokens);
     }
     
     
@@ -190,7 +198,7 @@ public class GSIConfig {
      * for the user's reference.
      *
      * @param desc the service description
-     * @return this current object
+     * @return this GSIConfig instance
      */
     public GSIConfig setDescription(String desc) {
         this.description = Objects.requireNonNullElse(desc, DEFAULT_DESC);
@@ -215,7 +223,7 @@ public class GSIConfig {
      * </blockquote>
      *
      * @param timeout the timeout value in seconds, or null to use client default
-     * @return this current object
+     * @return this GSIConfig instance
      *
      * @see <a href="https://developer.valvesoftware.com/wiki/Counter-Strike:_Global_Offensive_Game_State_Integration">Valve
      * Developer Community</a>
@@ -246,7 +254,7 @@ public class GSIConfig {
      * </blockquote>
      *
      * @param buffer the buffer value in seconds, or null to use client default
-     * @return this current object
+     * @return this GSIConfig instance
      *
      * @see <a href="https://developer.valvesoftware.com/wiki/Counter-Strike:_Global_Offensive_Game_State_Integration">Valve
      * Developer Community</a>
@@ -275,7 +283,7 @@ public class GSIConfig {
      * </blockquote>
      *
      * @param throttle the throttle value in seconds, or null to use client default
-     * @return this current object
+     * @return this GSIConfig instance
      *
      * @see <a href="https://developer.valvesoftware.com/wiki/Counter-Strike:_Global_Offensive_Game_State_Integration">Valve
      * Developer Community</a>
@@ -304,7 +312,7 @@ public class GSIConfig {
      * </blockquote>
      *
      * @param heartbeat the heartbeat period in seconds, or null to use client default
-     * @return this current object
+     * @return this GSIConfig instance
      *
      * @see <a href="https://developer.valvesoftware.com/wiki/Counter-Strike:_Global_Offensive_Game_State_Integration">Valve
      * Developer Community</a>
@@ -337,7 +345,7 @@ public class GSIConfig {
      * if you wish to use the default client value.
      *
      * @param precisionTime the number of decimal places for time units, or null for default
-     * @return this current object
+     * @return this GSIConfig instance
      *
      * @see <a href="https://developer.valvesoftware.com/wiki/Counter-Strike:_Global_Offensive_Game_State_Integration">
      * Valve Developer Community</a>
@@ -360,7 +368,7 @@ public class GSIConfig {
      * of null if you wish to use the default client value.
      *
      * @param precisionPosition the number of decimal places for position units, or null for default
-     * @return this current object
+     * @return this GSIConfig instance
      *
      * @see <a href="https://developer.valvesoftware.com/wiki/Counter-Strike:_Global_Offensive_Game_State_Integration">
      * Valve Developer Community</a>
@@ -383,7 +391,7 @@ public class GSIConfig {
      * use the default client value.
      *
      * @param precisionVector the number of decimal places for vector units, or null for default
-     * @return this current object
+     * @return this GSIConfig instance
      *
      * @see <a href="https://developer.valvesoftware.com/wiki/Counter-Strike:_Global_Offensive_Game_State_Integration">
      * Valve Developer Community</a>
@@ -394,53 +402,57 @@ public class GSIConfig {
     }
     
     /**
-     * Sets the which data values will be sent by the client. The set will be copied when calling this method, so future
-     * changes to the provided set won't change the state of this object. If a null value is passed, the method will
-     * generate an empty {@link EnumSet} instance.
+     * Replaces the current data components set, setting which data will be sent from the game client.
      *
-     * @param reportedData the new set of data components to be sent, or null
-     * @return this current object
+     * @param components the new set of data components to be sent
+     * @return this GSIConfig instance
      */
-    public GSIConfig setDataComponents(Set<DataComponent> reportedData) {
-        this.dataComponents = reportedData != null
-                ? EnumSet.copyOf(reportedData)
-                : EnumSet.noneOf(DataComponent.class);
+    public GSIConfig setDataComponents(Set<DataComponent> components) {
+        this.dataComponents.clear();
+        this.dataComponents.addAll(components);
         return this;
     }
     
     /**
-     * Sets the which data values will be sent by the client. If a null value is passed, the method will generate an
-     * empty {@link EnumSet} instance.
+     * Appends the specified data components to the set, setting which data will be sent from the game client.
      *
-     * @param reportedData the new set of data components to be sent, or null
-     * @return this current object
+     * @param components the data components to add
+     * @return this GSIConfig instance
      */
-    public GSIConfig setDataComponents(DataComponent... reportedData) {
-        Set<DataComponent> set = EnumSet.noneOf(DataComponent.class);
-        if (reportedData != null)
-            Collections.addAll(set, reportedData);
-        this.dataComponents = set;
+    public GSIConfig withDataComponents(Set<DataComponent> components) {
+        this.dataComponents.addAll(components);
         return this;
     }
     
     /**
-     * Sets the configuration so that all the data components will be sent by the client.
+     * Appends the specified data components to the set, setting which data will be sent from the game client.
      *
-     * @return this current object
+     * @param components the data components to add
+     * @return this GSIConfig instance
      */
-    public GSIConfig setAllDataComponents() {
+    public GSIConfig withDataComponents(DataComponent... components) {
+        this.dataComponents.addAll(Arrays.asList(components));
+        return this;
+    }
+    
+    /**
+     * Appends the specified data component to the set, setting which data will be sent from the game client.
+     *
+     * @param components the data component
+     * @return this GSIConfig instance
+     */
+    public GSIConfig withDataComponent(DataComponent components) {
+        this.dataComponents.add(components);
+        return this;
+    }
+    
+    /**
+     * Sets the configuration so that all available data components will be sent by the client.
+     *
+     * @return this GSIConfig instance
+     */
+    public GSIConfig withAllDataComponents() {
         this.dataComponents = EnumSet.allOf(DataComponent.class);
-        return this;
-    }
-    
-    /**
-     * Adds the specified data component to the current list, which will be sent by the client.
-     *
-     * @param reportedData the data component
-     * @return this current object
-     */
-    public GSIConfig addDataComponent(DataComponent reportedData) {
-        this.dataComponents.add(reportedData);
         return this;
     }
     
@@ -483,8 +495,14 @@ public class GSIConfig {
      * @see #writeFile(String)
      */
     public void export(Writer writer) throws IOException {
+        // Validate state
+        if (uri == null)
+            throw new IllegalStateException("No URI is set.");
+        if (dataComponents.isEmpty())
+            throw new IllegalStateException("No data components are specified.");
+        
         ValveConfigWriter conf = new ValveConfigWriter(writer);
-        conf.key(this.getDescription()).beginObject();
+        conf.key(description != null ? description : DEFAULT_DESC).beginObject();
     
         // Values
         conf.key("uri").value(getURI())
@@ -502,7 +520,7 @@ public class GSIConfig {
     
         // Auth tokens
         conf.key("auth").beginObject();
-        for (Map.Entry<String, String> token : getAuthTokens().entrySet()) {
+        for (Map.Entry<String, String> token : authTokens.entrySet()) {
             conf.key(token.getKey()).value(token.getValue());
         }
         conf.endObject();
@@ -510,8 +528,7 @@ public class GSIConfig {
         // Data components
         conf.key("data").beginObject();
         for (DataComponent type : DataComponent.values()) {
-            conf.key(type.getConfigName())
-                    .value(getDataComponents().contains(type) ? "1" : "0");
+            conf.key(type.getConfigName()).value(dataComponents.contains(type) ? "1" : "0");
         }
         conf.endObject().endObject().close();
     }
@@ -542,13 +559,16 @@ public class GSIConfig {
      * </pre>
      *
      * @param serviceName the identifying name of your application/service (eg: {@code test_service})
+     * @return the configuration file path which was written
      *
      * @throws IOException           if the file cannot be written to
      * @throws GameNotFoundException if the Steam or CSGO installation could not be located
      * @throws SecurityException     if the security manager doesn't permit access to the file
      */
-    public void writeFile(String serviceName) throws GameNotFoundException, IOException {
-        writeFile(getFile(serviceName));
+    public Path writeFile(String serviceName) throws GameNotFoundException, IOException {
+        Path file = getFile(serviceName);
+        writeFile(file);
+        return file;
     }
     
     /**
@@ -746,7 +766,7 @@ public class GSIConfig {
     public static Path getFile(Path dir, String serviceName) {
         if (!SERVICE_NAME_PATTERN.matcher(serviceName).matches())
             throw new IllegalArgumentException("Invalid service name.");
-        return dir.resolve("gamestate_integration_" + serviceName.toLowerCase() + ".cfg");
+        return dir.resolve("gamestate_integration_" + serviceName.toLowerCase() + ".cfg").toAbsolutePath();
     }
     
 }

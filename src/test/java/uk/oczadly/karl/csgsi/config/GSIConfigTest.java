@@ -1,6 +1,5 @@
 package uk.oczadly.karl.csgsi.config;
 
-import org.junit.Assert;
 import org.junit.Test;
 
 import java.io.IOException;
@@ -24,7 +23,7 @@ public class GSIConfigTest {
         profile.setURI("http://1.2.3.4:56");
         assertEquals("http://1.2.3.4:56", profile.getURI());
     
-        profile.setAuthToken("token", "auth_val");
+        profile.withAuthToken("token", "auth_val");
         assertEquals("auth_val", profile.getAuthTokens().get("token"));
     
         profile.setBufferPeriod(1d);
@@ -48,7 +47,7 @@ public class GSIConfigTest {
         profile.setPrecisionVector(423);
         assertEquals((Integer)423, profile.getPrecisionVector());
     
-        profile.addDataComponent(DataComponent.BOMB);
+        profile.withDataComponent(DataComponent.BOMB);
         assertEquals(1, profile.getDataComponents().size());
         assertTrue(profile.getDataComponents().contains(DataComponent.BOMB));
         assertFalse(profile.getDataComponents().contains(DataComponent.MAP));
@@ -61,8 +60,8 @@ public class GSIConfigTest {
     public void testProfileCreation() {
         //Profile
         GSIConfig profile = new GSIConfig("http://1.2.3.4:567")
-                .setAuthToken("token", "42A")
-                .addDataComponent(DataComponent.BOMB)
+                .withAuthToken("token", "42A")
+                .withDataComponent(DataComponent.BOMB)
                 .setBufferPeriod(20.1)
                 .setTimeoutPeriod(30.2)
                 .setHeartbeatPeriod(40.3)

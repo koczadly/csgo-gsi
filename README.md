@@ -30,21 +30,21 @@ Creating the game state configuration file for the game client is an easy automa
 
 ```java
 // Build the configuration for our service
-GSIConfig config = new GSIConfig(1337)
+GSIConfig config = new GSIConfig(1337) // localhost:1337
         .setTimeoutPeriod(1.0)
         .setBufferPeriod(0.5)
-        .setAuthToken("password", "Q79v5tcxVQ8u")
-        .setAllDataComponents(); // You could also choose which using setDataComponents(...)
+        .withAuthToken("password", "Q79v5tcxVQ8u")
+        .withAllDataComponents(); // Or specify which using withDataComponents(...)
 
 try {
     // Automatically locates the game directory and writes the file
-    config.writeConfigFile("test_service");
-    System.out.println("Config successfully created!");
+    Path file = config.writeFile("test_service");
+    System.out.println("Written config file: " + file);
 } catch (GameNotFoundException e) {
     // Either CSGO or Steam installation directory could not be located
-    System.out.println("Couldn't locate CSGO installation: " + e.getMessage());
+    System.err.println("Couldn't locate CSGO installation: " + e.getMessage());
 } catch (IOException e) {
-    System.out.println("Couldn't write configuration file.");
+    System.err.println("Couldn't write to configuration file.");
 }
 ```
 
