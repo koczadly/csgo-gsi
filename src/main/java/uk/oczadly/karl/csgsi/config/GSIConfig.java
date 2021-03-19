@@ -4,10 +4,14 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.*;
+import java.math.RoundingMode;
+import java.net.URI;
+import java.net.URL;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.NotDirectoryException;
 import java.nio.file.Path;
+import java.text.DecimalFormat;
 import java.util.*;
 import java.util.regex.Pattern;
 
@@ -35,14 +39,15 @@ import java.util.regex.Pattern;
  * method documentation).</p>
  *
  * <p>Your applications service name should be unique, and can only contain standard english word and digit
- * characters, as well as underscores, and must be between 1 and 32 characters in length. The name must
+ * characters, as well as underscores, and must be between 3 and 32 characters in length. The name must
  * <em>not</em> include the {@code gamestate_integration_} prefix or the {@code .cfg} file extension suffix.</p>
  */
 public final class GSIConfig {
     
-    private static final Logger LOGGER = LoggerFactory.getLogger(GSIConfig.class);
+    private static final Logger log = LoggerFactory.getLogger(GSIConfig.class);
     
-    private static final Pattern SERVICE_NAME_PATTERN = Pattern.compile("^\\w{1,32}$");
+    private static final DecimalFormat DOUBLE_FORMAT = new DecimalFormat("0.0###");
+    private static final Pattern SERVICE_NAME_PATTERN = Pattern.compile("^\\w{3,32}$");
     private static final String DEFAULT_DESC = "Created with https://github.com/koczadly/csgo-gsi";
     
     private String uri, description = DEFAULT_DESC;
@@ -126,10 +131,31 @@ public final class GSIConfig {
      * @throws NullPointerException if the provided {@code uri} argument is null
      */
     public GSIConfig setURI(String uri) {
-        if (uri == null)
-            throw new NullPointerException("URI argument cannot be null.");
+        if (uri == null) throw new NullPointerException("URI argument cannot be null.");
         this.uri = uri;
         return this;
+    }
+    
+    /**
+     * @param uri the URI of the server
+     * @return this GSIConfig instance
+     *
+     * @throws NullPointerException if the provided {@code uri} argument is null
+     */
+    public GSIConfig setURI(URL uri) {
+        if (uri == null) throw new NullPointerException("URI argument cannot be null.");
+        return setURI(uri.toString());
+    }
+    
+    /**
+     * @param uri the URI of the server
+     * @return this GSIConfig instance
+     *
+     * @throws NullPointerException if the provided {@code uri} argument is null
+     */
+    public GSIConfig setURI(URI uri) {
+        if (uri == null) throw new NullPointerException("URI argument cannot be null.");
+        return setURI(uri.toString());
     }
     
     /**
@@ -229,6 +255,8 @@ public final class GSIConfig {
      * Developer Community</a>
      */
     public GSIConfig setTimeoutPeriod(Double timeout) {
+        if (timeout != null && timeout < 0)
+            throw new IllegalArgumentException("Timeout duration cannot be negative.");
         this.timeout = timeout;
         return this;
     }
@@ -260,8 +288,31 @@ public final class GSIConfig {
      * Developer Community</a>
      */
     public GSIConfig setBufferPeriod(Double buffer) {
+        if (buffer != null && buffer < 0)
+            throw new IllegalArgumentException("Buffer period cannot be negative.");
         this.buffer = buffer;
         return this;
+    }
+    
+    /**
+     * Disables game state buffering by setting the buffer period to {@code 0}.
+     *
+     * <p>As defined on the Valve Developer Community documentation page:</p>
+     * <blockquote>
+     * Because multiple game events tend to occur one after another very quickly, it is recommended to specify a
+     * non-zero buffer. When buffering is enabled, the game will collect events for so many seconds to report a bigger
+     * delta. For localhost service integration this is less of an issue and can be tuned to match the needs of the
+     * service or set to 0.0 to disable buffering completely. If the setting is not specified then default buffer of 0.1
+     * sec will be used.
+     * </blockquote>
+     *
+     * @return this GSIConfig instance
+     *
+     * @see <a href="https://developer.valvesoftware.com/wiki/Counter-Strike:_Global_Offensive_Game_State_Integration">Valve
+     * Developer Community</a>
+     */
+    public GSIConfig disableBuffering() {
+        return setBufferPeriod(0d);
     }
     
     /**
@@ -285,12 +336,33 @@ public final class GSIConfig {
      * @param throttle the throttle value in seconds, or null to use client default
      * @return this GSIConfig instance
      *
-     * @see <a href="https://developer.valvesoftware.com/wiki/Counter-Strike:_Global_Offensive_Game_State_Integration">Valve
-     * Developer Community</a>
+     * @see <a href="https://developer.valvesoftware.com/wiki/Counter-Strike:_Global_Offensive_Game_State_Integration">
+     *     Valve Developer Community</a>
      */
     public GSIConfig setThrottlePeriod(Double throttle) {
+        if (throttle != null && throttle < 0)
+            throw new IllegalArgumentException("Throttle period cannot be negative.");
         this.throttle = throttle;
         return this;
+    }
+    
+    /**
+     * Disables game state throttling by setting the throttle period to {@code 0}.
+     *
+     * <p>As defined on the Valve Developer Community documentation page:</p>
+     * <blockquote>
+     * For high-traffic endpoints this setting will make the game client not send another request for at least this many
+     * seconds after receiving previous HTTP 2XX response to avoid notifying the service when game state changes too
+     * frequently. If the setting is not specified then default throttle of 1.0 sec will be used.
+     * </blockquote>
+     *
+     * @return this GSIConfig instance
+     *
+     * @see <a href="https://developer.valvesoftware.com/wiki/Counter-Strike:_Global_Offensive_Game_State_Integration">
+     *     Valve Developer Community</a>
+     */
+    public GSIConfig disableThrottling() {
+        return setBufferPeriod(0d);
     }
     
     /**
@@ -318,6 +390,8 @@ public final class GSIConfig {
      * Developer Community</a>
      */
     public GSIConfig setHeartbeatPeriod(Double heartbeat) {
+        if (heartbeat != null && heartbeat < 0)
+            throw new IllegalArgumentException("Heartbeat period cannot be negative.");
         this.heartbeat = heartbeat;
         return this;
     }
@@ -351,6 +425,8 @@ public final class GSIConfig {
      * Valve Developer Community</a>
      */
     public GSIConfig setPrecisionTime(Integer precisionTime) {
+        if (precisionTime != null && precisionTime < 0)
+            throw new IllegalArgumentException("Precision cannot be less than zero.");
         this.precisionTime = precisionTime;
         return this;
     }
@@ -374,6 +450,8 @@ public final class GSIConfig {
      * Valve Developer Community</a>
      */
     public GSIConfig setPrecisionPosition(Integer precisionPosition) {
+        if (precisionPosition != null && precisionPosition < 0)
+            throw new IllegalArgumentException("Precision cannot be less than zero.");
         this.precisionPosition = precisionPosition;
         return this;
     }
@@ -397,6 +475,8 @@ public final class GSIConfig {
      * Valve Developer Community</a>
      */
     public GSIConfig setPrecisionVector(Integer precisionVector) {
+        if (precisionVector != null && precisionVector < 0)
+            throw new IllegalArgumentException("Precision cannot be less than zero.");
         this.precisionVector = precisionVector;
         return this;
     }
@@ -408,6 +488,7 @@ public final class GSIConfig {
      * @return this GSIConfig instance
      */
     public GSIConfig setDataComponents(Set<DataComponent> components) {
+        if (components == null) throw new IllegalArgumentException("Data components cannot be null.");
         this.dataComponents.clear();
         this.dataComponents.addAll(components);
         return this;
@@ -420,6 +501,7 @@ public final class GSIConfig {
      * @return this GSIConfig instance
      */
     public GSIConfig withDataComponents(Set<DataComponent> components) {
+        if (components == null) throw new IllegalArgumentException("Data components cannot be null.");
         this.dataComponents.addAll(components);
         return this;
     }
@@ -431,6 +513,7 @@ public final class GSIConfig {
      * @return this GSIConfig instance
      */
     public GSIConfig withDataComponents(DataComponent... components) {
+        if (components == null) throw new IllegalArgumentException("Data components cannot be null.");
         this.dataComponents.addAll(Arrays.asList(components));
         return this;
     }
@@ -442,6 +525,7 @@ public final class GSIConfig {
      * @return this GSIConfig instance
      */
     public GSIConfig withDataComponent(DataComponent components) {
+        if (components == null) throw new IllegalArgumentException("Data components cannot be null.");
         this.dataComponents.add(components);
         return this;
     }
@@ -512,10 +596,10 @@ public final class GSIConfig {
     
         // Values
         conf.key("uri").value(getURI())
-                .key("timeout").value(getTimeoutPeriod())
-                .key("buffer").value(getBufferPeriod())
-                .key("throttle").value(getThrottlePeriod())
-                .key("heartbeat").value(getHeartbeatPeriod());
+                .key("timeout").value(formatDouble(getTimeoutPeriod()))
+                .key("buffer").value(formatDouble(getBufferPeriod()))
+                .key("throttle").value(formatDouble(getThrottlePeriod()))
+                .key("heartbeat").value(formatDouble(getHeartbeatPeriod()));
     
         // Output precision
         conf.key("output").beginObject()
@@ -539,6 +623,11 @@ public final class GSIConfig {
         conf.endObject().endObject().close();
     }
     
+    private static String formatDouble(Double val) {
+        DOUBLE_FORMAT.setRoundingMode(RoundingMode.UP);
+        return val != null ? DOUBLE_FORMAT.format(val) : null;
+    }
+    
     
     /**
      * Creates or replaces an existing configuration file within the located game directory.
@@ -548,7 +637,7 @@ public final class GSIConfig {
      * will be raised.</p>
      *
      * <p>Your applications service name should be unique, and can only contain standard english word and digit
-     * characters, as well as underscores, and must be between 1 and 32 characters in length. The name must
+     * characters, as well as underscores, and must be between 3 and 32 characters in length. The name must
      * <em>not</em> include the {@code gamestate_integration_} prefix or the {@code .cfg} file extension suffix.</p>
      *
      * <pre>
@@ -582,7 +671,7 @@ public final class GSIConfig {
      * Creates or replaces an existing configuration file within the specified game directory.
      *
      * <p>Your applications service name should be unique, and can only contain standard english word and digit
-     * characters, as well as underscores, and must be between 1 and 32 characters in length. The name must
+     * characters, as well as underscores, and must be between 3 and 32 characters in length. The name must
      * <em>not</em> include the {@code gamestate_integration_} prefix or the {@code .cfg} file extension suffix.</p>
      *
      * <p>The {@code dir} parameter can be passed the value returned from {@link SteamUtils#locateCsgoConfigFolder()},
@@ -638,11 +727,11 @@ public final class GSIConfig {
         if (Files.isDirectory(file))
             throw new IllegalArgumentException("Path was an existing directory, and not a file.");
         
-        LOGGER.debug("Attempting to write config file {}...", file.toString());
+        log.debug("Attempting to write config file {}...", file.toString());
         try (BufferedWriter writer = Files.newBufferedWriter(file, StandardCharsets.UTF_8)) {
             export(writer);
         }
-        LOGGER.info("Written game state config file {}", file.toString());
+        log.info("Written game state config file {}", file.toString());
     }
     
     
@@ -692,7 +781,7 @@ public final class GSIConfig {
             throw new NotDirectoryException("Path must be a directory.");
         
         Path file = getFile(dir, serviceName);
-        LOGGER.debug("Attempting to remove config file {}...", file.toString());
+        log.debug("Attempting to remove config file {}...", file.toString());
         return Files.deleteIfExists(file);
     }
     
@@ -742,7 +831,7 @@ public final class GSIConfig {
      * will be raised.</p>
      *
      * <p>Your applications service name should be unique, and can only contain standard english word and digit
-     * characters, as well as underscores, and must be between 1 and 32 characters in length. The name must
+     * characters, as well as underscores, and must be between 3 and 32 characters in length. The name must
      * <em>not</em> include the {@code gamestate_integration_} prefix or the {@code .cfg} file extension suffix.</p>
      *
      * @param serviceName the identifying name of your application or service, eg: {@code test_service}
@@ -760,7 +849,7 @@ public final class GSIConfig {
      * nor will it perform any checks as to whether the configuration file actually exists on the system.
      *
      * <p>Your applications service name should be unique, and can only contain standard english word and digit
-     * characters, as well as underscores, and must be between 1 and 32 characters in length. The name must
+     * characters, as well as underscores, and must be between 3 and 32 characters in length. The name must
      * <em>not</em> include the {@code gamestate_integration_} prefix or the {@code .cfg} file extension suffix.</p>
      *
      * @param dir         the directory containing the configuration file

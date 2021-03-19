@@ -24,27 +24,59 @@ This project is hosted on Maven Central. To import this library, add the followi
 The latest Javadoc pages can be [viewed online through Javadoc.io](https://www.javadoc.io/doc/uk.oczadly.karl/csgo-gsi).
 
 ### Configuration generation
-Creating the game state configuration file for the game client is an easy automated process. This can be accomplished
- using the provided [`GSIConfig`](https://www.javadoc.io/doc/uk.oczadly.karl/csgo-gsi/latest/uk/oczadly/karl/csgsi/config/GSIConfig.html)
+Creating the game state configuration file for the game client is an easy and automated process. This can be 
+accomplished using the provided [`GSIConfig`](https://www.javadoc.io/doc/uk.oczadly.karl/csgo-gsi/latest/uk/oczadly/karl/csgsi/config/GSIConfig.html)
  class. The example below demonstrates how to use this utility:
 
 ```java
 // Build the configuration for our service
-GSIConfig config = new GSIConfig(1337) // localhost:1337
+GSIConfig config = new GSIConfig()
+        .setLocalURI(1337)  // Server on localhost:1337
         .setTimeoutPeriod(1.0)
         .setBufferPeriod(0.5)
         .withAuthToken("password", "Q79v5tcxVQ8u")
-        .withAllDataComponents(); // Or specify which using withDataComponents(...)
+        .withAllDataComponents();  // Or specify which using withDataComponents(...)
 
 try {
-    // Automatically locates the game directory and writes the file
-    Path file = config.writeFile("test_service");
-    System.out.println("Written config file: " + file);
+    // Automatically locates the game directory and creates the configuration file
+    Path output = config.writeFile("test_service");
+    System.out.println("Written config file: " + output);
 } catch (GameNotFoundException e) {
     // Either CSGO or Steam installation directory could not be located
     System.err.println("Couldn't locate CSGO installation: " + e.getMessage());
 } catch (IOException e) {
     System.err.println("Couldn't write to configuration file.");
+}
+```
+
+This writes the following data to `gamestate_integration_test_service.cfg` in the CSGO directory:
+```text
+"Sample test service" {
+    "uri"     "http://localhost:1337"
+    "timeout" "1.0"
+    "buffer"  "0.5"
+    "auth" {
+        "password" "Q79v5tcxVQ8u"
+    }
+    "data" {
+        "map_round_wins"         "1"
+        "map"                    "1"
+        "player_id"              "1"
+        "player_match_stats"     "1"
+        "player_state"           "1"
+        "player_weapons"         "1"
+        "player_position"        "1"
+        "provider"               "1"
+        "round"                  "1"
+        "allgrenades"            "1"
+        "allplayers_id"          "1"
+        "allplayers_match_stats" "1"
+        "allplayers_position"    "1"
+        "allplayers_state"       "1"
+        "allplayers_weapons"     "1"
+        "bomb"                   "1"
+        "phase_countdowns"       "1"
+    }
 }
 ```
 
@@ -71,7 +103,7 @@ GSIListener listener = (state, context) -> {
 // Configure server
 GSIServer server = new GSIServer.Builder(1337)        // Port 1337, on all network interfaces
         .requireAuthToken("password", "Q79v5tcxVQ8u") // Require the specified password
-        .registerListener(listener)                   // Alternatively, you can call this on the GSIServer dynamically
+        .registerListener(listener)                   // Alternatively, you can call this dynamically on the GSIServer
         .build();
 
 // Start server
@@ -79,7 +111,7 @@ try {
     server.start(); // Start the server (runs in a separate thread)
     System.out.println("Server started. Listening for state data...");
 } catch (IOException e) {
-    System.out.println("Could not start server.");
+    System.err.println("Couldn't start server.");
 }
 ```
 
