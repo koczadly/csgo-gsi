@@ -96,7 +96,7 @@ public class SteamUtils {
         }
         
         // No suitable path found by this point
-        throw new SteamNotFoundException("The Steam installation directory could not be found.");
+        throw new SteamNotFoundException("No Steam installation directory was found.");
     }
     
     
@@ -128,7 +128,7 @@ public class SteamUtils {
                             if (Files.isDirectory(path))
                                 paths.add(path);
                         } catch (SecurityException e) {
-                            LOGGER.warn("SecurityException occured while checking Steam library path \""
+                            LOGGER.warn("SecurityException occurred while checking Steam library path \""
                                     + path.toString() + "\"", e);
                         }
                     }
