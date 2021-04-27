@@ -6,7 +6,7 @@ import uk.oczadly.karl.csgsi.state.components.Coordinate;
 /**
  * Represents a standard projectile grenade, with a position and velocity.
  */
-public class ProjectileGrenade extends Grenade {
+public class ProjectileGrenade extends BasicGrenade {
     
     @Expose private Coordinate position;
     @Expose private Coordinate velocity;

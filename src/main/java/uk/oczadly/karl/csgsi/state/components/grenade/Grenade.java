@@ -12,48 +12,29 @@ import uk.oczadly.karl.csgsi.state.components.PlayerSteamID;
  * This class represents a single grenade.
  * <p>Available types:</p>
  * <ul>
- *     <li>{@link Grenade} (base type)</li>
+ *     <li>{@link BasicGrenade} (base type, or for unknown grenades)</li>
  *     <li>{@link ProjectileGrenade}</li>
  *     <li>{@link EffectGrenade}</li>
  *     <li>{@link IncendiaryGrenade}</li>
  * </ul>
  */
 @JsonAdapter(Grenade.Adapter.class)
-public class Grenade {
-    
-    private EnumValue<Type> type;
-    @Expose private PlayerSteamID owner;
-    @Expose private double lifetime;
+public interface Grenade {
     
     /**
      * @return the type of grenade
      */
-    public EnumValue<Type> getType() {
-        return type;
-    }
+    EnumValue<Type> getType();
     
     /**
      * @return the Steam ID of the player who threw this grenade
      */
-    public PlayerSteamID getOwner() {
-        return owner;
-    }
+    PlayerSteamID getOwner();
     
     /**
      * @return how many seconds have elapsed since the grenade was thrown
      */
-    public double getLifetime() {
-        return lifetime;
-    }
-    
-    @Override
-    public String toString() {
-        return getClass().getSimpleName() + "{" +
-                "type=" + type +
-                ", owner=" + owner +
-                ", lifetime=" + lifetime +
-                '}';
-    }
+    double getLifetime();
     
     
     /**
@@ -91,11 +72,11 @@ public class Grenade {
         public Grenade deserialize(JsonElement json, java.lang.reflect.Type typeOfT,
                                    JsonDeserializationContext context) throws JsonParseException {
             JsonObject obj = json.getAsJsonObject();
-            EnumValue<Grenade.Type> gType = EnumValue.of(obj.get("type").getAsString(), Grenade.Type.class, Util.GSON);
-            Class<? extends Grenade> classType = gType.isResolved() ? gType.get().getObjectClass() : Grenade.class;
-            Grenade grenade = context.deserialize(obj, classType);
-            grenade.type = gType;
-            return grenade;
+            EnumValue<Grenade.Type> gType = EnumValue.of(
+                    obj.get("type").getAsString(), Grenade.Type.class, Util.GSON);
+            Class<? extends Grenade> classType = gType.isResolved()
+                    ? gType.get().getObjectClass() : BasicGrenade.class;
+            return context.deserialize(obj, classType);
         }
     }
     

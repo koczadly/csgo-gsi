@@ -125,12 +125,12 @@ public class GSIServerTest {
         assertSame(uriPath, observer2.context.getUriPath());
         assertSame(i1, observer1.context.getTimestamp());
         assertSame(i1, observer2.context.getTimestamp());
-        assertSame(previous, observer1.context.getPreviousState());
-        assertSame(previous, observer2.context.getPreviousState());
-        assertSame(i2, observer1.context.getPreviousTimestamp());
-        assertSame(i2, observer2.context.getPreviousTimestamp());
-        assertEquals(300, observer1.context.getMillisSinceLastState());
-        assertEquals(300, observer2.context.getMillisSinceLastState());
+        assertSame(previous, observer1.context.getPreviousState().get());
+        assertSame(previous, observer2.context.getPreviousState().get());
+        assertSame(i2, observer1.context.getPreviousTimestamp().get());
+        assertSame(i2, observer2.context.getPreviousTimestamp().get());
+        assertEquals(300, observer1.context.getMillisSinceLastState().getAsInt());
+        assertEquals(300, observer2.context.getMillisSinceLastState().getAsInt());
         assertEquals(43, observer1.context.getSequentialCounter());
         assertEquals(43, observer2.context.getSequentialCounter());
         assertEquals(authTokens, observer1.context.getAuthTokens());

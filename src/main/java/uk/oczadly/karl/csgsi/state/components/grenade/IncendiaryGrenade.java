@@ -9,7 +9,7 @@ import java.util.Map;
 /**
  * Represents a set of flames on the ground, from a thrown molotov or incendiary grenade.
  */
-public class IncendiaryGrenade extends Grenade {
+public class IncendiaryGrenade extends BasicGrenade {
     
     @Expose private Map<String, Coordinate> flames;
     private volatile Coordinate approxPos = null;
