@@ -150,10 +150,8 @@ public final class GSIServer {
      *
      * @param port the network port for the server to listen on
      *
-     * @deprecated Use inner builder class {@link Builder} to create {@link GSIServer} instances
      * @see Builder
      */
-    @Deprecated(forRemoval = true)
     public GSIServer(int port) {
         this(port, (InetAddress)null);
     }
