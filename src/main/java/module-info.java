@@ -4,6 +4,7 @@ module uk.oczadly.karl.csgogsi {
     
     exports uk.oczadly.karl.csgsi.state;
     exports uk.oczadly.karl.csgsi.state.components;
+    exports uk.oczadly.karl.csgsi.state.components.grenade;
     
     exports uk.oczadly.karl.csgsi.config;
     

@@ -2,7 +2,8 @@ package uk.oczadly.karl.csgsi.state;
 
 import org.junit.Test;
 import uk.oczadly.karl.csgsi.state.components.Coordinate;
-import uk.oczadly.karl.csgsi.state.components.Grenade;
+import uk.oczadly.karl.csgsi.state.components.grenade.EffectGrenade;
+import uk.oczadly.karl.csgsi.state.components.grenade.Grenade;
 import uk.oczadly.karl.csgsi.state.components.PlayerSteamID;
 
 import static org.junit.Assert.*;
@@ -29,7 +30,7 @@ public class GrenadeStateTest extends GameStateBaseTest {
         GrenadeState state = gameState.getGrenades().get();
         
         assertEquals(1, state.getAll().size());
-        Grenade.EffectGrenade grenade = (Grenade.EffectGrenade)state.getById(129);
+        EffectGrenade grenade = (EffectGrenade)state.getById(129);
         assertEquals(new Coordinate(2499.41, 49.75, 1616.00), grenade.getPosition());
         assertEquals(new Coordinate(1d, 2d, 3d), grenade.getVelocity());
         assertEquals(6.9, grenade.getLifetime(), 1e-9);

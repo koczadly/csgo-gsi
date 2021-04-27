@@ -2,8 +2,12 @@ package uk.oczadly.karl.csgsi.state.components;
 
 import org.junit.Test;
 import uk.oczadly.karl.csgsi.internal.Util;
+import uk.oczadly.karl.csgsi.state.components.grenade.EffectGrenade;
+import uk.oczadly.karl.csgsi.state.components.grenade.Grenade;
+import uk.oczadly.karl.csgsi.state.components.grenade.IncendiaryGrenade;
+import uk.oczadly.karl.csgsi.state.components.grenade.ProjectileGrenade;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
 
 /**
  * @author Karl Oczadly
@@ -20,7 +24,7 @@ public class GrenadeTest {
                 "\t\"type\": \"smoke\",\n" +
                 "\t\"effecttime\": \"9.8\"}";
     
-        Grenade.EffectGrenade grenade = (Grenade.EffectGrenade)Util.GSON.fromJson(json, Grenade.class);
+        EffectGrenade grenade = (EffectGrenade)Util.GSON.fromJson(json, Grenade.class);
         assertEquals(Grenade.Type.SMOKE, grenade.getType().get());
         assertEquals(PlayerSteamID.fromId64("76561197960265729"), grenade.getOwner());
         assertEquals(new Coordinate(1, 2, 3), grenade.getPosition());
@@ -38,7 +42,7 @@ public class GrenadeTest {
                 "\t\"lifetime\": \"10.7\",\n" +
                 "\t\"type\": \"firebomb\"}";
         
-        Grenade.ProjectileGrenade grenade = (Grenade.ProjectileGrenade)Util.GSON.fromJson(json, Grenade.class);
+        ProjectileGrenade grenade = (ProjectileGrenade)Util.GSON.fromJson(json, Grenade.class);
         assertEquals(Grenade.Type.MOLOTOV, grenade.getType().get());
         assertEquals(PlayerSteamID.fromId64("76561197960265729"), grenade.getOwner());
         assertEquals(new Coordinate(1, 2, 3), grenade.getPosition());
@@ -60,7 +64,7 @@ public class GrenadeTest {
                 "\t\t\"flame_p149_p2_n2\": \"8.97, 331.38, -0.38\",\n" +
                 "\t\t\"flame_p120_p89_n3\": \"-20.03, 418.38, -1.38\"}}";
         
-        Grenade.IncendiaryGrenade grenade = (Grenade.IncendiaryGrenade)Util.GSON.fromJson(json, Grenade.class);
+        IncendiaryGrenade grenade = (IncendiaryGrenade)Util.GSON.fromJson(json, Grenade.class);
         assertEquals(Grenade.Type.MOLOTOV_FLAMES, grenade.getType().get());
         assertEquals(PlayerSteamID.fromId64("76561197960265729"), grenade.getOwner());
         assertEquals(new Coordinate(-95.53, 359.38, -1.38), grenade.getApproxPosition());
@@ -79,7 +83,7 @@ public class GrenadeTest {
                 "\t\"lifetime\": \"10.7\",\n" +
                 "\t\"type\": \"flashbang\"}";
         
-        Grenade.ProjectileGrenade grenade = (Grenade.ProjectileGrenade)Util.GSON.fromJson(json, Grenade.class);
+        ProjectileGrenade grenade = (ProjectileGrenade)Util.GSON.fromJson(json, Grenade.class);
         assertEquals(Grenade.Type.FLASHBANG, grenade.getType().get());
         assertEquals(PlayerSteamID.fromId64("76561197960265729"), grenade.getOwner());
         assertEquals(new Coordinate(1, 2, 3), grenade.getPosition());
@@ -97,7 +101,7 @@ public class GrenadeTest {
                 "\t\"type\": \"decoy\",\n" +
                 "\t\"effecttime\": \"9.8\"}";
         
-        Grenade.EffectGrenade grenade = (Grenade.EffectGrenade)Util.GSON.fromJson(json, Grenade.class);
+        EffectGrenade grenade = (EffectGrenade)Util.GSON.fromJson(json, Grenade.class);
         assertEquals(Grenade.Type.DECOY, grenade.getType().get());
         assertEquals(PlayerSteamID.fromId64("76561197960265729"), grenade.getOwner());
         assertEquals(new Coordinate(1, 2, 3), grenade.getPosition());
@@ -115,7 +119,7 @@ public class GrenadeTest {
                 "\t\"lifetime\": \"10.7\",\n" +
                 "\t\"type\": \"frag\"}";
         
-        Grenade.ProjectileGrenade grenade = (Grenade.ProjectileGrenade)Util.GSON.fromJson(json, Grenade.class);
+        ProjectileGrenade grenade = (ProjectileGrenade)Util.GSON.fromJson(json, Grenade.class);
         assertEquals(Grenade.Type.FRAG, grenade.getType().get());
         assertEquals(PlayerSteamID.fromId64("76561197960265729"), grenade.getOwner());
         assertEquals(new Coordinate(1, 2, 3), grenade.getPosition());
@@ -130,7 +134,7 @@ public class GrenadeTest {
                 "\t\"lifetime\": \"10.7\",\n" +
                 "\t\"type\": \"slugs\"}";
         
-        Grenade.BasicGrenade grenade = (Grenade.BasicGrenade)Util.GSON.fromJson(json, Grenade.class);
+        Grenade grenade = Util.GSON.fromJson(json, Grenade.class);
         assertEquals("slugs", grenade.getType().getString());
         assertEquals(PlayerSteamID.fromId64("76561197960265729"), grenade.getOwner());
         assertEquals(10.7, grenade.getLifetime(), 1e-9);

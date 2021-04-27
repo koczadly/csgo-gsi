@@ -3,8 +3,11 @@ package uk.oczadly.karl.csgsi.state;
 import com.google.gson.*;
 import com.google.gson.annotations.JsonAdapter;
 import com.google.gson.reflect.TypeToken;
-import uk.oczadly.karl.csgsi.state.components.Grenade;
+import uk.oczadly.karl.csgsi.state.components.grenade.EffectGrenade;
+import uk.oczadly.karl.csgsi.state.components.grenade.Grenade;
 import uk.oczadly.karl.csgsi.state.components.PlayerSteamID;
+import uk.oczadly.karl.csgsi.state.components.grenade.IncendiaryGrenade;
+import uk.oczadly.karl.csgsi.state.components.grenade.ProjectileGrenade;
 
 import java.lang.reflect.Type;
 import java.util.*;
@@ -15,9 +18,9 @@ import java.util.*;
  * <p>Grenade classes can exist in the following types, which can be casted to access the specific attributes.</p>
  * <ul>
  *     <li>{@link Grenade} (base)</li>
- *     <li>{@link Grenade.ProjectileGrenade}</li>
- *     <li>{@link Grenade.EffectGrenade}</li>
- *     <li>{@link Grenade.IncendiaryGrenade}</li>
+ *     <li>{@link ProjectileGrenade}</li>
+ *     <li>{@link EffectGrenade}</li>
+ *     <li>{@link IncendiaryGrenade}</li>
  * </ul>
  */
 @JsonAdapter(GrenadeState.Adapter.class)
