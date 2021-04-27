@@ -4,9 +4,12 @@ import com.google.gson.JsonObject;
 import uk.oczadly.karl.csgsi.state.GameState;
 
 import java.net.InetAddress;
+import java.time.Duration;
 import java.time.Instant;
 import java.util.Collections;
 import java.util.Map;
+import java.util.Optional;
+import java.util.OptionalInt;
 
 /**
  * This class contains additional contextual information accompanying a {@link GameState} state update.
@@ -61,21 +64,22 @@ public final class GameStateContext {
      *
      * @return the previous game state, or null if it's the first state
      */
-    public GameState getPreviousState() {
-        return previousState;
+    public Optional<GameState> getPreviousState() {
+        return Optional.ofNullable(previousState);
     }
     
     /**
      * Gets the number of milliseconds elapsed since the last state update.
      *
      * <p>This value is based on the local timestamps when the data was parsed, and <em>not</em> on the timestamp
-     * included in the provider state. The first received game state will return {@code -1}.</p>
+     * included in the provider state.</p>
      *
      * @return the number of milliseconds since the last received state, or {@code -1} for the first state
      */
-    public int getMillisSinceLastState() {
-        if (prevTimestamp == null) return -1;
-        return (int)(timestamp.toEpochMilli() - prevTimestamp.toEpochMilli());
+    public OptionalInt getMillisSinceLastState() {
+        if (prevTimestamp == null)
+            return OptionalInt.empty();
+        return OptionalInt.of((int)Duration.between(prevTimestamp, timestamp).toMillis());
     }
     
     /**
@@ -93,14 +97,14 @@ public final class GameStateContext {
      *
      * @return the timestamp of the previous state, or null if it's the first state
      */
-    public Instant getPreviousTimestamp() {
-        return prevTimestamp;
+    public Optional<Instant> getPreviousTimestamp() {
+        return Optional.ofNullable(prevTimestamp);
     }
     
     /**
-     * Gets the current game state counter (each new state increases the value by 1).
+     * Gets the current state counter, where each new state increases the value by one, starting at {@code 1}.
      *
-     * @return the index counter of this game state
+     * @return the index counter of this state
      */
     public int getSequentialCounter() {
         return counter;
@@ -125,7 +129,7 @@ public final class GameStateContext {
     }
     
     /**
-     * Returns the raw JSON data (as a Gson {@link JsonObject}) received from the game client.
+     * Returns the raw JSON data (as a Gson {@link JsonObject}) sent by the game client.
      *
      * @return the raw JSON data
      */
@@ -134,7 +138,7 @@ public final class GameStateContext {
     }
     
     /**
-     * Returns the raw JSON data (in String form) received from the game client.
+     * Returns the raw string data sent by the game client.
      *
      * @return the raw JSON data
      */

@@ -101,8 +101,8 @@ class GSIServerHTTPHandler implements HTTPRequestHandler {
                     .append(" seconds ago)</i><br>\n");
             // Millis since last state
             sb.append("<b>Time diff between previous state: </b>");
-            if (latestContext.getMillisSinceLastState() != -1) {
-                sb.append(String.format("%,.3f", latestContext.getMillisSinceLastState() / 1000d))
+            if (latestContext.getMillisSinceLastState().isPresent()) {
+                sb.append(String.format("%,.3f", latestContext.getMillisSinceLastState().getAsInt() / 1000d))
                         .append(" seconds<br>\n");
             } else {
                 sb.append("<i>N/A</i><br>\n");
