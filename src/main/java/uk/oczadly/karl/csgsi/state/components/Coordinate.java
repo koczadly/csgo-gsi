@@ -18,6 +18,8 @@ import java.util.regex.Pattern;
 @JsonAdapter(Coordinate.Deserializer.class)
 public class Coordinate {
     
+    private static final Pattern PATTERN = Pattern.compile("^([-.0-9]+), ([-.0-9]+), ([-.0-9]+)$");
+    
     private final double x, y, z;
     
     public Coordinate(double x, double y, double z) {
@@ -79,22 +81,29 @@ public class Coordinate {
     }
     
     
+    /**
+     * Parses from the format "{@code x, y, z}".
+     * @param str the string to parse from
+     * @return the created Coordinate object
+     * @throws IllegalArgumentException if not a valid string
+     */
+    public static Coordinate parse(String str) {
+        Matcher matcher = PATTERN.matcher(str);
+        if (!matcher.matches())
+            throw new IllegalArgumentException("Invalid coordinate format.");
+        
+        return new Coordinate(
+                Double.parseDouble(matcher.group(1)),
+                Double.parseDouble(matcher.group(2)),
+                Double.parseDouble(matcher.group(3)));
+    }
+    
     
     static class Deserializer implements JsonDeserializer<Coordinate> {
-        private static final Pattern PATTERN = Pattern.compile("^([-.0-9]+), ([-.0-9]+), ([-.0-9]+)$");
-        
         @Override
         public Coordinate deserialize(JsonElement json, Type typeOfT, JsonDeserializationContext context)
                 throws JsonParseException {
-            Matcher matcher = PATTERN.matcher(json.getAsString());
-            if (matcher.matches()) {
-                return new Coordinate(
-                        Double.parseDouble(matcher.group(1)),
-                        Double.parseDouble(matcher.group(2)),
-                        Double.parseDouble(matcher.group(3)));
-            } else {
-                throw new JsonParseException("Invalid coordinate format.");
-            }
+            return Coordinate.parse(json.getAsString());
         }
     }
     
