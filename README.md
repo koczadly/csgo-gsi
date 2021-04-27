@@ -49,7 +49,9 @@ try {
 }
 ```
 
-This writes the following data to `gamestate_integration_test_service.cfg` in the CSGO directory:
+<details>
+<summary>Click to view data written to the file <code>gamestate_integration_test_service.cfg</code></summary>
+
 ```text
 "Sample test service" {
     "uri"     "http://localhost:1337"
@@ -79,6 +81,7 @@ This writes the following data to `gamestate_integration_test_service.cfg` in th
     }
 }
 ```
+</details>
 
 ### Listening for state information
 To listen for new game state information, a [`GSIServer`](https://www.javadoc.io/doc/uk.oczadly.karl/csgo-gsi/latest/uk/oczadly/karl/csgsi/GSIServer.html)
@@ -118,8 +121,10 @@ try {
 ### Accessing the diagnostics page
 If not disabled (using the GSIServer builder), you can access the server as a standard webpage, revealing information
  about the server and the game state information being received.
-![image](https://user-images.githubusercontent.com/1368580/98445604-686b7c00-2110-11eb-9cc9-44886371eae2.png)
-
+<details>
+<summary>Sample output screenshot</summary>
+<img src="https://user-images.githubusercontent.com/1368580/98445604-686b7c00-2110-11eb-9cc9-44886371eae2.png">
+</details>
 
 ## Development
 If you experience a bug or think the library is missing some functionality, please submit an issue or pull request.
