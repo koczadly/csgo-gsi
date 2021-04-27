@@ -62,7 +62,7 @@ public final class GameStateContext {
     /**
      * Gets the previous game state object from the {@link GSIServer}.
      *
-     * @return the previous game state, or null if it's the first state
+     * @return the previous game state, or <em>empty</em> if it's the first state
      */
     public Optional<GameState> getPreviousState() {
         return Optional.ofNullable(previousState);
@@ -74,7 +74,7 @@ public final class GameStateContext {
      * <p>This value is based on the local timestamps when the data was parsed, and <em>not</em> on the timestamp
      * included in the provider state.</p>
      *
-     * @return the number of milliseconds since the last received state, or {@code -1} for the first state
+     * @return the number of milliseconds since the last received state, or <em>empty</em> for the first state
      */
     public OptionalInt getMillisSinceLastState() {
         if (prevTimestamp == null)
@@ -92,10 +92,9 @@ public final class GameStateContext {
     }
     
     /**
-     * Gets the local timestamp of when the previous state was received. For the first received game state, this
-     * value will return null.
+     * Gets the local timestamp of when the previous state was received.
      *
-     * @return the timestamp of the previous state, or null if it's the first state
+     * @return the timestamp of the previous state, or <em>empty</em> if it's the first state
      */
     public Optional<Instant> getPreviousTimestamp() {
         return Optional.ofNullable(prevTimestamp);
