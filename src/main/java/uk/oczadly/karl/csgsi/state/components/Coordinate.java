@@ -7,6 +7,8 @@ import com.google.gson.JsonParseException;
 import com.google.gson.annotations.JsonAdapter;
 
 import java.lang.reflect.Type;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 /**
  * This class can be used to represent a set of 3 floating point values, labelled {@code X}, {@code Y} and {@code Z}.
@@ -40,7 +42,7 @@ public class Coordinate {
     }
     
     /**
-     * @return the Z coordinate
+     * @return the Z coordinate (altitude)
      */
     public double getZ() {
         return z;
@@ -73,20 +75,26 @@ public class Coordinate {
     
     @Override
     public String toString() {
-        return "{X=" + x + ", Y=" + y + ", Z=" + z + "}";
+        return String.format("Coordinate{x=%,.2f, y=%,.2f, z=%,.2f}", x, y, z);
     }
     
     
     
     static class Deserializer implements JsonDeserializer<Coordinate> {
+        private static final Pattern PATTERN = Pattern.compile("^([-.0-9]+), ([-.0-9]+), ([-.0-9]+)$");
+        
         @Override
         public Coordinate deserialize(JsonElement json, Type typeOfT, JsonDeserializationContext context)
                 throws JsonParseException {
-            String[] val = json.getAsString().split(", ");
-            return new Coordinate(
-                    Double.parseDouble(val[0]),
-                    Double.parseDouble(val[1]),
-                    Double.parseDouble(val[2]));
+            Matcher matcher = PATTERN.matcher(json.getAsString());
+            if (matcher.matches()) {
+                return new Coordinate(
+                        Double.parseDouble(matcher.group(1)),
+                        Double.parseDouble(matcher.group(2)),
+                        Double.parseDouble(matcher.group(3)));
+            } else {
+                throw new JsonParseException("Invalid coordinate format.");
+            }
         }
     }
     
