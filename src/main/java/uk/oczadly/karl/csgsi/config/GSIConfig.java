@@ -29,10 +29,8 @@ import java.util.regex.Pattern;
  *  GSIConfig config = new GSIConfig(80) // localhost:80
  *          .setTimeoutPeriod(1.0)
  *          .setBufferPeriod(0.5)
- *          .withAuthToken("password", "Q79v5tcxVQ8u")
- *          .withDataComponents(
- *                 DataComponent.PROVIDER,
- *                 DataComponent.ROUND);
+ *          .includeAuthToken("password", "Q79v5tcxVQ8u")
+ *          .subscribe(DataComponent.PROVIDER, DataComponent.ROUND);
  * </pre>
  *
  * <p>Profiles can then be created and written to the system using the {@link #writeFile(String)} method (refer to
@@ -45,7 +43,7 @@ import java.util.regex.Pattern;
 public final class GSIConfig {
     
     private static final Logger log = LoggerFactory.getLogger(GSIConfig.class);
-    
+
     private static final DecimalFormat DOUBLE_FORMAT = new DecimalFormat("0.0###");
     private static final Pattern SERVICE_NAME_PATTERN = Pattern.compile("^\\w{3,32}$");
     private static final String DEFAULT_DESC = "Created with https://github.com/koczadly/csgo-gsi";
@@ -55,6 +53,11 @@ public final class GSIConfig {
     private Integer precisionTime, precisionPosition, precisionVector;
     private final Map<String, String> authTokens = new HashMap<>();
     private Set<DataComponent> dataComponents = EnumSet.noneOf(DataComponent.class);
+
+
+    static {
+        DOUBLE_FORMAT.setRoundingMode(RoundingMode.UP);
+    }
     
     
     /**
@@ -182,10 +185,10 @@ public final class GSIConfig {
     /**
      * Adds all of the the specified authentication tokens to the current map.
      *
-     * @param authTokens the new map of auth tokens, or null
+     * @param authTokens the new map of auth tokens
      * @return this GSIConfig instance
      */
-    public GSIConfig withAuthTokens(Map<String, String> authTokens) {
+    public GSIConfig includeAuthTokens(Map<String, String> authTokens) {
         this.authTokens.putAll(authTokens);
         return this;
     }
@@ -199,7 +202,7 @@ public final class GSIConfig {
      *
      * @throws NullPointerException if the key value is null
      */
-    public GSIConfig withAuthToken(String key, String tokenValue) {
+    public GSIConfig includeAuthToken(String key, String tokenValue) {
         if (key == null)
             throw new NullPointerException("Auth token key cannot be null");
         
@@ -212,7 +215,7 @@ public final class GSIConfig {
     }
     
     /**
-     * @return the current map of authentication data to be sent by the client
+     * @return an immutable map of auth tokens to be sent by the client
      */
     public Map<String, String> getAuthTokens() {
         return Collections.unmodifiableMap(authTokens);
@@ -262,12 +265,12 @@ public final class GSIConfig {
     }
     
     /**
-     * @return the timeout period in seconds, or null if not set (default)
+     * @return the timeout period in seconds, or empty if not set (default)
      *
      * @see #setTimeoutPeriod(Double)
      */
-    public Double getTimeoutPeriod() {
-        return timeout;
+    public Optional<Double> getTimeoutPeriod() {
+        return Optional.ofNullable(timeout);
     }
     
     
@@ -316,12 +319,12 @@ public final class GSIConfig {
     }
     
     /**
-     * @return the buffer period in seconds, or null if not set (default)
+     * @return the buffer period in seconds, or empty if not set (default)
      *
      * @see #setBufferPeriod(Double)
      */
-    public Double getBufferPeriod() {
-        return buffer;
+    public Optional<Double> getBufferPeriod() {
+        return Optional.ofNullable(buffer);
     }
     
     
@@ -366,12 +369,12 @@ public final class GSIConfig {
     }
     
     /**
-     * @return the timeout period in seconds, or null if not set (default)
+     * @return the timeout period in seconds, or empty if not set (default)
      *
      * @see #setThrottlePeriod(Double)
      */
-    public Double getThrottlePeriod() {
-        return throttle;
+    public Optional<Double> getThrottlePeriod() {
+        return Optional.ofNullable(throttle);
     }
     
     
@@ -397,21 +400,21 @@ public final class GSIConfig {
     }
     
     /**
-     * @return the heartbeat period in seconds, or null if not set (default)
+     * @return the heartbeat period in seconds, or empty if not set (default)
      *
      * @see #setHeartbeatPeriod(Double)
      */
-    public Double getHeartbeatPeriod() {
-        return heartbeat;
+    public Optional<Double> getHeartbeatPeriod() {
+        return Optional.ofNullable(heartbeat);
     }
     
 
     /**
-     * @return the number of decimal places for time units, or null for default
+     * @return the number of decimal places for time units, or empty for default
      * @see #setPrecisionTime(Integer)
      */
-    public Integer getPrecisionTime() {
-        return precisionTime;
+    public Optional<Integer> getPrecisionTime() {
+        return Optional.ofNullable(precisionTime);
     }
     
     /**
@@ -432,11 +435,11 @@ public final class GSIConfig {
     }
     
     /**
-     * @return the number of decimal places for positional units, or null for default
+     * @return the number of decimal places for positional units, or empty for default
      * @see #setPrecisionPosition(Integer)
      */
-    public Integer getPrecisionPosition() {
-        return precisionPosition;
+    public Optional<Integer> getPrecisionPosition() {
+        return Optional.ofNullable(precisionPosition);
     }
     
     /**
@@ -457,11 +460,11 @@ public final class GSIConfig {
     }
     
     /**
-     * @return the number of decimal places for vector units, or null for default
+     * @return the number of decimal places for vector units, or empty for default
      * @see #setPrecisionVector(Integer)
      */
-    public Integer getPrecisionVector() {
-        return precisionVector;
+    public Optional<Integer> getPrecisionVector() {
+        return Optional.ofNullable(precisionVector);
     }
     
     /**
@@ -482,51 +485,35 @@ public final class GSIConfig {
     }
     
     /**
-     * Replaces the current data components set, setting which data will be sent from the game client.
+     * Replaces the contents of the current data component subscription set with the given set.
+     *
+     * <p>Subscribed components will be sent from the game client when available. If a component is not subscribed to
+     * in the configuration, the game client will never send any data.</p>
      *
      * @param components the new set of data components to be sent
      * @return this GSIConfig instance
      */
-    public GSIConfig setDataComponents(Set<DataComponent> components) {
-        if (components == null) throw new IllegalArgumentException("Data components cannot be null.");
+    public GSIConfig setSubscribedComponents(Set<DataComponent> components) {
+        if (components == null)
+            throw new IllegalArgumentException("Data components cannot be null.");
         this.dataComponents.clear();
         this.dataComponents.addAll(components);
         return this;
     }
-    
+
     /**
-     * Appends the specified data components to the set, setting which data will be sent from the game client.
+     * Appends the specified data components to the current component subscription set.
      *
-     * @param components the data components to add
+     * <p>Subscribed components will be sent from the game client when available. If a component is not subscribed to
+     * in the configuration, the game client will never send any data.</p>
+     *
+     * @param components the data components to subscribe to
      * @return this GSIConfig instance
      */
-    public GSIConfig withDataComponents(Set<DataComponent> components) {
-        if (components == null) throw new IllegalArgumentException("Data components cannot be null.");
-        this.dataComponents.addAll(components);
-        return this;
-    }
-    
-    /**
-     * Appends the specified data components to the set, setting which data will be sent from the game client.
-     *
-     * @param components the data components to add
-     * @return this GSIConfig instance
-     */
-    public GSIConfig withDataComponents(DataComponent... components) {
-        if (components == null) throw new IllegalArgumentException("Data components cannot be null.");
+    public GSIConfig subscribe(DataComponent... components) {
+        if (components == null)
+            throw new IllegalArgumentException("Data components cannot be null.");
         this.dataComponents.addAll(Arrays.asList(components));
-        return this;
-    }
-    
-    /**
-     * Appends the specified data component to the set, setting which data will be sent from the game client.
-     *
-     * @param components the data component
-     * @return this GSIConfig instance
-     */
-    public GSIConfig withDataComponent(DataComponent components) {
-        if (components == null) throw new IllegalArgumentException("Data components cannot be null.");
-        this.dataComponents.add(components);
         return this;
     }
     
@@ -535,7 +522,7 @@ public final class GSIConfig {
      *
      * @return this GSIConfig instance
      */
-    public GSIConfig withAllDataComponents() {
+    public GSIConfig subscribeAll() {
         this.dataComponents = EnumSet.allOf(DataComponent.class);
         return this;
     }
@@ -596,16 +583,16 @@ public final class GSIConfig {
     
         // Values
         conf.key("uri").value(getURI())
-                .key("timeout").value(formatDouble(getTimeoutPeriod()))
-                .key("buffer").value(formatDouble(getBufferPeriod()))
-                .key("throttle").value(formatDouble(getThrottlePeriod()))
-                .key("heartbeat").value(formatDouble(getHeartbeatPeriod()));
+                .key("timeout").value(getTimeoutPeriod().map(DOUBLE_FORMAT::format).orElse(null))
+                .key("buffer").value(getBufferPeriod().map(DOUBLE_FORMAT::format).orElse(null))
+                .key("throttle").value(getThrottlePeriod().map(DOUBLE_FORMAT::format).orElse(null))
+                .key("heartbeat").value(getHeartbeatPeriod().map(DOUBLE_FORMAT::format).orElse(null));
     
         // Output precision
         conf.key("output").beginObject()
-                .key("precision_time").value(getPrecisionTime())
-                .key("precision_position").value(getPrecisionPosition())
-                .key("precision_vector").value(getPrecisionVector())
+                .key("precision_time").value(getPrecisionTime().orElse(null))
+                .key("precision_position").value(getPrecisionPosition().orElse(null))
+                .key("precision_vector").value(getPrecisionVector().orElse(null))
                 .endObject();
     
         // Auth tokens
@@ -621,11 +608,6 @@ public final class GSIConfig {
             conf.key(type.getConfigName()).value(dataComponents.contains(type) ? "1" : "0");
         }
         conf.endObject().endObject().close();
-    }
-    
-    private static String formatDouble(Double val) {
-        DOUBLE_FORMAT.setRoundingMode(RoundingMode.UP);
-        return val != null ? DOUBLE_FORMAT.format(val) : null;
     }
     
     

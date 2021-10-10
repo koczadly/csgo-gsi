@@ -34,8 +34,8 @@ GSIConfig config = new GSIConfig()
         .setLocalURI(1337)  // Server on localhost:1337
         .setTimeoutPeriod(1.0)
         .setBufferPeriod(0.5)
-        .withAuthToken("password", "Q79v5tcxVQ8u")
-        .withAllDataComponents();  // Or specify which using withDataComponents(...)
+        .includeAuthToken("password", "Q79v5tcxVQ8u")
+        .subscribeAll();  // or specify which components using subscribe(...)
 
 try {
     // Automatically locates the game directory and creates the configuration file
