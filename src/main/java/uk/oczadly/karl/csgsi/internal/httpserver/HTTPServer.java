@@ -4,10 +4,11 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
-import java.net.InetAddress;
 import java.net.InetSocketAddress;
 import java.net.ServerSocket;
 import java.net.Socket;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
 /**
  * This class implements a basic HTTP server for the use of retrieving request data. The server always returns a 200 OK
@@ -15,10 +16,11 @@ import java.net.Socket;
  */
 public class HTTPServer {
     
-    private static final Logger LOGGER = LoggerFactory.getLogger(HTTPServer.class);
+    private static final Logger log = LoggerFactory.getLogger(HTTPServer.class);
 
     private final InetSocketAddress bindAddr;
     private final HTTPRequestHandler handler;
+    private final ExecutorService executorService = Executors.newFixedThreadPool(250);
     
     private volatile Thread thread;
     private volatile ServerSocket socket;
@@ -36,7 +38,7 @@ public class HTTPServer {
     /**
      * @return true if the server is currently running
      */
-    public boolean isRunning() {
+    public synchronized boolean isRunning() {
         return thread != null && thread.isAlive();
     }
     
@@ -47,12 +49,13 @@ public class HTTPServer {
      * @throws IOException           if the port cannot be opened
      * @throws IllegalStateException if the server is already running
      */
-    public void start() throws IOException {
+    public synchronized void start() throws IOException {
         if (isRunning())
             throw new IllegalStateException("Server is already running.");
         
-        LOGGER.info("Starting HTTP server on address {}...", bindAddr);
+        log.info("Starting HTTP server on interface {}...", bindAddr);
         socket = new ServerSocket(bindAddr.getPort(), 50, bindAddr.getAddress());
+        socket.setSoTimeout(10000);
         thread = new Thread(new ConnectionAcceptorTask());
         thread.start();
     }
@@ -62,12 +65,11 @@ public class HTTPServer {
      *
      * @throws IllegalStateException if the server is not currently running
      */
-    public void stop() {
+    public synchronized void stop() {
         if (!isRunning())
             throw new IllegalStateException("Server is not currently running.");
         
-        LOGGER.info("Stopping HTTP server on address {}...", bindAddr);
-        
+        log.info("Stopping HTTP server on interface {}...", bindAddr);
         thread.interrupt();
         try {
             socket.close();
@@ -81,15 +83,12 @@ public class HTTPServer {
         public void run() {
             while (!Thread.currentThread().isInterrupted()) {
                 try {
-                    LOGGER.debug("Awaiting HTTP connection...");
+                    log.debug("Awaiting HTTP connection...");
                     Socket conn = socket.accept();
-                    LOGGER.debug("Incoming HTTP request from {} on server address {}...",
+                    log.debug("Incoming HTTP request from {} on server interface {}...",
                             conn.getInetAddress(), getBindAddress());
-                    new HTTPConnection(conn, handler).run();
-                    LOGGER.debug("HTTP exchange finished.");
-                } catch (Exception e) {
-                    LOGGER.error("Exception occured while handling HTTP connection", e);
-                }
+                    executorService.submit(new HTTPConnection(conn, handler));
+                } catch (IOException ignored) {}
             }
         }
     }

@@ -22,8 +22,9 @@ class GSIServerHTTPHandler implements HTTPRequestHandler {
     private static final Logger log = LoggerFactory.getLogger(GSIServerHTTPHandler.class);
 
     private static final HTTPResponse RESPONSE_UPDATE = new HTTPResponse(200);
+    private static final HTTPResponse RESPONSE_IGNORED = new HTTPResponse(503);
     private static final HTTPResponse RESPONSE_404 = new HTTPResponse(404);
-    private static final HTTPResponse RESPONSE_404_REDIRECT = new HTTPResponse(404,
+    private static final HTTPResponse RESPONSE_WEB_REDIRECT = new HTTPResponse(404,
             "text/html", "<meta http-equiv=\"refresh\" content=\"0; url=/\" />");
 
     private final GSIServer gsi;
@@ -41,25 +42,26 @@ class GSIServerHTTPHandler implements HTTPRequestHandler {
         String userAgent = headers.get("user-agent");
         if (userAgent.startsWith("Valve/Steam HTTP Client") && method.equalsIgnoreCase("POST")) {
             // Received state update from client
-            if (body != null)
-                gsi.handleStateUpdate(body, path, address);
-            return RESPONSE_UPDATE;
-        } else if (gsi.diagPageEnabled && method.equalsIgnoreCase("GET")) {
+            if (body != null && gsi.handleStateUpdate(body, path, address)) {
+                return RESPONSE_UPDATE;
+            } else {
+                return RESPONSE_IGNORED;
+            }
+        } else if (gsi.diagnosticsEnabled && method.equalsIgnoreCase("GET")) {
             // Browser requesting diagnostics info
             switch (path.toLowerCase()) {
-                case "/":
-                    // Diagnostics page
+                case "/": // Diagnostics page
                     return new HTTPResponse(200, "text/html", getDiagnosticHTML());
-                case "/api/diagnostics":
-                    // Diagnostics JSON
+                case "/api/diagnostics": // Diagnostics JSON
                     return new HTTPResponse(200, "application/json", buildDiagnosticsJson());
-                case "/api/state":
-                    // Raw state JSON
-                    return new HTTPResponse(200, "application/json", gsi.stats.getLatestContext()
-                            .map(GameStateContext::getRawJsonString).orElse("{}"));
+                case "/api/state": // Raw state JSON
+                    synchronized (gsi.lock) {
+                        return new HTTPResponse(200, "application/json", gsi.stats.getLatestContext()
+                                .map(GameStateContext::getRawJsonString).orElse("{}"));
+                    }
                 default:
                     // Redirect to root directory
-                    return RESPONSE_404_REDIRECT;
+                    return RESPONSE_WEB_REDIRECT;
             }
         }
         // Unrecognized request
@@ -70,23 +72,25 @@ class GSIServerHTTPHandler implements HTTPRequestHandler {
 
     private String buildDiagnosticsJson() {
         JsonObject json = new JsonObject();
-        json.addProperty("startupTime",   gsi.serverStartTimestamp.toEpochMilli());
-        json.addProperty("bindAddress",   gsi.getBindAddress().getAddress().getHostAddress());
-        json.addProperty("bindPort",      gsi.getBindAddress().getPort());
-        json.addProperty("requiresAuth",  !gsi.getRequiredAuthTokens().isEmpty());
-        json.addProperty("listenerCount", gsi.listeners.size());
-        json.addProperty("stateCount",    gsi.stats.getStateCounter());
-        json.addProperty("rejectCount",   gsi.stats.getStateRejectCounter());
-        gsi.stats.getLatestContext().ifPresent(context -> {
-            json.addProperty("clientAddress", context.getAddress().getHostAddress());
-            json.addProperty("lastStateTime", context.getTimestamp().toEpochMilli());
-            context.getPreviousTimestamp().ifPresent(pts ->
-                    json.addProperty("lastStateDelay",
-                            Duration.between(pts, context.getTimestamp()).toMillis()));
-            if (gsi.getRequiredAuthTokens().isEmpty()) {
-                json.addProperty("lastStateContents", context.getRawJsonString());
-            }
-        });
+        synchronized (gsi.lock) {
+            json.addProperty("startupTime", gsi.stats.getServerStartTimestamp().toEpochMilli());
+            json.addProperty("bindAddress", gsi.getBindAddress().getAddress().getHostAddress());
+            json.addProperty("bindPort", gsi.getBindAddress().getPort());
+            json.addProperty("requiresAuth", !gsi.getRequiredAuthTokens().isEmpty());
+            json.addProperty("listenerCount", gsi.listeners.size());
+            json.addProperty("stateCount", gsi.stats.getStateCounter());
+            json.addProperty("rejectCount", gsi.stats.getStateRejectCounter());
+            json.addProperty("discardCount", gsi.stats.getStateDiscardCounter());
+            gsi.stats.getLatestContext().ifPresent(ctx -> {
+                json.addProperty("clientAddress", ctx.getAddress().getHostAddress());
+                json.addProperty("lastStateTime", ctx.getTimestamp().toEpochMilli());
+                ctx.getPreviousTimestamp().ifPresent(pts ->
+                        json.addProperty("lastStateDelay", Duration.between(pts, ctx.getTimestamp()).toMillis()));
+                if (gsi.getRequiredAuthTokens().isEmpty()) {
+                    json.addProperty("lastStateContents", ctx.getRawJsonString());
+                }
+            });
+        }
         return json.toString();
     }
 

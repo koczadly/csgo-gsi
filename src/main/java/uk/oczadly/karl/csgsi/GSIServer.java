@@ -16,7 +16,8 @@ import java.net.InetAddress;
 import java.net.InetSocketAddress;
 import java.time.Instant;
 import java.util.*;
-import java.util.concurrent.atomic.AtomicInteger;
+import java.util.concurrent.locks.Lock;
+import java.util.concurrent.locks.ReentrantLock;
 
 /**
  * This class is used to listen for live game state information sent by the game client.
@@ -67,31 +68,32 @@ import java.util.concurrent.atomic.AtomicInteger;
  */
 public final class GSIServer {
     
-    private static final Logger LOGGER = LoggerFactory.getLogger(GSIServer.class);
+    private static final Logger log = LoggerFactory.getLogger(GSIServer.class);
     
     final HTTPServer server;
     final ListenerRegistry listeners = new ListenerRegistry();
     final Map<String, String> requiredAuthTokens;
-    final boolean diagPageEnabled;
-    
-    volatile Instant serverStartTimestamp;
-    final ServerStats stats = new ServerStats(); // Holds statistics on the server and state
-    
-    
-    GSIServer(InetSocketAddress bindAddr, Map<String, String> authTokens,
-              Collection<GSIListener> listeners, boolean diagPageEnabled) {
+    final boolean diagnosticsEnabled;
+    final StatisticsContainer stats = new StatisticsContainer(); // Holds statistics on the server and state
+
+    private final Lock newStateLock = new ReentrantLock(); // Used to accept and update new state data
+    final Object lock = new Object(); // Used only when reading and writing state/stat data
+
+
+    GSIServer(InetSocketAddress bindAddr, Map<String, String> authTokens, Collection<GSIListener> listeners,
+              boolean diagnosticsEnabled) {
         this.server = new HTTPServer(bindAddr, new GSIServerHTTPHandler(this));
         this.requiredAuthTokens = Collections.unmodifiableMap(authTokens);
         this.listeners.register(listeners);
-        this.diagPageEnabled = diagPageEnabled;
+        this.diagnosticsEnabled = diagnosticsEnabled;
     }
     
     
     /**
-     * @return the latest game state, or null if the server has yet to receive an update
+     * @return the latest game state, or empty if the server has yet to receive an update
      */
-    public GameState getLatestGameState() {
-        return stats.latestState;
+    public Optional<GameState> getLatestGameState() {
+        return Optional.ofNullable(stats.latestState);
     }
     
     /**
@@ -109,7 +111,9 @@ public final class GSIServer {
      * @param listener the listener to register
      */
     public void registerListener(GSIListener listener) {
-        listeners.register(listener);
+        synchronized (lock) {
+            listeners.register(listener);
+        }
     }
     
     /**
@@ -119,7 +123,9 @@ public final class GSIServer {
      * @param listener the listener to unsubscribe
      */
     public void removeListener(GSIListener listener) {
-        listeners.remove(listener);
+        synchronized (lock) {
+            listeners.remove(listener);
+        }
     }
     
     /**
@@ -138,21 +144,16 @@ public final class GSIServer {
      * @throws IOException           if the configured port cannot be bound to
      */
     public void start() throws IOException {
-        if (server.isRunning())
-            throw new IllegalStateException("The GSI server is already running.");
-        
-        LOGGER.debug("Attempting to start GSI server on address {}...", server.getBindAddress());
-        
-        stats.latestState = null;
-        stats.latestContext = null;
-        stats.stateRejectCounter.set(0);
-        stats.stateCounter.set(0);
-        serverStartTimestamp = Instant.now();
-        
-        server.start();
-        LOGGER.info("GSI server successfully started.");
-        LOGGER.info("Interface: {}, auth required: {}, diagnostics enabled: {}.",
-                getBindAddress(), !requiredAuthTokens.isEmpty(), diagPageEnabled);
+        synchronized (lock) {
+            if (server.isRunning())
+                throw new IllegalStateException("The server is already running.");
+
+            log.debug("Attempting to start GSI server on address {}...", server.getBindAddress());
+            stats.reset(true);
+            server.start();
+        }
+        log.info("GSI server successfully started. Interface: {}, auth required: {}, diagnostics enabled: {}.",
+                getBindAddress(), !requiredAuthTokens.isEmpty(), diagnosticsEnabled);
     }
     
     /**
@@ -161,9 +162,15 @@ public final class GSIServer {
      * @throws IllegalStateException if the server is not currently running
      */
     public void stop() {
-        LOGGER.debug("Attempting to stop GSI server running on interface {}...", getBindAddress());
-        server.stop();
-        LOGGER.info("GSI server on interface {} successfully shut down.", getBindAddress());
+        log.debug("Attempting to stop GSI server running on interface {}...", getBindAddress());
+        synchronized (lock) {
+            if (!server.isRunning())
+                throw new IllegalStateException("The server is not currently running.");
+
+            server.stop();
+            stats.reset(false);
+        }
+        log.info("GSI server on interface {} successfully shut down.", getBindAddress());
     }
     
     /**
@@ -191,42 +198,60 @@ public final class GSIServer {
     /**
      * Handles a new JSON state and notifies the appropriate listeners.
      */
-    void handleStateUpdate(String json, String path, InetAddress address) {
-        LOGGER.debug("Handling new state update on server running on interface {}...", getBindAddress());
-        
-        JsonObject jsonObject;
+    boolean handleStateUpdate(String rawJson, String path, InetAddress address) {
+        log.debug("Handling new state update on server running on interface {}...", getBindAddress());
+
+        Instant receivedTime = Instant.now();
+
+        if (!newStateLock.tryLock()) {
+            // Busy, lock not acquired
+            log.debug("Discarding state as lock is busy.");
+            synchronized (lock) {
+                stats.stateDiscardCounter++;
+            }
+            return false;
+        }
+
         try {
-            jsonObject = JsonParser.parseString(json).getAsJsonObject();
-        } catch (JsonParseException e) {
-            LOGGER.warn("GSI server received invalid JSON object", e);
-            return;
+            JsonObject json;
+            try {
+                json = JsonParser.parseString(rawJson).getAsJsonObject();
+            } catch (JsonParseException e) {
+                log.warn("GSI server received invalid JSON state!", e);
+                synchronized (lock) {
+                    stats.stateDiscardCounter++;
+                }
+                return false;
+            }
+
+            // Check auth tokens match
+            Map<String, String> authTokens = verifyStateAuth(json);
+            if (authTokens == null) {
+                log.warn("GSI state update rejected due to auth token mismatch");
+                synchronized (lock) {
+                    stats.stateRejectCounter++;
+                }
+                return false;
+            }
+
+            // Parse the game state into an object
+            GameState state = Util.GSON.fromJson(json, GameState.class);
+            GameStateContext context;
+
+            synchronized (lock) {
+                // Create context object
+                context = new GameStateContext(this, path, stats.latestState, receivedTime,
+                        stats.latestContext != null ? stats.latestContext.getTimestamp() : null,
+                        ++stats.stateCounter, address, authTokens, json, rawJson);
+
+                this.stats.latestState = state;
+                this.stats.latestContext = context;
+            }
+            listeners.notify(state, context);
+            return true;
+        } finally {
+            newStateLock.unlock();
         }
-        
-        Map<String, String> authTokens = verifyStateAuth(jsonObject);
-        if (authTokens == null) {
-            stats.stateRejectCounter.incrementAndGet();
-            LOGGER.warn("GSI state update rejected due to auth token mismatch");
-            return;
-        }
-        
-        // Parse the game state into an object
-        GameState state = Util.GSON.fromJson(jsonObject, GameState.class);
-    
-        // Calculate information
-        int counter = this.stats.stateCounter.incrementAndGet();
-        Instant now = Instant.now();
-        
-        // Create context object
-        GameStateContext context = new GameStateContext(this, path, this.stats.latestState, now,
-                this.stats.latestContext != null ? this.stats.latestContext.getTimestamp() : null,
-                counter, address, authTokens, jsonObject, json);
-        
-        // Update latest state and timestamps
-        this.stats.latestState = state;
-        this.stats.latestContext = context;
-        
-        // Notify listeners
-        listeners.notify(state, context);
     }
     
     private Map<String, String> verifyStateAuth(JsonObject json) {
@@ -385,11 +410,12 @@ public final class GSIServer {
     }
     
     
-    static class ServerStats {
+    class StatisticsContainer {
+        private volatile Instant serverStartTimestamp;
         private volatile GameState latestState;
         private volatile GameStateContext latestContext;
-        private final AtomicInteger stateCounter = new AtomicInteger();
-        private final AtomicInteger stateRejectCounter = new AtomicInteger();
+        private volatile int stateCounter = 0, stateRejectCounter = 0, stateDiscardCounter = 0;
+
 
         public Optional<GameState> getLatestState() {
             return Optional.ofNullable(latestState);
@@ -400,11 +426,31 @@ public final class GSIServer {
         }
 
         public int getStateCounter() {
-            return stateCounter.get();
+            return stateCounter;
         }
 
         public int getStateRejectCounter() {
-            return stateRejectCounter.get();
+            return stateRejectCounter;
+        }
+
+        public int getStateDiscardCounter() {
+            return stateDiscardCounter;
+        }
+
+        public Instant getServerStartTimestamp() {
+            return serverStartTimestamp;
+        }
+
+
+        public void reset(boolean started) {
+            synchronized (lock) {
+                serverStartTimestamp = started ? Instant.now() : null;
+                latestState = null;
+                latestContext = null;
+                stateCounter = 0;
+                stateRejectCounter = 0;
+                stateDiscardCounter = 0;
+            }
         }
     }
     

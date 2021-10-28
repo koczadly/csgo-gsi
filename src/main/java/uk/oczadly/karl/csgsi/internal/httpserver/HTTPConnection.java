@@ -5,6 +5,7 @@ import org.slf4j.LoggerFactory;
 
 import java.io.*;
 import java.net.Socket;
+import java.net.SocketException;
 import java.net.URLDecoder;
 import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
@@ -18,7 +19,7 @@ import java.util.regex.Pattern;
  */
 class HTTPConnection implements Runnable {
     
-    private static final Logger LOGGER = LoggerFactory.getLogger(HTTPConnection.class);
+    private static final Logger log = LoggerFactory.getLogger(HTTPConnection.class);
     
     private static final Charset CHARSET = StandardCharsets.UTF_8;
     private static final Pattern HEADER_REGEX = Pattern.compile("^([\\w-]+)\\s*:\\s*(.+)$");
@@ -36,63 +37,56 @@ class HTTPConnection implements Runnable {
     @Override
     public void run() {
         try {
-            InputStream is = socket.getInputStream();
-            OutputStream os = socket.getOutputStream();
-            
             // Read start-line header
-            String startLine = readLine(is);
+            String startLine = readLine();
             if (startLine == null) {
-                LOGGER.warn("Socket InputStream returned null data.");
+                log.warn("Socket InputStream returned null data.");
                 return;
             }
             Matcher startMatcher = START_REGEX.matcher(startLine);
             if (!startMatcher.matches()) {
-                LOGGER.warn("Invalid HTTP start-line header \"{}\"!", startLine);
+                log.warn("Invalid HTTP start-line header \"{}\"!", startLine);
                 return;
             }
             String reqMethod = startMatcher.group(1).toUpperCase();
             String reqPath = URLDecoder.decode(startMatcher.group(2), CHARSET.name());
-            
+
             // Read headers and body
-            Map<String, String> headers = parseHeaders(is);
-            LOGGER.debug("Parsed {} headers from request.", headers.size());
+            Map<String, String> headers = parseHeaders();
+            log.debug("Parsed {} headers from request.", headers.size());
             String body = null;
             if (headers.containsKey("content-length")) {
-                body = readBody(socket.getInputStream(), Integer.parseInt(headers.get("content-length")));
+                body = readBody(Integer.parseInt(headers.get("content-length")));
             }
-            
+
             // Handle response
-            HTTPResponse res;
+            HTTPResponse response;
             try {
-                res = handler.handle(socket.getInetAddress(), reqPath, reqMethod, headers, body);
+                response = handler.handle(socket.getInetAddress(), reqPath, reqMethod, headers, body);
             } catch (Exception e) {
-                LOGGER.error("Handler threw uncaught exception.", e);
-                res = new HTTPResponse(500);
+                log.error("Handler threw uncaught exception.", e);
+                response = new HTTPResponse(500);
             }
 
             // Return header & body data
-            LOGGER.debug("Writing response data, status code: {}, body len: {}...",
-                    res.getStatusCode(), res.getBody() != null ? res.getBody().length() : 0);
-            writeResponse(res, socket.getOutputStream());
-
-            // Close socket
-            os.flush();
-        } catch (Exception e) {
-            LOGGER.error("Failed to handle HTTP connection.", e);
+            writeResponse(response);
+        } catch (IOException e) {
+            log.error("Failed to handle HTTP connection.", e);
         } finally {
             //Close socket
             try {
-                if (!socket.isClosed()) socket.close();
+                socket.close();
             } catch (IOException ignored) {}
+            log.debug("HTTP exchange finished.");
         }
     }
     
     
     /** Parse a set of headers into a map */
-    private static Map<String, String> parseHeaders(InputStream is) throws IOException {
+    private Map<String, String> parseHeaders() throws IOException {
         Map<String, String> headers = new HashMap<>();
         String s;
-        while ((s = readLine(is)) != null) {
+        while ((s = readLine()) != null) {
             if (s.equals("")) break; // End of headers
             
             Matcher matcher = HEADER_REGEX.matcher(s);
@@ -104,48 +98,52 @@ class HTTPConnection implements Runnable {
     }
     
     /** Read the body as a string */
-    private static String readBody(InputStream is, int length) throws IOException {
+    private String readBody(int length) throws IOException {
         byte[] buffer = new byte[length];
-        int readLen = is.read(buffer, 0, length);
+        int readLen = socket.getInputStream().read(buffer, 0, length);
         if (readLen == -1) {
-            LOGGER.debug("Read 0 bytes as stream has ended.");
+            log.debug("Read 0 bytes as stream has ended.");
             return null;
         }
         return new String(buffer, 0, readLen, CHARSET);
     }
     
     /** Write response message and server information */
-    private static void writeResponse(HTTPResponse res, OutputStream os) throws IOException {
-        writeString(os, "HTTP/1.1 " + res.getStatusCode());
-        if (res.getStatusCode() >= 200 && res.getStatusCode() < 300) {
-            writeString(os, " OK\r\n"); // 200 series
+    private void writeResponse(HTTPResponse response) throws IOException {
+        log.debug("Writing response data, status code: {}...", response.getStatusCode());
+
+        OutputStream os = socket.getOutputStream();
+        writeString("HTTP/1.1 " + response.getStatusCode());
+        if (response.getStatusCode() >= 200 && response.getStatusCode() < 300) {
+            writeString(" OK\r\n"); // 200 series
         } else {
-            writeString(os, " Error\r\n"); // non-200 series
+            writeString(" Error\r\n"); // non-200 series
         }
-        if (res.getBody() != null) {
-            byte[] body = res.getBody().getBytes(CHARSET);
-            writeString(os, "Connection: close\r\n");
-            writeString(os, "Content-length: " + body.length + "\r\n");
-            String contentType = res.getContentType() != null ? res.getContentType() : "text/plain";
-            writeString(os, "Content-type: " + contentType + "; charset=" + CHARSET.name() + "\r\n\r\n");
+        writeString("Connection: close\r\n");
+
+        if (response.getBody() != null) {
+            byte[] body = response.getBody().getBytes(CHARSET);
+            writeString("Content-length: " + body.length + "\r\n");
+            String contentType = response.getContentType() != null ? response.getContentType() : "text/plain";
+            writeString("Content-type: " + contentType + "; charset=" + CHARSET.name() + "\r\n\r\n");
             os.write(body);
         }
-        os.close();
+        os.flush();
     }
     
     /** Read a line without buffering/reading further */
-    private static String readLine(InputStream inputStream) throws IOException {
+    private String readLine() throws IOException {
         ByteArrayOutputStream bos = new ByteArrayOutputStream();
         int c;
-        for (c = inputStream.read(); c != '\n' && c != -1; c = inputStream.read())
+        for (c = socket.getInputStream().read(); c != '\n' && c != -1; c = socket.getInputStream().read())
             if (c != '\r') bos.write(c);
         if (c == -1 && bos.size() == 0) return null;
         return new String(bos.toByteArray(), 0, bos.size(), CHARSET);
     }
     
     /** Write a string in the correct char encoding */
-    private static void writeString(OutputStream os, String str) throws IOException {
-        os.write(str.getBytes(CHARSET));
+    private void writeString(String str) throws IOException {
+        socket.getOutputStream().write(str.getBytes(CHARSET));
     }
     
 }

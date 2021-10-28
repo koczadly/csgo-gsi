@@ -21,7 +21,7 @@
     <b>Server startup time:</b> <span id="d-startup-time"></span> (<span id="d-uptime"></span> uptime)<br>
     <b>Auth tokens required:</b> <span id="d-auth"></span><br>
     <b>Subscribed listeners:</b> <span id="d-listeners"></span><br>
-    <b>Total states received:</b> <span id="d-state-count"></span> (<span id="d-reject-count"></span> rejected)<br>
+    <b>Total states received:</b> <span id="d-state-count"></span> (<span id="d-discard-count"></span> discarded, <span id="d-reject-count"></span> rejected)<br>
     <b>Latest state timestamp:</b> <span id="d-state-time"></span> (<span id="d-state-ago"></span> ago)<br>
     <b>Latest state client address:</b> <code id="d-client-addr"></code><br>
     <b>Time elapsed between previous states: </b><span id="d-state-diff"></span><br><br>
@@ -71,6 +71,7 @@
             setProperty('d-listeners', info.listenerCount, e => e.toLocaleString());
             setProperty('d-state-count', info.stateCount, e => e.toLocaleString());
             setProperty('d-reject-count', info.rejectCount, e => e.toLocaleString());
+            setProperty('d-discard-count', info.discardCount, e => e.toLocaleString());
             setProperty('d-client-addr', info.clientAddress);
 
             if (info.hasOwnProperty('lastStateTime')) {
