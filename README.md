@@ -35,7 +35,7 @@ GSIConfig config = new GSIConfig()
         .setTimeoutPeriod(1.0)
         .setBufferPeriod(0.5)
         .includeAuthToken("password", "Q79v5tcxVQ8u")
-        .subscribeAll();  // or specify which components using subscribe(...)
+        .subscribeAllComponents();  // or specify which components using subscribe(...)
 
 try {
     // Automatically locates the game directory and creates the configuration file

@@ -52,7 +52,7 @@ public final class GSIConfig {
     private Double timeout, buffer, throttle, heartbeat;
     private Integer precisionTime, precisionPosition, precisionVector;
     private final Map<String, String> authTokens = new HashMap<>();
-    private Set<DataComponent> dataComponents = EnumSet.noneOf(DataComponent.class);
+    private EnumSet<DataComponent> dataComponents = EnumSet.noneOf(DataComponent.class);
 
 
     static {
@@ -522,7 +522,7 @@ public final class GSIConfig {
      *
      * @return this GSIConfig instance
      */
-    public GSIConfig subscribeAll() {
+    public GSIConfig subscribeAllComponents() {
         this.dataComponents = EnumSet.allOf(DataComponent.class);
         return this;
     }
