@@ -65,7 +65,7 @@ public class SteamUtils {
                 case UNIX:
                 case LINUX: // todo: untested
                     candidatePaths.add(Paths.get(homePath, ".local/share/Steam"));
-                    candidatePaths.add(Paths.get(homePath, ".steam"));
+                    candidatePaths.add(Paths.get(homePath, ".steam/steam"));
                     break;
                 case MAC: // todo: untested
                     candidatePaths.add(Paths.get(homePath, "Library/Application Support/Steam"));
