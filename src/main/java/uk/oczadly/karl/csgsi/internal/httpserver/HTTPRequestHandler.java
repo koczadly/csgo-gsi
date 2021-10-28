@@ -12,12 +12,8 @@ public interface HTTPRequestHandler {
     /**
      * Handles the data from an incoming HTTP request.
      *
-     * @param address the address of the client connection
-     * @param path    the requested URL path
-     * @param method  the HTTP request method (eg. POST, GET)
-     * @param headers a map of headers
-     * @param body    the payload body contents
+     * @param request the HTTP request content
      */
-    HTTPResponse handle(InetAddress address, String path, String method, Map<String, String> headers, String body);
+    HTTPResponse handle(HTTPRequest request);
     
 }

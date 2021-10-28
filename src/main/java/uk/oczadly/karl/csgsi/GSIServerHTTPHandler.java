@@ -3,15 +3,13 @@ package uk.oczadly.karl.csgsi;
 import com.google.gson.JsonObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import uk.oczadly.karl.csgsi.internal.httpserver.HTTPRequest;
 import uk.oczadly.karl.csgsi.internal.httpserver.HTTPRequestHandler;
 import uk.oczadly.karl.csgsi.internal.httpserver.HTTPResponse;
 
 import java.io.BufferedReader;
 import java.io.InputStream;
 import java.io.InputStreamReader;
-import java.net.InetAddress;
-import java.time.Duration;
-import java.util.Map;
 import java.util.stream.Collectors;
 
 /**
@@ -28,36 +26,39 @@ class GSIServerHTTPHandler implements HTTPRequestHandler {
             "text/html", "<meta http-equiv=\"refresh\" content=\"0; url=/\" />");
 
     private final GSIServer gsi;
+    private final ServerStateContainer srvState;
 
-    private volatile String diagnosticHtml;
+    private volatile String diagnosticsHtml;
     
     public GSIServerHTTPHandler(GSIServer gsi) {
         this.gsi = gsi;
+        this.srvState = gsi.srvState;
     }
     
     
     @Override
-    public HTTPResponse handle(InetAddress address, String path, String method, Map<String, String> headers,
-                               String body) {
-        String userAgent = headers.get("user-agent");
-        if (userAgent.startsWith("Valve/Steam HTTP Client") && method.equalsIgnoreCase("POST")) {
+    public HTTPResponse handle(HTTPRequest req) {
+        if (req.getMethod().equals("POST")
+                && req.getHeader("user-agent", "").startsWith("Valve/Steam HTTP Client")) {
             // Received state update from client
-            if (body != null && gsi.handleStateUpdate(body, path, address)) {
+            if (req.hasBody() && gsi.handleStateUpdate(
+                    req.getBodyAsString(), req.getPath(), req.getRemoteAddress())) {
                 return RESPONSE_UPDATE;
             } else {
                 return RESPONSE_IGNORED;
             }
-        } else if (gsi.diagnosticsEnabled && method.equalsIgnoreCase("GET")) {
+        } else if (gsi.diagnosticsEnabled && req.getMethod().equals("GET")) {
             // Browser requesting diagnostics info
-            switch (path.toLowerCase()) {
+            switch (req.getPath().toLowerCase()) {
                 case "/": // Diagnostics page
                     return new HTTPResponse(200, "text/html", getDiagnosticHTML());
                 case "/api/diagnostics": // Diagnostics JSON
                     return new HTTPResponse(200, "application/json", buildDiagnosticsJson());
                 case "/api/state": // Raw state JSON
-                    synchronized (gsi.lock) {
-                        return new HTTPResponse(200, "application/json", gsi.stats.getLatestContext()
-                                .map(GameStateContext::getRawJsonString).orElse("{}"));
+                    synchronized (srvState.getLock()) {
+                        return new HTTPResponse(200, "application/json",
+                                srvState.getLatestContext().map(GameStateContext::getRawJsonString)
+                                        .orElse("{}"));
                     }
                 default:
                     // Redirect to root directory
@@ -65,43 +66,51 @@ class GSIServerHTTPHandler implements HTTPRequestHandler {
             }
         }
         // Unrecognized request
-        log.warn("Unexpected HTTP request received ({} at {}) from {}!", method, path, address);
+        log.warn("Unexpected HTTP request received ({} at {}) from {}!",
+                req.getMethod(), req.getPath(), req.getRemoteAddress());
         return RESPONSE_404;
     }
 
 
     private String buildDiagnosticsJson() {
         JsonObject json = new JsonObject();
-        synchronized (gsi.lock) {
-            json.addProperty("startupTime", gsi.stats.getServerStartTimestamp().toEpochMilli());
-            json.addProperty("bindAddress", gsi.getBindAddress().getAddress().getHostAddress());
-            json.addProperty("bindPort", gsi.getBindAddress().getPort());
-            json.addProperty("requiresAuth", !gsi.getRequiredAuthTokens().isEmpty());
+        synchronized (srvState.getLock()) {
+            json.addProperty("startupTime",   srvState.getServerStartTimestamp().toEpochMilli());
+            json.addProperty("bindAddress",   gsi.getBindAddress().getAddress().getHostAddress());
+            json.addProperty("bindPort",      gsi.getBindAddress().getPort());
+            json.addProperty("requiresAuth",  !gsi.getRequiredAuthTokens().isEmpty());
             json.addProperty("listenerCount", gsi.listeners.size());
-            json.addProperty("stateCount", gsi.stats.getStateCounter());
-            json.addProperty("rejectCount", gsi.stats.getStateRejectCounter());
-            json.addProperty("discardCount", gsi.stats.getStateDiscardCounter());
-            gsi.stats.getLatestContext().ifPresent(ctx -> {
+            json.addProperty("stateCount",    srvState.getStateCounter());
+            json.addProperty("rejectCount",   srvState.getStateRejectCounter());
+            json.addProperty("discardCount",  srvState.getStateDiscardCounter());
+            srvState.getLatestContext().ifPresent(ctx -> {
                 json.addProperty("clientAddress", ctx.getAddress().getHostAddress());
                 json.addProperty("lastStateTime", ctx.getTimestamp().toEpochMilli());
-                ctx.getPreviousTimestamp().ifPresent(pts ->
-                        json.addProperty("lastStateDelay", Duration.between(pts, ctx.getTimestamp()).toMillis()));
-                if (gsi.getRequiredAuthTokens().isEmpty()) {
+                ctx.getMillisSinceLastState().ifPresent(millis -> json.addProperty("lastStateDelay", millis));
+                if (srvState.getMinStateTimeDifference() >= 0)
+                    json.addProperty("lastStateDelayMin", srvState.getMinStateTimeDifference());
+                if (srvState.getMaxStateTimeDifference() >= 0)
+                    json.addProperty("lastStateDelayMax", srvState.getMaxStateTimeDifference());
+                if (gsi.getRequiredAuthTokens().isEmpty())
                     json.addProperty("lastStateContents", ctx.getRawJsonString());
-                }
             });
         }
         return json.toString();
     }
 
     private synchronized String getDiagnosticHTML() {
-        if (diagnosticHtml == null) {
+        if (diagnosticsHtml == null) {
             // Load from resource file
             InputStream resource = getClass().getClassLoader().getResourceAsStream("diagnostics.html");
-            diagnosticHtml = new BufferedReader(new InputStreamReader(resource))
-                    .lines().collect(Collectors.joining("\n"));
+            if (resource != null) {
+                diagnosticsHtml = new BufferedReader(new InputStreamReader(resource))
+                        .lines().collect(Collectors.joining("\n"));
+            } else {
+                log.error("Couldn't load diagnostics HTML from resources!");
+                diagnosticsHtml = "<h1>Unable to load diagnostics page!</h1>";
+            }
         }
-        return diagnosticHtml;
+        return diagnosticsHtml;
     }
     
 }

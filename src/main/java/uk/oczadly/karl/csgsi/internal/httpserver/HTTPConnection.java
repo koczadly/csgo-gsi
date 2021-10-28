@@ -5,11 +5,17 @@ import org.slf4j.LoggerFactory;
 
 import java.io.*;
 import java.net.Socket;
+import java.net.SocketTimeoutException;
 import java.net.URLDecoder;
+import java.nio.ByteBuffer;
+import java.nio.channels.Channel;
+import java.nio.channels.Channels;
 import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Objects;
+import java.util.Optional;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -19,8 +25,9 @@ import java.util.regex.Pattern;
 class HTTPConnection implements Runnable {
     
     private static final Logger log = LoggerFactory.getLogger(HTTPConnection.class);
-    
-    private static final Charset CHARSET = StandardCharsets.UTF_8;
+
+    private static final String NL = "\r\n";
+    private static final Charset CHARSET = StandardCharsets.ISO_8859_1;
     private static final Pattern HEADER_REGEX = Pattern.compile("^([\\w-]+)\\s*:\\s*(.+)$");
     private static final Pattern REQUEST_LINE_REGEX = Pattern.compile("^(\\w+) (.+) (HTTP/[0-9.]+)$");
     
@@ -35,8 +42,8 @@ class HTTPConnection implements Runnable {
     
     @Override
     public void run() {
+        boolean keepalive = true;
         try {
-            boolean keepalive = false;
             do {
                 // Read start-line header
                 String requestLine = readLine();
@@ -55,31 +62,25 @@ class HTTPConnection implements Runnable {
                 // Read headers and body
                 Map<String, String> headers = parseHeaders();
                 log.debug("Parsed {} headers from request.", headers.size());
-                String body = null;
-                if (headers.containsKey("content-length")) {
-                    body = readBody(Integer.parseInt(headers.get("content-length")));
-                }
+                ByteBuffer body = readBody(headers);
+                log.debug("Parsed body (length: {} bytes).", body.limit());
+                HTTPRequest request = new HTTPRequest(socket.getInetAddress(), reqPath, reqMethod, headers, body);
 
                 // Check if keepalive should be disabled
-                String reqConnection = headers.get("connection");
-                if (reqConnection != null && reqConnection.equalsIgnoreCase("keep-alive"))
-                    keepalive = true;
+                if (!request.getHeader("connection", "keep-alive").equalsIgnoreCase("keep-alive"))
+                    keepalive = false;
 
-                // Handle response
-                HTTPResponse response;
-                try {
-                    response = handler.handle(socket.getInetAddress(), reqPath, reqMethod, headers, body);
-                } catch (Exception e) {
-                    log.error("Handler threw an uncaught exception - will return 500 status.", e);
-                    response = new HTTPResponse(500);
-                }
+                // Handle request and generate response
+                HTTPResponse response = handleRequest(request);
 
                 // Return header & body data
                 writeResponse(response, keepalive);
             } while (keepalive && socket.isConnected());
-        } catch (IOException e) {
+        } catch (SocketTimeoutException e) {
             if (log.isDebugEnabled())
-                log.debug("Network failure with HTTP connection.", e);
+                log.debug("Socket timeout (keepalive: {}).", keepalive, e);
+        } catch (IOException e) {
+            log.warn("Network failure with HTTP connection.", e);
         } finally {
             //Close socket
             try {
@@ -88,7 +89,16 @@ class HTTPConnection implements Runnable {
             log.debug("HTTP exchange finished.");
         }
     }
-    
+
+
+    private HTTPResponse handleRequest(HTTPRequest request) {
+        try {
+            return handler.handle(request);
+        } catch (Exception e) {
+            log.error("Handler threw an uncaught exception - will return 500 status.", e);
+            return new HTTPResponse(500);
+        }
+    }
     
     /** Parse a set of headers into a map */
     private Map<String, String> parseHeaders() throws IOException {
@@ -104,16 +114,16 @@ class HTTPConnection implements Runnable {
         }
         return headers;
     }
-    
-    /** Read the body as a string */
-    private String readBody(int length) throws IOException {
-        byte[] buffer = new byte[length];
-        int readLen = socket.getInputStream().read(buffer, 0, length);
-        if (readLen == -1) {
-            log.debug("Read 0 bytes as stream has ended.");
-            return null;
+
+    private ByteBuffer readBody(Map<String, String> headers) throws IOException {
+        ByteBuffer buffer;
+        if (headers.containsKey("content-length")) {
+            buffer = ByteBuffer.allocate(Integer.parseInt(headers.get("content-length")));
+            Channels.newChannel(socket.getInputStream()).read(buffer);
+        } else {
+            buffer = ByteBuffer.allocate(0);
         }
-        return new String(buffer, 0, readLen, CHARSET);
+        return buffer.flip();
     }
     
     /** Write response message and server information */
@@ -121,41 +131,48 @@ class HTTPConnection implements Runnable {
         log.debug("Writing response data, status code: {}...", response.getStatusCode());
 
         // Status line
-        OutputStream os = socket.getOutputStream();
         writeString("HTTP/1.1 " + response.getStatusCode());
-        if (response.getStatusCode() >= 200 && response.getStatusCode() < 300) {
-            writeString(" OK\r\n");
-        } else {
-            writeString(" FAILURE\r\n");
-        }
+        writeString(response.getStatusCode() >= 200 && response.getStatusCode() < 300 ? " OK" : " FAILURE");
+        writeString(NL);
         // Keepalive
-        writeString("Connection: " + (keepalive ? "keep-alive" : "close") + "\r\n");
+        writeHeader("Connection", (keepalive ? "keep-alive" : "close"));
         if (keepalive && socket.getSoTimeout() > 0)
-            writeString("Keep-alive: timeout=" + (socket.getSoTimeout() / 1000) + "\r\n");
-        // Body
-        if (response.getBody() != null) {
+            writeHeader("Keep-alive", "timeout=" + (socket.getSoTimeout() / 1000));
+        // Content
+        if (response.getBody() != null && !response.getBody().isEmpty()) {
             byte[] body = response.getBody().getBytes(CHARSET);
-            writeString("Content-length: " + body.length + "\r\n");
-            String contentType = response.getContentType() != null ? response.getContentType() : "text/plain";
-            writeString("Content-type: " + contentType + "; charset=" + CHARSET.name() + "\r\n\r\n");
-            os.write(body);
+            writeHeader("Content-length", body.length);
+            String contentType = Objects.requireNonNullElse(response.getContentType(), "text/plain");
+            writeHeader("Content-type", contentType + "; charset=" + CHARSET.name());
+            writeString(NL);
+            // Write body
+            socket.getOutputStream().write(body);
+        } else {
+            writeHeader("Content-length", 0);
+            writeString(NL);
         }
-        os.flush();
+        socket.getOutputStream().flush();
     }
 
     /** Read a line without buffering/reading further */
     private String readLine() throws IOException {
-        ByteArrayOutputStream bos = new ByteArrayOutputStream();
+        InputStream is = socket.getInputStream();
+        ByteArrayOutputStream bos = new ByteArrayOutputStream(64);
         int b;
-        for (b = socket.getInputStream().read(); b != '\n' && b != -1; b = socket.getInputStream().read())
+        for (b = is.read(); b != '\n' && b != -1; b = is.read())
             if (b != '\r') bos.write(b);
         if (b == -1 && bos.size() == 0) return null;
         return new String(bos.toByteArray(), 0, bos.size(), CHARSET);
     }
-    
+
     /** Write a string in the correct char encoding */
     private void writeString(String str) throws IOException {
         socket.getOutputStream().write(str.getBytes(CHARSET));
+    }
+
+    /** Write a string in the correct char encoding */
+    private void writeHeader(String key, Object value) throws IOException {
+        writeString(key + ": " + value.toString() + NL);
     }
     
 }
