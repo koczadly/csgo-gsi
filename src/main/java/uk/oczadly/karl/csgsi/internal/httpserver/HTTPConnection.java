@@ -5,7 +5,6 @@ import org.slf4j.LoggerFactory;
 
 import java.io.*;
 import java.net.Socket;
-import java.net.SocketException;
 import java.net.URLDecoder;
 import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
@@ -23,7 +22,7 @@ class HTTPConnection implements Runnable {
     
     private static final Charset CHARSET = StandardCharsets.UTF_8;
     private static final Pattern HEADER_REGEX = Pattern.compile("^([\\w-]+)\\s*:\\s*(.+)$");
-    private static final Pattern START_REGEX = Pattern.compile("^(\\w+) (.+) (HTTP/[0-9.]+)$");
+    private static final Pattern REQUEST_LINE_REGEX = Pattern.compile("^(\\w+) (.+) (HTTP/[0-9.]+)$");
     
     private final Socket socket;
     private final HTTPRequestHandler handler;
@@ -37,41 +36,50 @@ class HTTPConnection implements Runnable {
     @Override
     public void run() {
         try {
-            // Read start-line header
-            String startLine = readLine();
-            if (startLine == null) {
-                log.warn("Socket InputStream returned null data.");
-                return;
-            }
-            Matcher startMatcher = START_REGEX.matcher(startLine);
-            if (!startMatcher.matches()) {
-                log.warn("Invalid HTTP start-line header \"{}\"!", startLine);
-                return;
-            }
-            String reqMethod = startMatcher.group(1).toUpperCase();
-            String reqPath = URLDecoder.decode(startMatcher.group(2), CHARSET.name());
+            boolean keepalive = false;
+            do {
+                // Read start-line header
+                String requestLine = readLine();
+                if (requestLine == null) {
+                    log.warn("Socket InputStream returned null data.");
+                    return;
+                }
+                Matcher startMatcher = REQUEST_LINE_REGEX.matcher(requestLine);
+                if (!startMatcher.matches()) {
+                    log.warn("Invalid HTTP start-line header \"{}\"!", requestLine);
+                    return;
+                }
+                String reqMethod = startMatcher.group(1).toUpperCase();
+                String reqPath = URLDecoder.decode(startMatcher.group(2), CHARSET.name());
 
-            // Read headers and body
-            Map<String, String> headers = parseHeaders();
-            log.debug("Parsed {} headers from request.", headers.size());
-            String body = null;
-            if (headers.containsKey("content-length")) {
-                body = readBody(Integer.parseInt(headers.get("content-length")));
-            }
+                // Read headers and body
+                Map<String, String> headers = parseHeaders();
+                log.debug("Parsed {} headers from request.", headers.size());
+                String body = null;
+                if (headers.containsKey("content-length")) {
+                    body = readBody(Integer.parseInt(headers.get("content-length")));
+                }
 
-            // Handle response
-            HTTPResponse response;
-            try {
-                response = handler.handle(socket.getInetAddress(), reqPath, reqMethod, headers, body);
-            } catch (Exception e) {
-                log.error("Handler threw uncaught exception.", e);
-                response = new HTTPResponse(500);
-            }
+                // Check if keepalive should be disabled
+                String reqConnection = headers.get("connection");
+                if (reqConnection != null && reqConnection.equalsIgnoreCase("keep-alive"))
+                    keepalive = true;
 
-            // Return header & body data
-            writeResponse(response);
+                // Handle response
+                HTTPResponse response;
+                try {
+                    response = handler.handle(socket.getInetAddress(), reqPath, reqMethod, headers, body);
+                } catch (Exception e) {
+                    log.error("Handler threw an uncaught exception - will return 500 status.", e);
+                    response = new HTTPResponse(500);
+                }
+
+                // Return header & body data
+                writeResponse(response, keepalive);
+            } while (keepalive && socket.isConnected());
         } catch (IOException e) {
-            log.error("Failed to handle HTTP connection.", e);
+            if (log.isDebugEnabled())
+                log.debug("Network failure with HTTP connection.", e);
         } finally {
             //Close socket
             try {
@@ -109,18 +117,22 @@ class HTTPConnection implements Runnable {
     }
     
     /** Write response message and server information */
-    private void writeResponse(HTTPResponse response) throws IOException {
+    private void writeResponse(HTTPResponse response, boolean keepalive) throws IOException {
         log.debug("Writing response data, status code: {}...", response.getStatusCode());
 
+        // Status line
         OutputStream os = socket.getOutputStream();
         writeString("HTTP/1.1 " + response.getStatusCode());
         if (response.getStatusCode() >= 200 && response.getStatusCode() < 300) {
-            writeString(" OK\r\n"); // 200 series
+            writeString(" OK\r\n");
         } else {
-            writeString(" Error\r\n"); // non-200 series
+            writeString(" FAILURE\r\n");
         }
-        writeString("Connection: close\r\n");
-
+        // Keepalive
+        writeString("Connection: " + (keepalive ? "keep-alive" : "close") + "\r\n");
+        if (keepalive && socket.getSoTimeout() > 0)
+            writeString("Keep-alive: timeout=" + (socket.getSoTimeout() / 1000) + "\r\n");
+        // Body
         if (response.getBody() != null) {
             byte[] body = response.getBody().getBytes(CHARSET);
             writeString("Content-length: " + body.length + "\r\n");
@@ -130,14 +142,14 @@ class HTTPConnection implements Runnable {
         }
         os.flush();
     }
-    
+
     /** Read a line without buffering/reading further */
     private String readLine() throws IOException {
         ByteArrayOutputStream bos = new ByteArrayOutputStream();
-        int c;
-        for (c = socket.getInputStream().read(); c != '\n' && c != -1; c = socket.getInputStream().read())
-            if (c != '\r') bos.write(c);
-        if (c == -1 && bos.size() == 0) return null;
+        int b;
+        for (b = socket.getInputStream().read(); b != '\n' && b != -1; b = socket.getInputStream().read())
+            if (b != '\r') bos.write(b);
+        if (b == -1 && bos.size() == 0) return null;
         return new String(bos.toByteArray(), 0, bos.size(), CHARSET);
     }
     
