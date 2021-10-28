@@ -5,6 +5,7 @@ import org.junit.Test;
 import uk.oczadly.karl.csgsi.state.GameState;
 
 import java.net.InetAddress;
+import java.net.UnknownHostException;
 import java.time.Instant;
 import java.util.HashMap;
 import java.util.Map;
@@ -27,18 +28,19 @@ public class GSIServerTest {
     
     
     @Test
-    public void testBuilder() {
-        InetAddress addr = InetAddress.getLoopbackAddress();
+    public void testBuilder() throws Exception {
+        InetAddress addr = InetAddress.getByAddress(new byte[] {1, 2, 3, 4});
         GSIListener observer = new MockListener(null);
-        GSIServer srv = new GSIServer.Builder(addr, 1337)
+        GSIServer srv = new GSIServer.Builder(1337)
+                .bindToInterface(addr)
                 .requireAuthToken("t3", "v3") // Single add
                 .requireAuthTokens(Map.of("t1", "v1", "t2", "v2")) // Multi add
                 .disableDiagnosticsPage()
                 .registerListener(observer).build();
         
         assertFalse(srv.diagPageEnabled);
-        assertEquals(1337, srv.getPort());
-        assertSame(addr, srv.getBindingAddress());
+        assertEquals(1337, srv.getBindAddress().getPort());
+        assertSame(addr, srv.getBindAddress().getAddress());
         assertEquals(Map.of("t1", "v1", "t2", "v2", "t3", "v3"), srv.getRequiredAuthTokens());
         assertEquals(Set.of(observer), srv.listeners.listeners);
     }

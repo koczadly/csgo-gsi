@@ -5,6 +5,7 @@ import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 import java.net.InetAddress;
+import java.net.InetSocketAddress;
 import java.net.ServerSocket;
 import java.net.Socket;
 
@@ -15,34 +16,20 @@ import java.net.Socket;
 public class HTTPServer {
     
     private static final Logger LOGGER = LoggerFactory.getLogger(HTTPServer.class);
-    
-    private final int port;
-    private final InetAddress bindAddr;
+
+    private final InetSocketAddress bindAddr;
     private final HTTPRequestHandler handler;
     
     private volatile Thread thread;
     private volatile ServerSocket socket;
     
-    
-    /**
-     * @param port            the port number to listen on
-     * @param handler         the handling class to receive HTTP requests
-     */
-    public HTTPServer(int port, InetAddress bindAddr, HTTPRequestHandler handler) {
-        this.port = port;
+
+    public HTTPServer(InetSocketAddress bindAddr, HTTPRequestHandler handler) {
         this.bindAddr = bindAddr;
         this.handler = handler;
     }
     
-    
-    /**
-     * @return the specified port to listen on
-     */
-    public int getPort() {
-        return port;
-    }
-    
-    public InetAddress getBindAddress() {
+    public InetSocketAddress getBindAddress() {
         return bindAddr;
     }
     
@@ -64,8 +51,8 @@ public class HTTPServer {
         if (isRunning())
             throw new IllegalStateException("Server is already running.");
         
-        LOGGER.info("Starting HTTP server on port {}...", port);
-        socket = new ServerSocket(port, 50, bindAddr);
+        LOGGER.info("Starting HTTP server on address {}...", bindAddr);
+        socket = new ServerSocket(bindAddr.getPort(), 50, bindAddr.getAddress());
         thread = new Thread(new ConnectionAcceptorTask());
         thread.start();
     }
@@ -79,7 +66,7 @@ public class HTTPServer {
         if (!isRunning())
             throw new IllegalStateException("Server is not currently running.");
         
-        LOGGER.info("Stopping HTTP server on port {}...", port);
+        LOGGER.info("Stopping HTTP server on address {}...", bindAddr);
         
         thread.interrupt();
         try {
@@ -96,8 +83,8 @@ public class HTTPServer {
                 try {
                     LOGGER.debug("Awaiting HTTP connection...");
                     Socket conn = socket.accept();
-                    LOGGER.debug("Incoming HTTP request from {} on server port {}...",
-                            conn.getInetAddress(), getPort());
+                    LOGGER.debug("Incoming HTTP request from {} on server address {}...",
+                            conn.getInetAddress(), getBindAddress());
                     new HTTPConnection(conn, handler).run();
                     LOGGER.debug("HTTP exchange finished.");
                 } catch (Exception e) {

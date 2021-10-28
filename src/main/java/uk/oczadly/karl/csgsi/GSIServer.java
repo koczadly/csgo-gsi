@@ -13,6 +13,7 @@ import uk.oczadly.karl.csgsi.state.GameState;
 
 import java.io.IOException;
 import java.net.InetAddress;
+import java.net.InetSocketAddress;
 import java.time.Instant;
 import java.util.*;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -42,7 +43,7 @@ import java.util.concurrent.atomic.AtomicInteger;
  *  };
  *
  *  // Configure server
- *  GSIServer server = new GSIServer.Builder(1337)        // Port 1337, on all network interfaces
+ *  GSIServer server = new GSIServer.Builder(1337)        // Port 1337
  *          .requireAuthToken("password", "Q79v5tcxVQ8u") // Require the specified password
  *          .registerListener(listener)                   // Alternatively, you can call this on the GSIServer
  *          .build();
@@ -77,83 +78,12 @@ public final class GSIServer {
     final ServerStats stats = new ServerStats(); // Holds statistics on the server and state
     
     
-    GSIServer(InetAddress bindAddr, int port, Map<String, String> authTokens,
+    GSIServer(InetSocketAddress bindAddr, Map<String, String> authTokens,
               Collection<GSIListener> listeners, boolean diagPageEnabled) {
-        this.server = new HTTPServer(port, bindAddr, new GSIServerHTTPHandler(this));
+        this.server = new HTTPServer(bindAddr, new GSIServerHTTPHandler(this));
         this.requiredAuthTokens = Collections.unmodifiableMap(authTokens);
         this.listeners.register(listeners);
         this.diagPageEnabled = diagPageEnabled;
-    }
-    
-    
-    /**
-     * Constructs a new GSIServer object with pre-processed client authentication.
-     *
-     * @param port               the network port for the server to listen on
-     * @param bindAddr           the local address to bind to
-     * @param requiredAuthTokens the authentication tokens required to accept state reports
-     *
-     * @deprecated Use inner builder class {@link Builder} to create {@link GSIServer} instances
-     * @see Builder
-     */
-    @Deprecated(forRemoval = true)
-    public GSIServer(int port, InetAddress bindAddr, Map<String, String> requiredAuthTokens) {
-        //Validate port
-        if (port <= 0 || port > 65535)
-            throw new IllegalArgumentException("Port number out of range");
-        
-        //Validate auth tokens
-        if (requiredAuthTokens != null) {
-            // Validate map
-            for (Map.Entry<String, String> key : requiredAuthTokens.entrySet())
-                if (key.getKey() == null || key.getValue() == null)
-                    throw new IllegalArgumentException("Auth token key or value cannot be null");
-            this.requiredAuthTokens = Collections.unmodifiableMap(new HashMap<>(requiredAuthTokens));
-        } else {
-            this.requiredAuthTokens = Collections.emptyMap();
-        }
-        
-        this.server = new HTTPServer(port, bindAddr, new GSIServerHTTPHandler(this));
-        this.diagPageEnabled = true;
-    }
-    
-    /**
-     * Constructs a new GSIServer object with pre-processed client authentication.
-     *
-     * @param port               the network port for the server to listen on
-     * @param requiredAuthTokens the authentication tokens required to accept state reports
-     *
-     * @deprecated Use inner builder class {@link Builder} to create {@link GSIServer} instances
-     * @see Builder
-     */
-    @Deprecated(forRemoval = true)
-    public GSIServer(int port, Map<String, String> requiredAuthTokens) {
-        this(port, null, requiredAuthTokens);
-    }
-    
-    /**
-     * Constructs a new GSIServer object with no pre-processed client authentication.
-     *
-     * @param port     the network port for the server to listen on
-     * @param bindAddr the local address to bind to
-     *
-     * @deprecated Use inner builder class {@link Builder} to create {@link GSIServer} instances
-     * @see Builder
-     */
-    @Deprecated(forRemoval = true)
-    public GSIServer(int port, InetAddress bindAddr) {
-        this(port, bindAddr, new HashMap<>());
-    }
-    
-    /**
-     * Constructs a new GSIServer object with no pre-processed client authentication.
-     *
-     * @param port the network port for the server to listen on
-     *
-     * @see Builder
-     */
-    public GSIServer(int port) {
-        this(port, (InetAddress)null);
     }
     
     
@@ -211,7 +141,7 @@ public final class GSIServer {
         if (server.isRunning())
             throw new IllegalStateException("The GSI server is already running.");
         
-        LOGGER.debug("Attempting to start GSI server on port {}...", server.getPort());
+        LOGGER.debug("Attempting to start GSI server on address {}...", server.getBindAddress());
         
         stats.latestState = null;
         stats.latestContext = null;
@@ -221,8 +151,8 @@ public final class GSIServer {
         
         server.start();
         LOGGER.info("GSI server successfully started.");
-        LOGGER.info("Port: {}, bind IP: {}, auth required: {}, diagnostics enabled: {}.",
-                server.getPort(), server.getBindAddress(), !requiredAuthTokens.isEmpty(), diagPageEnabled);
+        LOGGER.info("Interface: {}, auth required: {}, diagnostics enabled: {}.",
+                getBindAddress(), !requiredAuthTokens.isEmpty(), diagPageEnabled);
     }
     
     /**
@@ -231,9 +161,9 @@ public final class GSIServer {
      * @throws IllegalStateException if the server is not currently running
      */
     public void stop() {
-        LOGGER.debug("Attempting to stop GSI server running on port {}...", server.getPort());
+        LOGGER.debug("Attempting to stop GSI server running on interface {}...", getBindAddress());
         server.stop();
-        LOGGER.info("GSI server on port {} successfully shut down.", server.getPort());
+        LOGGER.info("GSI server on interface {} successfully shut down.", getBindAddress());
     }
     
     /**
@@ -244,16 +174,9 @@ public final class GSIServer {
     }
     
     /**
-     * @return the port which the server will listen on
+     * @return the port and address which the server will bind to
      */
-    public int getPort() {
-        return server.getPort();
-    }
-    
-    /**
-     * @return the address which the server will bind to, or null if it will bind to all local addresses
-     */
-    public InetAddress getBindingAddress() {
+    public InetSocketAddress getBindAddress() {
         return server.getBindAddress();
     }
     
@@ -269,7 +192,7 @@ public final class GSIServer {
      * Handles a new JSON state and notifies the appropriate listeners.
      */
     void handleStateUpdate(String json, String path, InetAddress address) {
-        LOGGER.debug("Handling new state update on server running on port {}...", getPort());
+        LOGGER.debug("Handling new state update on server running on interface {}...", getBindAddress());
         
         JsonObject jsonObject;
         try {
@@ -325,34 +248,65 @@ public final class GSIServer {
     
     /**
      * Used for configuring and constructing instances of {@link GSIServer} objects.
+     *
+     * <p>By default, the server will only bind to the local loopback address. If the game client will be ran from a
+     * remote computer, invoke {@link #bindToAllInterfaces()}.</p>
      */
     public static class Builder {
         private final int bindPort;
-        private final InetAddress bindAddr;
+        private InetSocketAddress bindAddr;
         private final Map<String, String> authTokens = new HashMap<>();
         private final Set<GSIListener> listeners = new HashSet<>();
         private boolean diagPageEnabled = true;
-    
-    
+
+
         /**
-         * Creates a builder with the specified port, binding to all IP interfaces.
+         * Creates a new builder instance, binding the socket to port {@code 8080}.
+         */
+        public Builder() {
+            this(8080);
+        }
+
+        /**
+         * Creates a new builder instance, specifying the port to bind the socket to.
          * @param bindPort the socket port to bind to
          */
         public Builder(int bindPort) {
-            this(null, bindPort);
-        }
-    
-        /**
-         * Creates a builder with the specified port, binding to all IP interfaces.
-         * @param bindAddr the socket IP address to bind to, or null to bind to all
-         * @param bindPort the socket port to bind to
-         */
-        public Builder(InetAddress bindAddr, int bindPort) {
             if (bindPort <= 0 || bindPort > 65535)
                 throw new IllegalArgumentException("Port number out of range");
-            
-            this.bindAddr = bindAddr;
             this.bindPort = bindPort;
+            bindToLoopback();
+        }
+
+
+        /**
+         * Binds the server socket to the specified network interface.
+         *
+         * @param bindAddr the address of the interface to bind to
+         * @return this builder
+         */
+        public Builder bindToInterface(InetAddress bindAddr) {
+            this.bindAddr = new InetSocketAddress(bindAddr, bindPort);
+            return this;
+        }
+
+        /**
+         * Binds the server socket to all network interfaces.
+         *
+         * @return this builder
+         */
+        public Builder bindToAllInterfaces() {
+            this.bindAddr = new InetSocketAddress((InetAddress)null, bindPort);
+            return this;
+        }
+
+        /**
+         * Binds the server socket to the local loopback interface.
+         *
+         * @return this builder
+         */
+        public Builder bindToLoopback() {
+            return bindToInterface(InetAddress.getLoopbackAddress());
         }
         
     
@@ -410,7 +364,8 @@ public final class GSIServer {
         }
         
         /**
-         * Disables the HTTP diagnostics page, instead returning an HTTP error.
+         * Disables the HTTP diagnostics webpage. Accessing the page in the browser when disabled will return a 404
+         * error.
          *
          * @return this builder
          */
@@ -420,12 +375,12 @@ public final class GSIServer {
         }
     
         /**
-         * Constructs a new {@link GSIServer} with the specified parameters.
+         * Constructs a new {@link GSIServer} instance with the configured parameters.
          *
          * @return a new {@link GSIServer} object
          */
         public GSIServer build() {
-            return new GSIServer(bindAddr, bindPort, authTokens, listeners, diagPageEnabled);
+            return new GSIServer(bindAddr, authTokens, listeners, diagPageEnabled);
         }
     }
     
