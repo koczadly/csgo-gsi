@@ -17,11 +17,11 @@ public class GSIConfigTest {
     
     @Test
     public void testGettersAndSetters() {
-        GSIConfig profile = new GSIConfig("");
+        GSIConfig profile = new GSIConfig();
         
         //URI
-        profile.setURI("http://1.2.3.4:56");
-        assertEquals("http://1.2.3.4:56", profile.getURI());
+        profile.setServerURL("http://1.2.3.4:56");
+        assertEquals("http://1.2.3.4:56", profile.getURL());
     
         profile.includeAuthToken("token", "auth_val");
         assertEquals("auth_val", profile.getAuthTokens().get("token"));
@@ -47,7 +47,7 @@ public class GSIConfigTest {
         profile.setPrecisionVector(423);
         assertEquals((Integer)423, profile.getPrecisionVector().get());
     
-        profile.subscribe(DataComponent.BOMB);
+        profile.subscribeComponents(DataComponent.BOMB);
         assertEquals(1, profile.getDataComponents().size());
         assertTrue(profile.getDataComponents().contains(DataComponent.BOMB));
         assertFalse(profile.getDataComponents().contains(DataComponent.MAP));
@@ -59,9 +59,10 @@ public class GSIConfigTest {
     @Test
     public void testProfileCreation() {
         //Profile
-        GSIConfig profile = new GSIConfig("http://1.2.3.4:567")
+        GSIConfig profile = new GSIConfig()
+                .setServerURL("1.2.3.4", 567)
                 .includeAuthToken("token", "42A")
-                .subscribe(DataComponent.BOMB)
+                .subscribeComponents(DataComponent.BOMB)
                 .setBufferPeriod(20.1)
                 .setTimeoutPeriod(30.2)
                 .setHeartbeatPeriod(40.3)

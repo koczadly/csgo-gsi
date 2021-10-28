@@ -31,11 +31,11 @@ accomplished using the provided [`GSIConfig`](https://www.javadoc.io/doc/uk.ocza
 ```java
 // Build the configuration for our service
 GSIConfig config = new GSIConfig()
-        .setLocalURI(1337)  // Server on localhost:1337
+        .setLocalServerPort(1337)  // Server on localhost:1337
         .setTimeoutPeriod(1.0)
         .setBufferPeriod(0.5)
         .includeAuthToken("password", "Q79v5tcxVQ8u")
-        .subscribeAllComponents();  // or specify which components using subscribe(...)
+        .subscribeAllComponents();  // or specify using subscribeComponents(...)
 
 try {
     // Automatically locates the game directory and creates the configuration file

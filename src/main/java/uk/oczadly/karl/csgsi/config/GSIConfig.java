@@ -19,18 +19,18 @@ import java.util.regex.Pattern;
  * <p>This class represents a series of parameters used in the game state profile configuration, and provides static
  * utilities for creating and deleting these profiles.</p>
  *
- * <p>The class follows a similar design to the builder pattern, whereby each optional parameter can be set by calling
- * the appropriate setter methods (which return the current instance). Mandatory parameters (callback URI) are passed
- * within the class constructor.</p>
+ * <p>The class is structured similarly to the builder pattern, whereby each parameter can be set by calling the
+ * appropriate setter methods (which all return the {@code GSIConfig} instance to allow for method chaining).</p>
  *
  * <p>The following example demonstrates how to configure a profile with a local server on port 80 with a timeout of
  * 1 second, a buffer of 500ms, an authentication value "password", and receives the provider and round components:
  * <pre>
- *  GSIConfig config = new GSIConfig(80) // localhost:80
+ *  GSIConfig config = new GSIConfig()
+ *          .setLocalServerPort(80)  // localhost:80
  *          .setTimeoutPeriod(1.0)
  *          .setBufferPeriod(0.5)
  *          .includeAuthToken("password", "Q79v5tcxVQ8u")
- *          .subscribe(DataComponent.PROVIDER, DataComponent.ROUND);
+ *          .subscribeComponents(DataComponent.PROVIDER, DataComponent.ROUND);
  * </pre>
  *
  * <p>Profiles can then be created and written to the system using the {@link #writeFile(String)} method (refer to
@@ -46,9 +46,9 @@ public final class GSIConfig {
 
     private static final DecimalFormat DOUBLE_FORMAT = new DecimalFormat("0.0###");
     private static final Pattern SERVICE_NAME_PATTERN = Pattern.compile("^\\w{3,32}$");
-    private static final String DEFAULT_DESC = "Created with https://github.com/koczadly/csgo-gsi";
+    private static final String DEFAULT_DESC = "Generated using https://github.com/koczadly/csgo-gsi";
     
-    private String uri, description = DEFAULT_DESC;
+    private String url, description = DEFAULT_DESC;
     private Double timeout, buffer, throttle, heartbeat;
     private Integer precisionTime, precisionPosition, precisionVector;
     private final Map<String, String> authTokens = new HashMap<>();
@@ -59,44 +59,16 @@ public final class GSIConfig {
         DOUBLE_FORMAT.setRoundingMode(RoundingMode.UP);
     }
     
-    
-    /**
-     * Constructs a new GSI configuration object with the URI as localhost on the specified port. Refer to class
-     * documentation and setter methods for configuring other properties.
-     *
-     * @param port the port of the server
-     */
-    public GSIConfig(int port) {
-        setLocalURI(port);
-    }
-    
-    /**
-     * Constructs a new GSI configuration object with the URI as localhost on the specified port. Refer to class
-     * documentation and setter methods for configuring other properties.
-     *
-     * @param host the hostname or address of the server (eg. "{@code 127.0.0.1}")
-     * @param port the port of the server
-     */
-    public GSIConfig(String host, int port) {
-        setURI(host, port);
-    }
-    
-    /**
-     * Constructs a new GSI configuration object with the specified URI. Refer to class documentation and setter methods
-     * for configuring other properties.
-     *
-     * @param uri the URI of the server, including port and protocol
-     * @throws NullPointerException if the provided {@code uri} argument is null
-     */
-    public GSIConfig(String uri) {
-        setURI(uri);
-    }
-    
+
     /**
      * Constructs a new GSI configuration object. Refer to class documentation and setter methods for configuring
      * properties.
+     *
+     * <p>The default server URL will be {@code localhost:8080} unless overridden through the setters.</p>
      */
-    public GSIConfig() {}
+    public GSIConfig() {
+        setLocalServerPort(8080);
+    }
     
     
     /**
@@ -108,12 +80,12 @@ public final class GSIConfig {
      *
      * @throws NullPointerException if the provided {@code uri} argument is null
      */
-    public GSIConfig setLocalURI(int port) {
-        return setURI("localhost", port);
+    public GSIConfig setLocalServerPort(int port) {
+        return setServerURL("localhost", port);
     }
     
     /**
-     * Sets the URI of the server to the specified host and port, using the {@code HTTP} protocol.
+     * Sets the URL of the server to the specified host and port, using the {@code HTTP} protocol.
      *
      * @param host the hostname or address of the server (eg. "{@code 127.0.0.1}")
      * @param port the port of the server
@@ -121,54 +93,53 @@ public final class GSIConfig {
      *
      * @throws NullPointerException if the provided {@code uri} argument is null
      */
-    public GSIConfig setURI(String host, int port) {
+    public GSIConfig setServerURL(String host, int port) {
         if (port < 1 || port > 65535)
             throw new NullPointerException("Port value is outside the allowable range.");
-        return setURI("http://" + host + ":" + port);
+        return setServerURL("http://" + host + ":" + port);
     }
     
     /**
-     * @param uri the URI (including protocol and port) of the server
+     * @param url the URL (including protocol and port) of the server
      * @return this GSIConfig instance
      *
      * @throws NullPointerException if the provided {@code uri} argument is null
      */
-    public GSIConfig setURI(String uri) {
-        if (uri == null) throw new NullPointerException("URI argument cannot be null.");
-        this.uri = uri;
+    public GSIConfig setServerURL(String url) {
+        if (url == null) throw new NullPointerException("URL argument cannot be null.");
+        this.url = url;
         return this;
     }
     
     /**
-     * @param uri the URI of the server
+     * @param url the URL of the server
      * @return this GSIConfig instance
      *
      * @throws NullPointerException if the provided {@code uri} argument is null
      */
-    public GSIConfig setURI(URL uri) {
-        if (uri == null) throw new NullPointerException("URI argument cannot be null.");
-        return setURI(uri.toString());
+    public GSIConfig setServerURL(URL url) {
+        if (url == null) throw new NullPointerException("URL argument cannot be null.");
+        return setServerURL(url.toString());
     }
     
     /**
-     * @param uri the URI of the server
-     * @return this GSIConfig instance
+     * @return the current configured URL parameter
+     */
+    public String getURL() {
+        return url;
+    }
+
+
+    /**
+     * Clears all authentication tokens currently in the map.
      *
-     * @throws NullPointerException if the provided {@code uri} argument is null
+     * @return this GSIConfig instance
      */
-    public GSIConfig setURI(URI uri) {
-        if (uri == null) throw new NullPointerException("URI argument cannot be null.");
-        return setURI(uri.toString());
+    public GSIConfig clearAuthTokens() {
+        this.authTokens.clear();
+        return this;
     }
-    
-    /**
-     * @return the current configured URI parameter
-     */
-    public String getURI() {
-        return uri;
-    }
-    
-    
+
     /**
      * Sets the authentication tokens to a specified map of {@link String} elements.
      *
@@ -183,7 +154,7 @@ public final class GSIConfig {
     }
     
     /**
-     * Adds all of the the specified authentication tokens to the current map.
+     * Adds all the specified authentication tokens to the current map.
      *
      * @param authTokens the new map of auth tokens
      * @return this GSIConfig instance
@@ -215,7 +186,7 @@ public final class GSIConfig {
     }
     
     /**
-     * @return an immutable map of auth tokens to be sent by the client
+     * @return an immutable map of configured auth tokens to be sent by the client
      */
     public Map<String, String> getAuthTokens() {
         return Collections.unmodifiableMap(authTokens);
@@ -483,7 +454,18 @@ public final class GSIConfig {
         this.precisionVector = precisionVector;
         return this;
     }
-    
+
+
+    /**
+     * Clears all currently subscribed data components, emptying the set.
+     *
+     * @return this GSIConfig instance
+     */
+    public GSIConfig clearSubscribedComponents() {
+        this.dataComponents.clear();
+        return this;
+    }
+
     /**
      * Replaces the contents of the current data component subscription set with the given set.
      *
@@ -510,7 +492,7 @@ public final class GSIConfig {
      * @param components the data components to subscribe to
      * @return this GSIConfig instance
      */
-    public GSIConfig subscribe(DataComponent... components) {
+    public GSIConfig subscribeComponents(DataComponent... components) {
         if (components == null)
             throw new IllegalArgumentException("Data components cannot be null.");
         this.dataComponents.addAll(Arrays.asList(components));
@@ -536,8 +518,8 @@ public final class GSIConfig {
     
     
     private void validateState() {
-        if (uri == null)
-            throw new IllegalStateException("No URI is set.");
+        if (url == null)
+            throw new IllegalStateException("No URL is set.");
         if (dataComponents.isEmpty())
             throw new IllegalStateException("No data components are specified.");
     }
@@ -582,7 +564,7 @@ public final class GSIConfig {
         conf.key(description != null ? description : DEFAULT_DESC).beginObject();
     
         // Values
-        conf.key("uri").value(getURI())
+        conf.key("uri").value(getURL())
                 .key("timeout").value(getTimeoutPeriod().map(DOUBLE_FORMAT::format).orElse(null))
                 .key("buffer").value(getBufferPeriod().map(DOUBLE_FORMAT::format).orElse(null))
                 .key("throttle").value(getThrottlePeriod().map(DOUBLE_FORMAT::format).orElse(null))
