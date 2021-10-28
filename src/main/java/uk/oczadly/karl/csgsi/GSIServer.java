@@ -386,10 +386,26 @@ public final class GSIServer {
     
     
     static class ServerStats {
-        volatile GameState latestState;
-        volatile GameStateContext latestContext;
-        final AtomicInteger stateCounter = new AtomicInteger();
-        final AtomicInteger stateRejectCounter = new AtomicInteger();
+        private volatile GameState latestState;
+        private volatile GameStateContext latestContext;
+        private final AtomicInteger stateCounter = new AtomicInteger();
+        private final AtomicInteger stateRejectCounter = new AtomicInteger();
+
+        public Optional<GameState> getLatestState() {
+            return Optional.ofNullable(latestState);
+        }
+
+        public Optional<GameStateContext> getLatestContext() {
+            return Optional.ofNullable(latestContext);
+        }
+
+        public int getStateCounter() {
+            return stateCounter.get();
+        }
+
+        public int getStateRejectCounter() {
+            return stateRejectCounter.get();
+        }
     }
     
 }
