@@ -13,12 +13,9 @@ import java.util.regex.Pattern;
 
 public class Util {
     
-    private static final Logger LOGGER = LoggerFactory.getLogger(Util.class);
-    
-    private static final Pattern REG_PATTERN = Pattern.compile("^ {4}(\\S+) {4}\\S+ {4}(.+)$");
-    
-    
-    public static final String GITHUB_URL = "https://github.com/koczadly/csgo-gsi";
+    private static final Logger log = LoggerFactory.getLogger(Util.class);
+
+    public static final String REPO_URL = "https://github.com/koczadly/csgo-gsi";
     
     public static final Gson GSON = new GsonBuilder()
             .setLenient().excludeFieldsWithoutExposeAnnotation().create();
@@ -30,34 +27,7 @@ public class Util {
             sb.append(c);
         return sb.toString();
     }
-    
-    /**
-     * Helper method to read Windows registry keys
-     */
-    public static String readWinRegValue(String path, String key) {
-        String value = null;
-        try {
-            Process proc = Runtime.getRuntime().exec("reg query \"" + path + "\" /v \"" + key + "\"");
-            BufferedReader reader = new BufferedReader(new InputStreamReader(proc.getInputStream()));
-            
-            String line;
-            while ((line = reader.readLine()) != null) {
-                Matcher matcher = REG_PATTERN.matcher(line);
-                if (matcher.matches() && matcher.group(1).equalsIgnoreCase(key)) {
-                    value = matcher.group(2);
-                }
-            }
-            reader.close();
-            proc.destroy();
-        } catch (IOException e) {
-            LOGGER.warn("Failed to read registry key {} at path {}", key, path, e);
-            return null;
-        }
-        if (value == null)
-            LOGGER.warn("Failed to read registry key {} at path {}", key, path);
-        return value;
-    }
-    
+
     public static String refVal(Object o) {
         return o.getClass().getSimpleName() + '@' + Integer.toHexString(System.identityHashCode(o));
     }

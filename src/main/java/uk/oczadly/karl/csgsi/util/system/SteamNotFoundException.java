@@ -1,4 +1,4 @@
-package uk.oczadly.karl.csgsi.config;
+package uk.oczadly.karl.csgsi.util.system;
 
 /**
  * This exception is thrown when the Steam installation directory cannot be found, or if an error occurs while

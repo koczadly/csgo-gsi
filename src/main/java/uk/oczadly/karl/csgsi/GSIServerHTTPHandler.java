@@ -69,7 +69,7 @@ class GSIServerHTTPHandler implements HTTPRequestHandler {
                 .append("<script src=\"https://cdn.jsdelivr.net/gh/google/code-prettify@master/loader/")
                 .append("run_prettify.js\"></script></head>\n");
         
-        sb.append("<body><h1><a style=\"color:green\" href=\"").append(Util.GITHUB_URL)
+        sb.append("<body><h1><a style=\"color:green\" href=\"").append(Util.REPO_URL)
                 .append("\">CSGO-GSI server is running!</a></h1>\n");
         // Listening port
         sb.append("<b>Listening on:</b> <code>http://")

@@ -2,10 +2,13 @@ package uk.oczadly.karl.csgsi.config;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import uk.oczadly.karl.csgsi.internal.Util;
+import uk.oczadly.karl.csgsi.util.system.CsgoUtils;
+import uk.oczadly.karl.csgsi.util.system.GameNotFoundException;
+import uk.oczadly.karl.csgsi.util.system.ValveConfigWriter;
 
 import java.io.*;
 import java.math.RoundingMode;
-import java.net.URI;
 import java.net.URL;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
@@ -46,7 +49,7 @@ public final class GSIConfig {
 
     private static final DecimalFormat DOUBLE_FORMAT = new DecimalFormat("0.0###");
     private static final Pattern SERVICE_NAME_PATTERN = Pattern.compile("^\\w{3,32}$");
-    private static final String DEFAULT_DESC = "Generated using https://github.com/koczadly/csgo-gsi";
+    private static final String DEFAULT_DESC = "Generated using " + Util.REPO_URL;
     
     private String url, description = DEFAULT_DESC;
     private Double timeout, buffer, throttle, heartbeat;
@@ -596,7 +599,7 @@ public final class GSIConfig {
     /**
      * Creates or replaces an existing configuration file within the located game directory.
      *
-     * <p>This method automatically locates the game directory using the {@link SteamUtils#locateCsgoConfigFolder()}
+     * <p>This method automatically locates the game directory using the {@link CsgoUtils#locateConfigDirectory()}
      * utility method. If neither the Steam or game directory can be identified, then a {@link GameNotFoundException}
      * will be raised.</p>
      *
@@ -638,7 +641,7 @@ public final class GSIConfig {
      * characters, as well as underscores, and must be between 3 and 32 characters in length. The name must
      * <em>not</em> include the {@code gamestate_integration_} prefix or the {@code .cfg} file extension suffix.</p>
      *
-     * <p>The {@code dir} parameter can be passed the value returned from {@link SteamUtils#locateCsgoConfigFolder()},
+     * <p>The {@code dir} parameter can be passed the value returned from {@link CsgoUtils#locateConfigDirectory()},
      * which will automatically locate this folder on the current system for you. Be aware that the utility method can
      * return null if no CS:GO directory is found, and throw a {@link GameNotFoundException} if no valid Steam
      * installation can be found on the system. The following example demonstrates how to create and write a
@@ -647,7 +650,7 @@ public final class GSIConfig {
      *  GSIConfig config = ... // Create config here
      *
      *  try {
-     *      Path configPath = SteamUtils.locateCsgoConfigFolder();
+     *      Path configPath = CsgoUtils.locateConfigDirectory();
      *
      *      config.writeFile("my_service", configPath);
      *      System.out.println("Config successfully created!");
@@ -666,7 +669,7 @@ public final class GSIConfig {
      * @throws SecurityException     if the security manager doesn't permit access to the file
      * @throws IllegalStateException if one or more configuration values aren't set or are invalid
      *
-     * @see SteamUtils#locateCsgoConfigFolder()
+     * @see CsgoUtils#locateConfigDirectory()
      * @see #writeFile(String)
      */
     public void writeFile(String serviceName, Path dir) throws IOException {
@@ -691,18 +694,18 @@ public final class GSIConfig {
         if (Files.isDirectory(file))
             throw new IllegalArgumentException("Path was an existing directory, and not a file.");
         
-        log.debug("Attempting to write config file {}...", file.toString());
+        log.debug("Attempting to write config file {}...", file);
         try (BufferedWriter writer = Files.newBufferedWriter(file, StandardCharsets.UTF_8)) {
             export(writer);
         }
-        log.info("Written game state config file {}", file.toString());
+        log.info("Written game state config file {}", file);
     }
     
     
     /**
      * Removes a configuration file in the located game directory, if it exists.
      *
-     * <p>This method automatically locates the game directory using the {@link SteamUtils#locateCsgoConfigFolder()}
+     * <p>This method automatically locates the game directory using the {@link CsgoUtils#locateConfigDirectory()} ()}
      * utility method. If neither the Steam or game directory can be identified, then a {@link GameNotFoundException}
      * will be raised.</p>
      *
@@ -716,13 +719,13 @@ public final class GSIConfig {
      * @throws FileNotFoundException if the given path argument is not an existing directory
      */
     public static boolean removeFile(String serviceName) throws GameNotFoundException, IOException {
-        return removeFile(SteamUtils.locateCsgoConfigFolder(), serviceName);
+        return removeFile(CsgoUtils.locateConfigDirectory(), serviceName);
     }
     
     /**
      * Removes a configuration file in the provided directory, if it exists.
      *
-     * <p>The directory parameter can be passed the result from the {@link SteamUtils#locateCsgoConfigFolder()} method,
+     * <p>The directory parameter can be passed the result from the {@link CsgoUtils#locateConfigDirectory()} method,
      * which will attempt to automatically locate the directory for you.</p>
      *
      * @param dir         the directory which the configuration file resides in
@@ -735,7 +738,7 @@ public final class GSIConfig {
      * @throws FileNotFoundException if the given path argument is not an existing directory
      * @throws NotDirectoryException if the given path argument is not a directory
      *
-     * @see SteamUtils#locateCsgoConfigFolder()
+     * @see CsgoUtils#locateConfigDirectory()
      * @see #removeFile(String)
      */
     public static boolean removeFile(Path dir, String serviceName) throws IOException {
@@ -745,7 +748,7 @@ public final class GSIConfig {
             throw new NotDirectoryException("Path must be a directory.");
         
         Path file = getFile(dir, serviceName);
-        log.debug("Attempting to remove config file {}...", file.toString());
+        log.debug("Attempting to remove config file {}...", file);
         return Files.deleteIfExists(file);
     }
     
@@ -753,7 +756,7 @@ public final class GSIConfig {
     /**
      * Checks whether a configuration file currently exists with the specified service name.
      *
-     * <p>This method automatically locates the game directory using the {@link SteamUtils#locateCsgoConfigFolder()}
+     * <p>This method automatically locates the game directory using the {@link CsgoUtils#locateConfigDirectory()}
      * utility method. If neither the Steam or game directory can be identified, then a {@link GameNotFoundException}
      * will be raised.</p>
      *
@@ -778,7 +781,7 @@ public final class GSIConfig {
      *
      * @throws SecurityException     if the security manager disallows access to the file
      *
-     * @see SteamUtils#locateCsgoConfigFolder()
+     * @see CsgoUtils#locateConfigDirectory()
      * @see #fileExists(String)
      */
     public static boolean fileExists(Path dir, String serviceName) {
@@ -790,7 +793,7 @@ public final class GSIConfig {
      * Returns the path of the configuration file with the given service name. This method will not create any files,
      * nor will it perform any checks as to whether the configuration file actually exists on the system.
      *
-     * <p>This method automatically locates the game directory using the {@link SteamUtils#locateCsgoConfigFolder()}
+     * <p>This method automatically locates the game directory using the {@link CsgoUtils#locateConfigDirectory()}
      * utility method. If neither the Steam or game directory can be identified, then a {@link GameNotFoundException}
      * will be raised.</p>
      *
@@ -805,7 +808,7 @@ public final class GSIConfig {
      * @throws GameNotFoundException if the Steam or CSGO installation could not be located
      */
     public static Path getFile(String serviceName) throws GameNotFoundException {
-        return getFile(SteamUtils.locateCsgoConfigFolder(), serviceName);
+        return getFile(CsgoUtils.locateConfigDirectory(), serviceName);
     }
     
     /**

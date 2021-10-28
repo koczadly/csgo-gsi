@@ -1,4 +1,4 @@
-package uk.oczadly.karl.csgsi.config;
+package uk.oczadly.karl.csgsi.util.system;
 
 import uk.oczadly.karl.csgsi.internal.Util;
 

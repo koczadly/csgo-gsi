@@ -1,4 +1,4 @@
-package uk.oczadly.karl.csgsi.config;
+package uk.oczadly.karl.csgsi.util.system;
 
 /**
  * This exception is thrown when the a game directory could not be found.
