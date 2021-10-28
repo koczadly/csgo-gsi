@@ -15,14 +15,15 @@
 <body>
     <h1><a style="color:green" href="https://github.com/koczadly/csgo-gsi">CSGO-GSI server is running!</a></h1>
 
-    <b>Auto update: </b><input type="checkbox" id="s-auto-update" checked="checked"><br><br>
+    <b>Auto update: </b><input type="checkbox" id="s-auto-update" checked="checked"> <button onclick="fetchState()">Refresh 🔄</button><br><br>
 
     <b>Socket binding:</b> <code id="d-socket"></code><br>
     <b>Server startup time:</b> <span id="d-startup-time"></span> (<span id="d-uptime"></span> uptime)<br>
-    <b>Auth tokens configured:</b> <span id="d-auth"></span><br>
+    <b>Auth tokens required:</b> <span id="d-auth"></span><br>
     <b>Subscribed listeners:</b> <span id="d-listeners"></span><br>
     <b>Total states received:</b> <span id="d-state-count"></span> (<span id="d-reject-count"></span> rejected)<br>
     <b>Latest state timestamp:</b> <span id="d-state-time"></span> (<span id="d-state-ago"></span> ago)<br>
+    <b>Latest state client address:</b> <code id="d-client-addr"></code><br>
     <b>Time elapsed between previous states: </b><span id="d-state-diff"></span><br><br>
     <div id="d-state">
         <h2>Latest state JSON <button onclick="copyState()">Copy to clipboard</button></h2>
@@ -49,9 +50,13 @@
         }
 
         async function fetchState() {
-            console.log("Fetching state... " + Date.now());
-            const response = await fetch("/api/diagnostics", {cache: "no-store"});
-            updateDiagnosticInfo(await response.json());
+            try {
+                console.log("Fetching state... ");
+                const response = await fetch("/api/diagnostics", {cache: "no-store"});
+                updateDiagnosticInfo(await response.json());
+            } catch (err) {
+                console.log(err);
+            }
         }
 
         function updateDiagnosticInfo(info) {
@@ -59,38 +64,43 @@
             const time = Date.now();
 
             // Diagnostic fields
-            document.getElementById("d-socket").innerHTML = info.bindAddress + ":" + info.bindPort;
-            document.getElementById("d-startup-time").innerHTML = formatDate(info.startupTime);
-            document.getElementById("d-uptime").innerHTML = formatTime(time - info.startupTime);
-            document.getElementById("d-auth").innerHTML = info.auth ? "Yes" : "No";
-            document.getElementById("d-listeners").innerHTML = info.listenerCount.toLocaleString();
-            document.getElementById("d-state-count").innerHTML = info.stateCount.toLocaleString();
-            document.getElementById("d-reject-count").innerHTML = info.rejectCount.toLocaleString();
-
+            setProperty('d-socket', info.bindAddress + ":" + info.bindPort);
+            setProperty('d-startup-time', info.startupTime, formatDate);
+            setProperty('d-uptime', info.startupTime, e => formatTime(time - e));
+            setProperty('d-auth', info.requiresAuth ? "Yes" : "No");
+            setProperty('d-listeners', info.listenerCount, e => e.toLocaleString());
+            setProperty('d-state-count', info.stateCount, e => e.toLocaleString());
+            setProperty('d-reject-count', info.rejectCount, e => e.toLocaleString());
+            setProperty('d-client-addr', info.clientAddress);
 
             if (info.hasOwnProperty('lastStateTime')) {
-                document.getElementById("d-state-time").innerHTML = formatDate(info.lastStateTime);
-                document.getElementById("d-state-ago").innerHTML = formatTime(time - info.lastStateTime);
-                document.getElementById("d-state-diff").innerHTML =
-                        info.hasOwnProperty('lastStateDelay') ? formatTime(info.lastStateDelay) : "N/A";
+                setProperty('d-state-time', info.lastStateTime, formatDate);
+                setProperty('d-state-ago', info.lastStateTime, e => formatTime(time - e));
+                setProperty('d-state-diff', info.lastStateDelay, formatTime);
             } else {
-                document.getElementById("d-state-time").innerHTML = "N/A";
-                document.getElementById("d-state-ago").innerHTML = "N/A";
-                document.getElementById("d-state-diff").innerHTML = "N/A";
+                setProperty('d-state-time', null);
+                setProperty('d-state-ago', null);
+                setProperty('d-state-diff', null);
             }
 
             if (info.hasOwnProperty('lastStateContents')) {
                 lastState = info.lastStateContents;
-                document.getElementById("d-state-json").innerHTML = info.lastStateContents;
-                document.getElementById("d-state").display = "";
+                setProperty("d-state-json", info.lastStateContents);
+                document.getElementById("d-state").style.display = "";
             } else {
                 lastState = null;
-                document.getElementById("d-state").display = "none";
+                document.getElementById("d-state").style.display = "none";
             }
         }
 
+        function setProperty(id, value, mapper = (e => e)) {
+            document.getElementById(id).innerHTML = (value != undefined ? mapper(value) : "???");
+        }
+
         function formatTime(millis) {
-            if (millis < 60000) {
+            if (millis < 1000) {
+                return millis + "ms";
+            } else if (millis < 60000) {
                 return (millis / 1000).toFixed(3) + "s";
             } else if (millis > 60000) {
                 return (millis / 60000).toFixed(2) + "m";

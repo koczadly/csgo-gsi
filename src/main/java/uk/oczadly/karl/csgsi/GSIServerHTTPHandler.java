@@ -73,16 +73,19 @@ class GSIServerHTTPHandler implements HTTPRequestHandler {
         json.addProperty("startupTime",   gsi.serverStartTimestamp.toEpochMilli());
         json.addProperty("bindAddress",   gsi.getBindAddress().getAddress().getHostAddress());
         json.addProperty("bindPort",      gsi.getBindAddress().getPort());
-        json.addProperty("hasAuthKeys",   !gsi.getRequiredAuthTokens().isEmpty());
+        json.addProperty("requiresAuth",  !gsi.getRequiredAuthTokens().isEmpty());
         json.addProperty("listenerCount", gsi.listeners.size());
         json.addProperty("stateCount",    gsi.stats.getStateCounter());
         json.addProperty("rejectCount",   gsi.stats.getStateRejectCounter());
         gsi.stats.getLatestContext().ifPresent(context -> {
+            json.addProperty("clientAddress", context.getAddress().getHostAddress());
             json.addProperty("lastStateTime", context.getTimestamp().toEpochMilli());
             context.getPreviousTimestamp().ifPresent(pts ->
                     json.addProperty("lastStateDelay",
                             Duration.between(pts, context.getTimestamp()).toMillis()));
-            json.addProperty("lastStateContents", context.getRawJsonString());
+            if (gsi.getRequiredAuthTokens().isEmpty()) {
+                json.addProperty("lastStateContents", context.getRawJsonString());
+            }
         });
         return json.toString();
     }
