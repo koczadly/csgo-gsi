@@ -1,10 +1,8 @@
 package uk.oczadly.karl.csgsi;
 
-import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import uk.oczadly.karl.csgsi.internal.Util;
 import uk.oczadly.karl.csgsi.internal.httpserver.HTTPRequest;
 import uk.oczadly.karl.csgsi.internal.httpserver.HTTPRequestHandler;
 import uk.oczadly.karl.csgsi.internal.httpserver.HTTPResponse;
@@ -76,6 +74,7 @@ class GSIServerHTTPHandler implements HTTPRequestHandler {
     private String buildDiagnosticsJson() {
         JsonObject json = new JsonObject();
         synchronized (srvState.lock) {
+            json.addProperty("time",          System.currentTimeMillis());
             json.addProperty("startupTime",   srvState.getServerStartTimestamp().toEpochMilli());
             json.addProperty("bindAddress",   gsi.getBindAddress().getAddress().getHostAddress());
             json.addProperty("bindPort",      gsi.getBindAddress().getPort());
@@ -84,10 +83,9 @@ class GSIServerHTTPHandler implements HTTPRequestHandler {
             json.addProperty("stateCount",    srvState.getStateCounter());
             json.addProperty("rejectCount",   srvState.getStateRejectCounter());
             json.addProperty("discardCount",  srvState.getStateDiscardCounter());
-            json.add("intervalHistory", GSON.toJsonTree(srvState.getStateIntervalHistory()).getAsJsonArray());
+            json.add("historicalTimestamps", GSON.toJsonTree(srvState.getHistoricalStateTimestamps()).getAsJsonArray());
             srvState.getLatestContext().ifPresent(ctx -> {
                 json.addProperty("clientAddress", ctx.getAddress().getHostAddress());
-                json.addProperty("lastStateTime", ctx.getTimestamp().toEpochMilli());
                 if (!gsi.requiresAuthTokens())
                     json.addProperty("lastStateContents", ctx.getRawJsonString());
             });

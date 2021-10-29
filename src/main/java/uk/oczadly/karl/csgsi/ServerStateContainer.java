@@ -9,7 +9,7 @@ import java.util.*;
 
 class ServerStateContainer {
 
-    private final static int STATE_INTERVAL_COUNT = 20;
+    private final static int TIMESTAMP_HISTORY_COUNT = 25;
 
     public final Object lock;
     private final GSIServer gsiServer;
@@ -17,7 +17,7 @@ class ServerStateContainer {
     private volatile GameState latestState;
     private volatile GameStateContext latestContext;
     private volatile int stateCounter, stateRejectCounter, stateDiscardCounter;
-    private final List<Integer> stateIntervalHistory = new LinkedList<>();
+    private final List<Long> historicalStateTimestamps = new LinkedList<>();
 
     ServerStateContainer(GSIServer gsiServer) {
         this.gsiServer = gsiServer;
@@ -45,7 +45,7 @@ class ServerStateContainer {
                     incrementStateCounter(), remoteAddr, authTokens, json, rawJson);
 
             // Update statistics
-            latestContext.getMillisSinceLastState().ifPresent(this::addStateIntervalHistory);
+            this.recordHistoricalStateTimestamp(receivedTime.toEpochMilli());
 
             return latestContext;
         }
@@ -85,23 +85,23 @@ class ServerStateContainer {
         return serverStartTimestamp;
     }
 
-    public List<Integer> getStateIntervalHistory() {
-        return stateIntervalHistory;
+    public List<Long> getHistoricalStateTimestamps() {
+        return historicalStateTimestamps;
     }
 
-    public void addStateIntervalHistory(int intervalMillis) {
+    private void recordHistoricalStateTimestamp(long tsMillis) {
         synchronized (lock) {
-            if (stateIntervalHistory.size() == STATE_INTERVAL_COUNT) {
-                stateIntervalHistory.remove(STATE_INTERVAL_COUNT - 1);
+            if (historicalStateTimestamps.size() == TIMESTAMP_HISTORY_COUNT) {
+                historicalStateTimestamps.remove(TIMESTAMP_HISTORY_COUNT - 1);
             }
-            stateIntervalHistory.add(0, intervalMillis);
+            historicalStateTimestamps.add(0, tsMillis);
         }
     }
 
     public void reset(boolean started) {
         synchronized (lock) {
             serverStartTimestamp = started ? Instant.now() : null;
-            stateIntervalHistory.clear();
+            historicalStateTimestamps.clear();
             latestState = null;
             latestContext = null;
             stateCounter = 0;
