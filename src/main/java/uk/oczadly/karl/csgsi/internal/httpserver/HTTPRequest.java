@@ -62,10 +62,10 @@ public class HTTPRequest {
         return body.asReadOnlyBuffer();
     }
 
-    // todo: get charset from content-type
     public synchronized String getBodyAsString() {
         if (bodyString == null) {
-            bodyString = StandardCharsets.ISO_8859_1.decode(getBody()).toString();
+            // todo: get charset from content-type
+            bodyString = HTTPConnection.CHARSET.decode(getBody()).toString();
         }
         return bodyString;
     }

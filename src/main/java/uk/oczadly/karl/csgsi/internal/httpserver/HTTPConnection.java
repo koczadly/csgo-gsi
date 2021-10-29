@@ -26,8 +26,9 @@ class HTTPConnection implements Runnable {
     
     private static final Logger log = LoggerFactory.getLogger(HTTPConnection.class);
 
+    static final Charset CHARSET = StandardCharsets.UTF_8;
+
     private static final String NL = "\r\n";
-    private static final Charset CHARSET = StandardCharsets.ISO_8859_1;
     private static final Pattern HEADER_REGEX = Pattern.compile("^([\\w-]+)\\s*:\\s*(.+)$");
     private static final Pattern REQUEST_LINE_REGEX = Pattern.compile("^(\\w+) (.+) (HTTP/[0-9.]+)$");
     
