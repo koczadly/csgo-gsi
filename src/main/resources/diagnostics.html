@@ -7,32 +7,56 @@
     <link rel="icon" type="image/x-icon" sizes="16x16" href="data:image/x-icon;base64,AAABAAEAEBAAAAAAAABoBAAAFgAAACgAAAAQAAAAIAAAAAEAIAAAAAAAAAQAABMLAAATCwAAAAAAAAAAAAAQIltVFS19nxUsd58WLnSfFjJ6nxc0f58XNX+fFzeCnxg9lJ8XN4GfFzN7nxYyfZ8VL3ufFSx4nxUse58QIl1QFS15yxs7n/8bPpr/ICxC/x1Ekv8dS6z/H06s/x9Npf8gMEn/HzFR/x5Lp/8dSab/HEOd/xw+mf8bO5r/Fy5+uRcyfbAdQ6D/HU2v/yAqOv8gQ3b/IV/C/yJctf8jXbL/ISgl/yJNi/8hX77/IFWq/x9Ppf8eSKD/HUSe/xg0gp8ZO4avIE+q/yFhx/8hNE//Iiko/yd11P8nc8z/Jmev/yInKf8mZaz/JnHJ/yVmuf8jYLP/IVit/yFRqv8aPoufHEaSryRetv8mbsn/JmCj/yEeFP8rc7P/L5fy/y+Izv8hHBP/Kmyj/y2M4P8qecj/KHHB/yZouv8kYLb/HkqYnyBUn68obcH/KnbF/y+Q5v8jLDP/KEZX/z3E//8tY4b/HhAG/y98sP80oO3/MY3U/y6Ezv8reMf/KG7B/yJYpZ8kYaqvLXzM/y+I0P82pfX/KEth/yIhHf8wZ4j/HAYA/yQ2QP9As/j/OqPk/zec3v80ldn/MIvS/y1/zP8lZ7CfKHC3rzGL1f80ltn/PLL9/yxadf8cDQL/GwwB/yEgHv9HnM3/Tr79/0Sq5P89puT/OKDg/zWY2v8yjtb/K3W8nyt9wa80ltv/OqDg/0vB//88c5L/IxoT/yYmJf8tPEP/Y7np/2fD9f9ctuj/UbLn/0Wr5f87o+L/NZjb/y2CxZ82jc2vQaTj/0yu5v9hyf//Q2p//ykkIP8xOz//HxcR/2SWsf+V+P//dMbz/2W55v9btuj/T6/m/0Om4/83ktGfQZvXr0qr5v9Tsuf/aM7//0JmeP8kHxv/LDQ2/yoxM/9JZHL/R2Fs/3O54P9yx/X/Ybrp/1e05/9Nruf/Qp/an0Gf2q9MreX/VrTm/2nH9/9mrtb/Ki4v/ykuL/8uNzv/IyIh/xsRDP9ejab/kPf//2vI+P9auuz/T6/m/0Oj3Z9Dot2vTK7k/1e15v9lv+3/eM/6/zE8Q/8cFRD/MDk9/yovMf8oLDD/OEZO/1F3iP9Wl7f/WK7a/1Cx5v9Gp+CfQ6PesEut4v9Wteb/YLnl/3TL9f93wOD/NUJJ/w4CAP9Tc4T/erXP/2Wcuv9QgJj/WKDE/1q35v9PsOT/Rafhn0Kh3cpIq+H/UrPk/1u45v9juOP/hOX//2Katv8YFRj/Z566/5Lr//960Pr/cdD+/2LB8P9VtOX/TK7i/0Ol37g/ntpaQ6ber0yv4a9UtOOvXLjlr2O45K9vxvCvdcfvr3TH8a9quuOvZrzmr1+65a9XtuWvULLir0eq4K9BodxVAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==" />
 
     <style type="text/css">
-
+        h2 {
+            margin: 10px 0px 5px 0px;
+            text-decoration: underline;
+        }
+        #d-interval-container {
+            display: inline-block;
+            padding: 0px; margin: 0px;
+        }
+        #d-interval-container div {
+            display: inline-block;
+            min-width: 55px; height: 30px;
+            line-height: 30px;
+            padding: 0px 5px; margin: 0px -2px -2px 0px;
+            border: 2px solid black;
+            text-align: center; vertical-align: middle;
+        }
     </style>
 </head>
 
 <body>
     <h1><a style="color:green" href="https://github.com/koczadly/csgo-gsi">CSGO-GSI server is running!</a></h1>
 
-    <b>Auto update: </b><input type="checkbox" id="s-auto-update" checked="checked"> <button onclick="fetchState()">Refresh 🔄</button><br><br>
+    <h2>Options</h2>
+    <b>Auto update: </b><input type="checkbox" id="s-auto-update" checked="checked"> <a style="margin-left:20px;" href="javascript:fetchState()">Refresh</a>
 
+    <h2>Configuration</h2>
     <b>Socket binding:</b> <code id="d-socket"></code><br>
-    <b>Server startup time:</b> <span id="d-startup-time"></span> (<span id="d-uptime"></span> uptime)<br>
     <b>Auth tokens required:</b> <span id="d-auth"></span><br>
+
+    <h2>Statistics</h2>
+    <b>Server startup time:</b> <span id="d-startup-time"></span> (<span id="d-uptime"></span> uptime)<br>
     <b>Subscribed listeners:</b> <span id="d-listeners"></span><br>
     <b>Total states received:</b> <span id="d-state-count"></span> (<span id="d-discard-count"></span> discarded, <span id="d-reject-count"></span> rejected)<br>
     <b>Latest state timestamp:</b> <span id="d-state-time"></span> (<span id="d-state-ago"></span> ago)<br>
-    <b>Latest state client address:</b> <code id="d-client-addr"></code><br>
-    <b>Duration between previous states: </b><span id="d-state-diff"></span> (min: <span id="d-state-diff-min"></span>, max: <span id="d-state-diff-max"></span>)<br><br>
+    <b>Latest game client address:</b> <code id="d-client-addr"></code><br>
+
+    <h2>State intervals (newest first)</h2>
+    <div id="d-interval-container"></div>
+
     <div id="d-state">
-        <h2>Latest state JSON <button onclick="copyState()">Copy to clipboard</button></h2>
+        <h2>State JSON contents <a href="/api/state">(raw)</a> <a href="javascript:copyState()">(copy)</a></h2>
         <pre><code id="d-state-json"></code></pre>
     </div>
 
 
     <script type="text/javascript">
-        const pollTime = 200;
+        const pollTime = 150;
+
         var lastState = null;
+        var lastStateCount = 0;
 
         window.onload = function() {
             fetchState();
@@ -62,6 +86,9 @@
             console.log("Updating state...");
             const time = Date.now();
 
+            var hasNewState = info.stateCount != lastStateCount;
+            lastStateCount = info.stateCount;
+
             // Diagnostic fields
             setProperty('d-socket', info.bindAddress + ":" + info.bindPort);
             setProperty('d-startup-time', info.startupTime, formatDate);
@@ -72,20 +99,31 @@
             setProperty('d-reject-count', info.rejectCount, e => e.toLocaleString());
             setProperty('d-discard-count', info.discardCount, e => e.toLocaleString());
             setProperty('d-client-addr', info.clientAddress);
-
             setProperty('d-state-time', info.lastStateTime, formatDate);
             setProperty('d-state-ago', info.lastStateTime, e => formatTime(time - e));
-            setProperty('d-state-diff', info.lastStateDelay, formatTime);
-            setProperty('d-state-diff-min', info.lastStateDelayMin, formatTime);
-            setProperty('d-state-diff-max', info.lastStateDelayMax, formatTime);
 
-            if (info.hasOwnProperty('lastStateContents')) {
-                lastState = info.lastStateContents;
-                setProperty("d-state-json", info.lastStateContents);
-                document.getElementById("d-state").style.display = "";
-            } else {
-                lastState = null;
-                document.getElementById("d-state").style.display = "none";
+            if (hasNewState) {
+                // State intervals
+                var intervalHtml = "";
+                for (const intervalMs of info.intervalHistory) {
+                    var colour = intervalMs < 50 ? "05ed1c"
+                        : intervalMs < 250 ? "1ccc0c"
+                        : intervalMs < 1000 ? "cbd420"
+                        : intervalMs < 2500 ? "d9961a"
+                        : intervalMs < 10000 ? "d46153" : "eb291c";
+                    intervalHtml += `<div style="background-color:#${colour}">${formatTime(intervalMs)}</div>`;
+                }
+                document.getElementById("d-interval-container").innerHTML = intervalHtml;
+
+                // State content
+                if (info.hasOwnProperty('lastStateContents')) {
+                    lastState = info.lastStateContents;
+                    setProperty("d-state-json", info.lastStateContents);
+                    document.getElementById("d-state").style.display = "";
+                } else {
+                    lastState = null;
+                    document.getElementById("d-state").style.display = "none";
+                }
             }
         }
 

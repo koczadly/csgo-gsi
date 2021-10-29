@@ -7,7 +7,6 @@ import com.google.gson.reflect.TypeToken;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import uk.oczadly.karl.csgsi.config.GSIConfig;
-import uk.oczadly.karl.csgsi.internal.Util;
 import uk.oczadly.karl.csgsi.internal.httpserver.HTTPServer;
 import uk.oczadly.karl.csgsi.state.GameState;
 
@@ -18,6 +17,8 @@ import java.time.Instant;
 import java.util.*;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
+
+import static uk.oczadly.karl.csgsi.internal.Util.GSON;
 
 /**
  * This class is used to listen for live game state information sent by the game client.
@@ -93,14 +94,7 @@ public final class GSIServer {
      * @return the latest game state, or empty if the server has yet to receive an update
      */
     public Optional<GameState> getLatestGameState() {
-        return Optional.ofNullable(srvState.latestState);
-    }
-    
-    /**
-     * @return true if the server has received at least one valid game state since starting
-     */
-    public boolean hasReceivedState() {
-        return srvState.latestState != null;
+        return srvState.getLatestState();
     }
     
     
@@ -193,6 +187,13 @@ public final class GSIServer {
     public Map<String, String> getRequiredAuthTokens() {
         return requiredAuthTokens;
     }
+
+    /**
+     * @return true if one or more auth tokens are configured and required to be sent
+     */
+    public boolean requiresAuthTokens() {
+        return !requiredAuthTokens.isEmpty();
+    }
     
     
     /**
@@ -205,79 +206,46 @@ public final class GSIServer {
 
         if (!newStateLock.tryLock()) {
             log.warn("Discarding state as lock is already in use.");
-            synchronized (readWriteLock) {
-                srvState.stateDiscardCounter++;
-            }
+            srvState.incrementStateDiscardCounter();
             return false;
         }
 
         try {
+            // Parse as JSON object
             JsonObject json;
             try {
                 json = JsonParser.parseString(rawJson).getAsJsonObject();
             } catch (JsonParseException e) {
                 log.warn("GSI server received invalid JSON state!", e);
-                synchronized (readWriteLock) {
-                    srvState.stateDiscardCounter++;
-                }
+                srvState.incrementStateDiscardCounter();
                 return false;
             }
 
             // Parse auth tokens
-            Map<String, String> authTokens;
-            if (json.has("auth")) {
-                authTokens = Util.GSON.fromJson(json.getAsJsonObject("auth"),
-                        new TypeToken<Map<String, String>>() {}.getType());
-            } else {
-                authTokens = Collections.emptyMap();
-            }
+            Map<String, String> authTokens = json.has("auth")
+                    ? GSON.fromJson(json.getAsJsonObject("auth"), new TypeToken<Map<String, String>>(){}.getType())
+                    : Collections.emptyMap();
             // Verify auth tokens
-            if (verifyAuthTokens(authTokens)) {
+            boolean authValid = requiredAuthTokens.entrySet().stream()
+                    .allMatch(t -> t.getValue().equals(authTokens.get(t.getKey())));
+            if (!authValid) {
                 log.warn("GSI state update rejected due to auth token mismatch");
-                synchronized (readWriteLock) {
-                    srvState.stateRejectCounter++;
-                }
+                srvState.incrementStateRejectCounter();
                 return false;
             }
 
-            // Parse the game state into an object
-            GameState state = Util.GSON.fromJson(json, GameState.class);
-            GameStateContext context;
+            // Parse the game state and update
+            GameState gameState = GSON.fromJson(json, GameState.class);
+            GameStateContext stateContext = srvState.updateState(gameState,
+                    path, receivedTime, address, authTokens, json, rawJson);
 
-            synchronized (readWriteLock) {
-                // Create context object
-                context = new GameStateContext(this, path, srvState.latestState, receivedTime,
-                        srvState.latestContext != null ? srvState.latestContext.getTimestamp() : null,
-                        ++srvState.stateCounter, address, authTokens, json, rawJson);
-
-                srvState.latestState = state;
-                srvState.latestContext = context;
-                context.getMillisSinceLastState().ifPresent(millis -> {
-                    if (srvState.minStateTimeDiff == -1 || millis < srvState.minStateTimeDiff) {
-                        srvState.minStateTimeDiff = millis;
-                    }
-                    if (millis > srvState.maxStateTimeDiff) {
-                        srvState.maxStateTimeDiff = millis;
-                    }
-                });
-            }
-            listeners.notify(state, context);
+            // Notify listeners of new state
+            listeners.notify(gameState, stateContext);
             return true;
         } finally {
             newStateLock.unlock();
         }
     }
-    
-    private boolean verifyAuthTokens(Map<String, String> authTokens) {
-        // Verify auth tokens
-        for (Map.Entry<String, String> token : requiredAuthTokens.entrySet()) {
-            if (!token.getValue().equals(authTokens.get(token.getKey()))) {
-                return false; // Invalid auth token(s)
-            }
-        }
-        return true;
-    }
-    
     
     /**
      * Used for configuring and constructing instances of {@link GSIServer} objects.
@@ -287,11 +255,10 @@ public final class GSIServer {
      */
     public static class Builder {
         private final int bindPort;
-        private InetSocketAddress bindAddr;
+        private InetAddress bindAddr;
         private final Map<String, String> authTokens = new HashMap<>();
         private final Set<GSIListener> listeners = new HashSet<>();
-        private boolean diagPageEnabled = true;
-
+        private boolean diagnosticsEnabled = true;
 
         /**
          * Creates a new builder instance, binding the socket to port {@code 8080}.
@@ -308,7 +275,7 @@ public final class GSIServer {
             if (bindPort <= 0 || bindPort > 65535)
                 throw new IllegalArgumentException("Port number out of range");
             this.bindPort = bindPort;
-            bindToLoopback();
+            this.bindToLoopback();
         }
 
 
@@ -319,7 +286,9 @@ public final class GSIServer {
          * @return this builder
          */
         public Builder bindToInterface(InetAddress bindAddr) {
-            this.bindAddr = new InetSocketAddress(bindAddr, bindPort);
+            if (bindAddr == null)
+                throw new IllegalArgumentException("Address cannot be null.");
+            this.bindAddr = bindAddr;
             return this;
         }
 
@@ -329,7 +298,7 @@ public final class GSIServer {
          * @return this builder
          */
         public Builder bindToAllInterfaces() {
-            this.bindAddr = new InetSocketAddress((InetAddress)null, bindPort);
+            this.bindAddr = null;
             return this;
         }
 
@@ -355,11 +324,11 @@ public final class GSIServer {
          */
         public Builder requireAuthTokens(Map<String, String> authTokens) {
             if (authTokens == null)
-                throw new IllegalArgumentException("authTokens cannot be null.");
+                throw new IllegalArgumentException("Token map cannot be null.");
             for (Map.Entry<String, String> key : authTokens.entrySet())
                 if (key.getKey() == null || key.getValue() == null)
                     throw new IllegalArgumentException("Auth token key or value cannot be null.");
-            
+
             this.authTokens.putAll(authTokens);
             return this;
         }
@@ -378,7 +347,7 @@ public final class GSIServer {
         public Builder requireAuthToken(String key, String value) {
             if (key == null || value == null)
                 throw new IllegalArgumentException("Auth token key or value cannot be null.");
-            
+
             authTokens.put(key, value);
             return this;
         }
@@ -403,7 +372,7 @@ public final class GSIServer {
          * @return this builder
          */
         public Builder disableDiagnosticsPage() {
-            this.diagPageEnabled = false;
+            this.diagnosticsEnabled = false;
             return this;
         }
     
@@ -413,7 +382,9 @@ public final class GSIServer {
          * @return a new {@link GSIServer} object
          */
         public GSIServer build() {
-            return new GSIServer(bindAddr, authTokens, listeners, diagPageEnabled);
+            return new GSIServer(
+                    new InetSocketAddress(bindAddr, bindPort),
+                    authTokens, listeners, diagnosticsEnabled);
         }
     }
 
