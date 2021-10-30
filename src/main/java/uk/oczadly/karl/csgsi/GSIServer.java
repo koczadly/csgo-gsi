@@ -364,10 +364,11 @@ public final class GSIServer {
             listeners.add(listener);
             return this;
         }
-        
+
         /**
-         * Disables the HTTP diagnostics webpage. Accessing the page in the browser when disabled will return a 404
-         * error.
+         * Disables the HTTP diagnostics webpage (and {@code /api/} endpoints).
+         *
+         * <p>Accessing the page in the browser when disabled will return a generic 404 error.</p>
          *
          * @return this builder
          */

@@ -3,6 +3,7 @@ package uk.oczadly.karl.csgsi;
 import com.google.gson.JsonObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import uk.oczadly.karl.csgsi.internal.Util;
 import uk.oczadly.karl.csgsi.internal.httpserver.HTTPRequest;
 import uk.oczadly.karl.csgsi.internal.httpserver.HTTPRequestHandler;
 import uk.oczadly.karl.csgsi.internal.httpserver.HTTPResponse;
@@ -25,9 +26,11 @@ class GSIServerHTTPHandler implements HTTPRequestHandler {
     private static final String MIME_HTML = "text/html";
     private static final HTTPResponse RESPONSE_UPDATE = new HTTPResponse(200);
     private static final HTTPResponse RESPONSE_IGNORED = new HTTPResponse(503);
-    private static final HTTPResponse RESPONSE_404 = new HTTPResponse(404);
-    private static final HTTPResponse RESPONSE_WEB_REDIRECT = new HTTPResponse(404,
-            MIME_HTML, "<meta http-equiv=\"refresh\" content=\"0; url=/\" />");
+    private static final HTTPResponse RESPONSE_404 = new HTTPResponse(404, "text/plain",
+            "This HTTP server is used to receive game state information from the CS:GO game client.\n"
+                    + "See " + Util.REPO_URL + " for more info.");
+    private static final HTTPResponse RESPONSE_WEB_REDIRECT = new HTTPResponse(404, MIME_HTML,
+            "<!DOCTYPE html>\n<head><meta http-equiv=\"refresh\" content=\"0; url=/\" /></head>");
 
     private final GSIServer gsi;
     private final ServerStateContainer srvState;
