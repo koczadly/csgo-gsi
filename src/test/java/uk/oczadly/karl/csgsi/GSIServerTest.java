@@ -128,22 +128,22 @@ public class GSIServerTest {
         assertSame(i1, observer2.context.getTimestamp());
         assertSame(previous, observer1.context.getPreviousState().get());
         assertSame(previous, observer2.context.getPreviousState().get());
-        assertSame(i2, observer1.context.getPreviousTimestamp().get());
-        assertSame(i2, observer2.context.getPreviousTimestamp().get());
-        assertEquals(300, observer1.context.getMillisSinceLastState().getAsInt());
-        assertEquals(300, observer2.context.getMillisSinceLastState().getAsInt());
-        assertEquals(43, observer1.context.getSequentialCounter());
-        assertEquals(43, observer2.context.getSequentialCounter());
+        assertSame(i2, observer1.context.getPreviousStateTimestamp().get());
+        assertSame(i2, observer2.context.getPreviousStateTimestamp().get());
+        assertEquals(300, observer1.context.getUpdateTimeInterval().get().toMillis());
+        assertEquals(300, observer2.context.getUpdateTimeInterval().get().toMillis());
+        assertEquals(43, observer1.context.getSequenceIndex());
+        assertEquals(43, observer2.context.getSequenceIndex());
         assertEquals(authTokens, observer1.context.getAuthTokens());
         assertEquals(authTokens, observer2.context.getAuthTokens());
-        assertSame(address, observer1.context.getAddress());
-        assertSame(address, observer2.context.getAddress());
+        assertSame(address, observer1.context.getClientAddress());
+        assertSame(address, observer2.context.getClientAddress());
         assertSame(server, observer1.context.getGsiServer());
         assertSame(server, observer2.context.getGsiServer());
-        assertSame(jsonObject, observer1.context.getRawJsonObject());
-        assertSame(jsonObject, observer2.context.getRawJsonObject());
-        assertSame(jsonString, observer1.context.getRawJsonString());
-        assertSame(jsonString, observer2.context.getRawJsonString());
+        assertSame(jsonObject, observer1.context.getStateJson());
+        assertSame(jsonObject, observer2.context.getStateJson());
+        assertSame(jsonString, observer1.context.getRawStateContents());
+        assertSame(jsonString, observer2.context.getRawStateContents());
     }
     
     

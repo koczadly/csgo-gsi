@@ -16,7 +16,7 @@ class ServerStateContainer {
     private volatile Instant serverStartTimestamp;
     private volatile GameState latestState;
     private volatile GameStateContext latestContext;
-    private volatile int stateCounter, stateRejectCounter, stateDiscardCounter;
+    private volatile int stateCount, stateRejectCount, stateDiscardCount;
     private final List<Long> historicalStateTimestamps = new LinkedList<>();
 
     ServerStateContainer(GSIServer gsiServer) {
@@ -42,7 +42,7 @@ class ServerStateContainer {
             latestContext = new GameStateContext(
                     gsiServer, path, getLatestState().orElse(null), receivedTime,
                     getLatestContext().map(GameStateContext::getTimestamp).orElse(null),
-                    incrementStateCounter(), remoteAddr, authTokens, json, rawJson);
+                    incrementStateCounter() - 1, remoteAddr, authTokens, json, rawJson);
 
             // Update statistics
             this.recordHistoricalStateTimestamp(receivedTime.toEpochMilli());
@@ -51,33 +51,33 @@ class ServerStateContainer {
         }
     }
 
-    public int getStateCounter() {
-        return stateCounter;
+    public int getStateCount() {
+        return stateCount;
     }
 
     public int incrementStateCounter() {
         synchronized (lock) {
-            return ++stateCounter;
+            return ++stateCount;
         }
     }
 
-    public int getStateRejectCounter() {
-        return stateRejectCounter;
+    public int getStateRejectCount() {
+        return stateRejectCount;
     }
 
     public int incrementStateRejectCounter() {
         synchronized (lock) {
-            return ++stateRejectCounter;
+            return ++stateRejectCount;
         }
     }
 
-    public int getStateDiscardCounter() {
-        return stateDiscardCounter;
+    public int getStateDiscardCount() {
+        return stateDiscardCount;
     }
 
     public int incrementStateDiscardCounter() {
         synchronized (lock) {
-            return ++stateDiscardCounter;
+            return ++stateDiscardCount;
         }
     }
 
@@ -104,9 +104,9 @@ class ServerStateContainer {
             historicalStateTimestamps.clear();
             latestState = null;
             latestContext = null;
-            stateCounter = 0;
-            stateRejectCounter = 0;
-            stateDiscardCounter = 0;
+            stateCount = 0;
+            stateRejectCount = 0;
+            stateDiscardCount = 0;
         }
     }
 }

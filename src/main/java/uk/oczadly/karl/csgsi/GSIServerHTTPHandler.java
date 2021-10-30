@@ -60,7 +60,7 @@ class GSIServerHTTPHandler implements HTTPRequestHandler {
                 case "/api/state": // Raw state JSON
                     synchronized (srvState.lock) {
                         return new HTTPResponse(200, MIME_JSON, srvState.getLatestContext()
-                                .map(GameStateContext::getRawJsonString).orElse("{}"));
+                                .map(GameStateContext::getRawStateContents).orElse("{}"));
                     }
                 default:
                     // Redirect to root directory
@@ -83,14 +83,14 @@ class GSIServerHTTPHandler implements HTTPRequestHandler {
             json.addProperty("bindPort",      gsi.getBindAddress().getPort());
             json.addProperty("requiresAuth",  gsi.requiresAuthTokens());
             json.addProperty("listenerCount", gsi.listeners.size());
-            json.addProperty("stateCount",    srvState.getStateCounter());
-            json.addProperty("rejectCount",   srvState.getStateRejectCounter());
-            json.addProperty("discardCount",  srvState.getStateDiscardCounter());
+            json.addProperty("stateCount",    srvState.getStateCount());
+            json.addProperty("rejectCount",   srvState.getStateRejectCount());
+            json.addProperty("discardCount",  srvState.getStateDiscardCount());
             json.add("historicalTimestamps", GSON.toJsonTree(srvState.getHistoricalStateTimestamps()).getAsJsonArray());
             srvState.getLatestContext().ifPresent(ctx -> {
-                json.addProperty("clientAddress", ctx.getAddress().getHostAddress());
+                json.addProperty("clientAddress", ctx.getClientAddress().getHostAddress());
                 if (!gsi.requiresAuthTokens())
-                    json.addProperty("lastStateContents", ctx.getRawJsonString());
+                    json.addProperty("lastStateContents", ctx.getRawStateContents());
             });
         }
         return json.toString();

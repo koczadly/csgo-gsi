@@ -9,7 +9,6 @@ import java.time.Instant;
 import java.util.Collections;
 import java.util.Map;
 import java.util.Optional;
-import java.util.OptionalInt;
 
 /**
  * This class contains additional contextual information accompanying a {@link GameState} state update.
@@ -19,21 +18,21 @@ public final class GameStateContext {
     private final GSIServer server;
     private final GameState previousState;
     private final Instant timestamp, prevTimestamp;
-    private final int counter;
+    private final int sequenceIndex;
     private final InetAddress address;
     private final Map<String, String> authTokens;
     private final JsonObject rawJson;
     private final String uriPath, rawJsonString;
     
     GameStateContext(GSIServer server, String uriPath, GameState previousState, Instant timestamp,
-                     Instant prevTimestamp, int counter, InetAddress address, Map<String, String> authTokens,
+                     Instant prevTimestamp, int sequenceIndex, InetAddress address, Map<String, String> authTokens,
                      JsonObject rawJson, String rawJsonString) {
         this.server = server;
         this.uriPath = uriPath;
         this.previousState = previousState;
         this.timestamp = timestamp;
         this.prevTimestamp = prevTimestamp;
-        this.counter = counter;
+        this.sequenceIndex = sequenceIndex;
         this.address = address;
         this.authTokens = Collections.unmodifiableMap(authTokens);
         this.rawJson = rawJson;
@@ -69,21 +68,20 @@ public final class GameStateContext {
     }
     
     /**
-     * Gets the number of milliseconds elapsed since the last state update.
+     * Gets the elapsed time duration between this state and the previous, returning empty if this is the first
+     * received state.
      *
-     * <p>This value is based on the local timestamps when the data was parsed, and <em>not</em> on the timestamp
-     * included in the provider state.</p>
+     * <p>This value is based on local timestamps of when the data was received and parsed, and <em>not</em> on the
+     * timestamp provided by the client in the {@code provider} component.</p>
      *
-     * @return the number of milliseconds since the last received state, or <em>empty</em> for the first state
+     * @return the time interval between this state and the previous, or <em>empty</em> for the first state
      */
-    public OptionalInt getMillisSinceLastState() {
-        if (prevTimestamp == null)
-            return OptionalInt.empty();
-        return OptionalInt.of((int)Duration.between(prevTimestamp, timestamp).toMillis());
+    public Optional<Duration> getUpdateTimeInterval() {
+        return getPreviousStateTimestamp().map(pt -> Duration.between(pt, timestamp));
     }
     
     /**
-     * Gets the local timestamp of when this state update was received (now).
+     * Gets the local timestamp of when this state update was received.
      *
      * @return the timestamp of this state
      */
@@ -94,54 +92,57 @@ public final class GameStateContext {
     /**
      * Gets the local timestamp of when the previous state was received.
      *
-     * @return the timestamp of the previous state, or <em>empty</em> if it's the first state
+     * @return the timestamp of the previous state, or <em>empty</em> for the first state
      */
-    public Optional<Instant> getPreviousTimestamp() {
+    public Optional<Instant> getPreviousStateTimestamp() {
         return Optional.ofNullable(prevTimestamp);
     }
     
     /**
-     * Gets the current state counter, where each new state increases the value by one, starting at {@code 1}.
+     * Returns the sequential index of this state update. The first state will return a value of {@code 0}, with each
+     * additional state incrementing the index by {@code 1}.
      *
-     * @return the index counter of this state
+     * @return the sequential index of this state
      */
-    public int getSequentialCounter() {
-        return counter;
+    public int getSequenceIndex() {
+        return sequenceIndex;
     }
     
     /**
-     * Gets the network address of the game client which sent the associated state data.
+     * Gets the network address of the game client which sent the associated state data. For local instances, this will
+     * return the local {@link InetAddress#getLoopbackAddress() loopback address} (typically {@code 127.0.0.1}).
      *
      * @return the address of the game client
      */
-    public InetAddress getAddress() {
+    public InetAddress getClientAddress() {
         return address;
     }
     
     /**
-     * Gets a map of the received authentication tokens (passwords) received from the game client.
+     * Returns an immutable map of the received authentication tokens (passwords) sent by the game client.
      *
-     * @return a map of received authentication tokens
+     * @return an immutable map of auth tokens sent by the game
      */
     public Map<String, String> getAuthTokens() {
         return authTokens;
     }
     
     /**
-     * Returns the raw JSON data (as a Gson {@link JsonObject}) sent by the game client.
+     * Returns the raw state JSON data (as a Gson {@link JsonObject}) sent by the game client.
      *
-     * @return the raw JSON data
+     * @return the raw state JSON
      */
-    public JsonObject getRawJsonObject() {
+    public JsonObject getStateJson() {
         return rawJson;
     }
     
     /**
-     * Returns the raw string data sent by the game client.
+     * Returns the unmodified JSON state data sent from the client. This will preserve any formatting and indentation
+     * sent from the game.
      *
-     * @return the raw JSON data
+     * @return the raw data sent from the game client
      */
-    public String getRawJsonString() {
+    public String getRawStateContents() {
         return rawJsonString;
     }
     
