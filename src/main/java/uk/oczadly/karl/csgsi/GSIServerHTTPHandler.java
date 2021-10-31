@@ -52,19 +52,21 @@ class GSIServerHTTPHandler implements HTTPRequestHandler {
             return status ? RESPONSE_UPDATE : RESPONSE_IGNORED;
         } else if (gsi.diagnosticsEnabled && req.getMethod().equals("GET")) {
             // Browser requesting diagnostics info
-            switch (req.getPath().toLowerCase()) {
-                case "/": // Diagnostics page
-                    return new HTTPResponse(200, MIME_HTML, getDiagnosticHTML());
-                case "/api/diagnostics": // Diagnostics JSON
-                    return new HTTPResponse(200, MIME_JSON, buildDiagnosticsJson());
-                case "/api/state": // Raw state JSON
-                    synchronized (srvState.lock) {
-                        return new HTTPResponse(200, MIME_JSON, srvState.getLatestContext()
-                                .map(GameStateContext::getRawStateContents).orElse("{}"));
-                    }
-                default:
-                    // Redirect to root directory
-                    return RESPONSE_WEB_REDIRECT;
+            if (req.getPath().equals("/")) {
+                // Diagnostics web app
+                return new HTTPResponse(200, MIME_HTML, getDiagnosticHTML());
+            } else if (req.getPath().equals("/api/diagnostics")) {
+                // Diagnostics JSON
+                return new HTTPResponse(200, MIME_JSON, buildDiagnosticsJson());
+            } else if (req.getPath().equals("/api/state") && !gsi.requiresAuthTokens()) {
+                // Raw state JSON
+                synchronized (srvState.lock) {
+                    return new HTTPResponse(200, MIME_JSON, srvState.getLatestContext()
+                            .map(GameStateContext::getRawStateContents).orElse("{}"));
+                }
+            } else {
+                // Redirect to root directory
+                return RESPONSE_WEB_REDIRECT;
             }
         }
         // Unrecognized request
@@ -77,7 +79,7 @@ class GSIServerHTTPHandler implements HTTPRequestHandler {
     private String buildDiagnosticsJson() {
         JsonObject json = new JsonObject();
         synchronized (srvState.lock) {
-            json.addProperty("time",          System.currentTimeMillis());
+            json.addProperty("srvTime",       System.currentTimeMillis());
             json.addProperty("startupTime",   srvState.getServerStartTimestamp().toEpochMilli());
             json.addProperty("bindAddress",   gsi.getBindAddress().getAddress().getHostAddress());
             json.addProperty("bindPort",      gsi.getBindAddress().getPort());
@@ -90,7 +92,7 @@ class GSIServerHTTPHandler implements HTTPRequestHandler {
             srvState.getLatestContext().ifPresent(ctx -> {
                 json.addProperty("clientAddress", ctx.getClientAddress().getHostAddress());
                 if (!gsi.requiresAuthTokens())
-                    json.addProperty("lastStateContents", ctx.getRawStateContents());
+                    json.addProperty("stateContents", ctx.getRawStateContents());
             });
         }
         return json.toString();
