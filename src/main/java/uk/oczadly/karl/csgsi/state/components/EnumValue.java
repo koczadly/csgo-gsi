@@ -8,10 +8,8 @@ import com.google.gson.annotations.JsonAdapter;
 import com.google.gson.reflect.TypeToken;
 import com.google.gson.stream.JsonReader;
 import com.google.gson.stream.JsonWriter;
-import uk.oczadly.karl.csgsi.internal.Util;
 
 import java.io.IOException;
-import java.io.StringReader;
 import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
 import java.util.Objects;
@@ -22,65 +20,73 @@ import java.util.function.Consumer;
  * This class is a wrapper for {@code Enum} values, allowing for cases where the corresponding enum constant cannot be
  * parsed, while still retaining the original serialized string information.
  *
- * In most implementations, the {@link #get()} method can be used to retrieve the enum value as normal. For cases
+ * In most implementations, the {@link #enumVal()} method can be used to retrieve the enum value as normal. For cases
  * where the originally returned value could not be parsed as an enum constant (resulting in a null enum value), the
- * {@link #getString()} value will return the raw serialized value received from the game client.
+ * {@link #rawVal()} value will return the raw serialized value received from the game client.
  *
  * @param <E> the enum class
  *
- * @see #get()
+ * @see #enumVal()
  */
 @JsonAdapter(EnumValue.DeserializerFactory.class)
-public class EnumValue<E> {
+public class EnumValue<E extends Enum<E>> {
     
     private final E enumVal;
-    private final String rawVal;
+    private final String stringVal;
     
-    public EnumValue(E enumVal, String rawVal) {
-        if (rawVal == null)
+    public EnumValue(E enumVal, String stringVal) {
+        if (stringVal == null)
             throw new IllegalArgumentException("The raw string value cannot be null.");
-        
+
         this.enumVal = enumVal;
-        this.rawVal = rawVal;
+        this.stringVal = stringVal;
     }
     
     
     /**
      * Returns the parsed enum value, or null in cases where the corresponding enum constant could not be parsed. If
      * the game client did not send a null value, and the value returned from this method is null, then the
-     * {@link #getString()} method will return the serialized string value.
+     * {@link #rawVal()} method will return the serialized string value.
      *
-     * @return the parsed enum value, or null if not found
+     * @return the parsed enum value, or null if not resolved
      */
-    public E get() {
+    public E enumVal() {
         return enumVal;
     }
-    
+
+    /**
+     * Returns the parsed enum value, or empty in cases where the corresponding enum constant could not be parsed.
+     *
+     * @return the parsed enum value, or empty if not resolved
+     */
+    public Optional<E> asOptional() {
+        return Optional.ofNullable(enumVal);
+    }
+
     /**
      * Returns the raw string value sent by the game client. This method should be preferred for logging or storing
      * game state data, as it will always contain the correct value sent by the game client.
      * @return the raw value sent by the game client
      */
-    public String getString() {
-        return rawVal;
+    public String rawVal() {
+        return stringVal;
     }
     
     /**
-     * Returns whether the enum value could be resolved or not. If this value is false, {@link #get()} will return a
-     * null value and {@link #getString()} should be used instead.
+     * Returns whether the enum value could be resolved or not. If this value is false, {@link #enumVal()} will return a
+     * null value and {@link #rawVal()} should be used instead.
      * @return true if the value is resolved
      */
     public boolean isResolved() {
         return enumVal != null;
     }
-    
+
     /**
      * If the value is resolved, then execute the given function.
      * @param consumer the consumer function to execute
      */
     public void ifResolved(Consumer<? super E> consumer) {
-        if (isResolved())
-            consumer.accept(get());
+        if (isResolved()) consumer.accept(enumVal());
     }
     
     /**
@@ -91,7 +97,7 @@ public class EnumValue<E> {
      */
     @Override
     public String toString() {
-        return isResolved() ? get().toString() : getString();
+        return isResolved() ? enumVal().toString() : rawVal();
     }
     
     
@@ -101,12 +107,12 @@ public class EnumValue<E> {
         if (o == null || getClass() != o.getClass()) return false;
         EnumValue<?> that = (EnumValue<?>)o;
         return enumVal == that.enumVal &&
-                Objects.equals(rawVal, that.rawVal);
+                Objects.equals(stringVal, that.stringVal);
     }
     
     @Override
     public int hashCode() {
-        return Objects.hash(enumVal, rawVal);
+        return Objects.hash(enumVal, stringVal);
     }
     
     
@@ -118,13 +124,12 @@ public class EnumValue<E> {
      * @param <T>    the parsed object/enum type
      * @return an {@link EnumValue} containing the object
      */
-    public static <T> EnumValue<T> of(String strVal, Class<T> clazz, Gson gson) {
+    public static <T extends Enum<T>> EnumValue<T> of(String strVal, Class<T> clazz, Gson gson) {
         return of(strVal, gson.getAdapter(clazz));
     }
     
-    private static <T> EnumValue<T> of(String strVal, TypeAdapter<T> adapter) {
-        T val = adapter.fromJsonTree(new JsonPrimitive(strVal));
-        return new EnumValue<>(val, strVal);
+    private static <T extends Enum<T>> EnumValue<T> of(String strVal, TypeAdapter<T> adapter) {
+        return new EnumValue<>(adapter.fromJsonTree(new JsonPrimitive(strVal)), strVal);
     }
     
     
@@ -160,9 +165,9 @@ public class EnumValue<E> {
             @Override
             public void write(JsonWriter out, EnumValue<E> value) throws IOException {
                 if (value.isResolved()) {
-                    enumAdapter.write(out, value.get());
+                    enumAdapter.write(out, value.enumVal());
                 } else {
-                    out.value(value.getString());
+                    out.value(value.rawVal());
                 }
             }
         }

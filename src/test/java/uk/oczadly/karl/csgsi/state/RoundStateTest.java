@@ -20,9 +20,9 @@ public class RoundStateTest extends GameStateBaseTest {
         assertTrue(gameState.getRound().isPresent());
         RoundState state = gameState.getRound().get();
     
-        assertEquals(RoundState.RoundPhase.OVER, state.getPhase().get());
-        assertEquals(Team.TERRORIST, state.getWinningTeam().get());
-        assertEquals(RoundState.BombPhase.EXPLODED, state.getBombPhase().get());
+        assertEquals(RoundState.RoundPhase.OVER, state.getPhase().enumVal());
+        assertEquals(Team.TERRORIST, state.getWinningTeam().enumVal());
+        assertEquals(RoundState.BombPhase.EXPLODED, state.getBombPhase().enumVal());
     }
     
     @Test

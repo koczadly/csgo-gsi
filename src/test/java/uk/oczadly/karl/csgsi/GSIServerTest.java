@@ -131,8 +131,8 @@ public class GSIServerTest {
         assertSame(previous, observer2.context.getPreviousState().get());
         assertSame(i2, observer1.context.getPreviousStateTimestamp().get());
         assertSame(i2, observer2.context.getPreviousStateTimestamp().get());
-        assertEquals(300, observer1.context.getUpdateTimeInterval().get().toMillis());
-        assertEquals(300, observer2.context.getUpdateTimeInterval().get().toMillis());
+        assertEquals(300, observer1.context.getElapsedInterval().get().toMillis());
+        assertEquals(300, observer2.context.getElapsedInterval().get().toMillis());
         assertEquals(43, observer1.context.getSequenceIndex());
         assertEquals(43, observer2.context.getSequenceIndex());
         assertEquals(authTokens, observer1.context.getAuthTokens());
@@ -141,8 +141,8 @@ public class GSIServerTest {
         assertSame(address, observer2.context.getClientAddress());
         assertSame(server, observer1.context.getServer());
         assertSame(server, observer2.context.getServer());
-        assertSame(jsonObject, observer1.context.getStateJson());
-        assertSame(jsonObject, observer2.context.getStateJson());
+        assertEquals(jsonObject, observer1.context.getStateJson());
+        assertEquals(jsonObject, observer2.context.getStateJson());
         assertSame(jsonString, observer1.context.getRawStateContents());
         assertSame(jsonString, observer2.context.getRawStateContents());
     }

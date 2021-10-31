@@ -1,7 +1,6 @@
 package uk.oczadly.karl.csgsi.state.components.grenade;
 
 import com.google.gson.*;
-import com.google.gson.annotations.Expose;
 import com.google.gson.annotations.JsonAdapter;
 import com.google.gson.annotations.SerializedName;
 import uk.oczadly.karl.csgsi.internal.Util;
@@ -40,7 +39,7 @@ public interface Grenade {
     /**
      * Represents a grenade type.
      */
-    public enum Type {
+    enum Type {
         /** A decoy grenade. */
         @SerializedName("decoy")     DECOY          (EffectGrenade.class),
         /** A flashbang grenade. */
@@ -67,7 +66,7 @@ public interface Grenade {
     }
     
     
-    static class Adapter implements JsonDeserializer<Grenade> {
+    class Adapter implements JsonDeserializer<Grenade> {
         @Override
         public Grenade deserialize(JsonElement json, java.lang.reflect.Type typeOfT,
                                    JsonDeserializationContext context) throws JsonParseException {
@@ -75,7 +74,7 @@ public interface Grenade {
             EnumValue<Grenade.Type> gType = EnumValue.of(
                     obj.get("type").getAsString(), Grenade.Type.class, Util.GSON);
             Class<? extends Grenade> classType = gType.isResolved()
-                    ? gType.get().getObjectClass() : BasicGrenade.class;
+                    ? gType.enumVal().getObjectClass() : BasicGrenade.class;
             return context.deserialize(obj, classType);
         }
     }

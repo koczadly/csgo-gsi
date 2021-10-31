@@ -25,7 +25,7 @@ public class GrenadeTest {
                 "\t\"effecttime\": \"9.8\"}";
     
         EffectGrenade grenade = (EffectGrenade)Util.GSON.fromJson(json, Grenade.class);
-        assertEquals(Grenade.Type.SMOKE, grenade.getType().get());
+        assertEquals(Grenade.Type.SMOKE, grenade.getType().enumVal());
         assertEquals(PlayerSteamID.fromId64("76561197960265729"), grenade.getOwner());
         assertEquals(new Coordinate(1, 2, 3), grenade.getPosition());
         assertEquals(new Coordinate(4, 5, 6), grenade.getVelocity());
@@ -43,7 +43,7 @@ public class GrenadeTest {
                 "\t\"type\": \"firebomb\"}";
         
         ProjectileGrenade grenade = (ProjectileGrenade)Util.GSON.fromJson(json, Grenade.class);
-        assertEquals(Grenade.Type.MOLOTOV, grenade.getType().get());
+        assertEquals(Grenade.Type.MOLOTOV, grenade.getType().enumVal());
         assertEquals(PlayerSteamID.fromId64("76561197960265729"), grenade.getOwner());
         assertEquals(new Coordinate(1, 2, 3), grenade.getPosition());
         assertEquals(new Coordinate(4, 5, 6), grenade.getVelocity());
@@ -65,7 +65,7 @@ public class GrenadeTest {
                 "\t\t\"flame_p120_p89_n3\": \"-20.03, 418.38, -1.38\"}}";
         
         IncendiaryGrenade grenade = (IncendiaryGrenade)Util.GSON.fromJson(json, Grenade.class);
-        assertEquals(Grenade.Type.MOLOTOV_FLAMES, grenade.getType().get());
+        assertEquals(Grenade.Type.MOLOTOV_FLAMES, grenade.getType().enumVal());
         assertEquals(PlayerSteamID.fromId64("76561197960265729"), grenade.getOwner());
         assertEquals(new Coordinate(-95.53, 359.38, -1.38), grenade.getApproxPosition());
         assertEquals(6, grenade.getFlames().size());
@@ -84,7 +84,7 @@ public class GrenadeTest {
                 "\t\"type\": \"flashbang\"}";
         
         ProjectileGrenade grenade = (ProjectileGrenade)Util.GSON.fromJson(json, Grenade.class);
-        assertEquals(Grenade.Type.FLASHBANG, grenade.getType().get());
+        assertEquals(Grenade.Type.FLASHBANG, grenade.getType().enumVal());
         assertEquals(PlayerSteamID.fromId64("76561197960265729"), grenade.getOwner());
         assertEquals(new Coordinate(1, 2, 3), grenade.getPosition());
         assertEquals(new Coordinate(4, 5, 6), grenade.getVelocity());
@@ -102,7 +102,7 @@ public class GrenadeTest {
                 "\t\"effecttime\": \"9.8\"}";
         
         EffectGrenade grenade = (EffectGrenade)Util.GSON.fromJson(json, Grenade.class);
-        assertEquals(Grenade.Type.DECOY, grenade.getType().get());
+        assertEquals(Grenade.Type.DECOY, grenade.getType().enumVal());
         assertEquals(PlayerSteamID.fromId64("76561197960265729"), grenade.getOwner());
         assertEquals(new Coordinate(1, 2, 3), grenade.getPosition());
         assertEquals(new Coordinate(4, 5, 6), grenade.getVelocity());
@@ -120,7 +120,7 @@ public class GrenadeTest {
                 "\t\"type\": \"frag\"}";
         
         ProjectileGrenade grenade = (ProjectileGrenade)Util.GSON.fromJson(json, Grenade.class);
-        assertEquals(Grenade.Type.FRAG, grenade.getType().get());
+        assertEquals(Grenade.Type.FRAG, grenade.getType().enumVal());
         assertEquals(PlayerSteamID.fromId64("76561197960265729"), grenade.getOwner());
         assertEquals(new Coordinate(1, 2, 3), grenade.getPosition());
         assertEquals(new Coordinate(4, 5, 6), grenade.getVelocity());
@@ -135,7 +135,7 @@ public class GrenadeTest {
                 "\t\"type\": \"slugs\"}";
         
         Grenade grenade = Util.GSON.fromJson(json, Grenade.class);
-        assertEquals("slugs", grenade.getType().getString());
+        assertEquals("slugs", grenade.getType().rawVal());
         assertEquals(PlayerSteamID.fromId64("76561197960265729"), grenade.getOwner());
         assertEquals(10.7, grenade.getLifetime(), 1e-9);
     }

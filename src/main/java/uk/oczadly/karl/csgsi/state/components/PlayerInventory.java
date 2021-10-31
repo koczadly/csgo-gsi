@@ -10,6 +10,7 @@ import com.google.gson.reflect.TypeToken;
 
 import java.lang.reflect.Type;
 import java.util.*;
+import java.util.stream.Collectors;
 
 /**
  * This class represents a player's in-game inventory slots. This includes weapons, utilities and other miscellaneous
@@ -21,31 +22,12 @@ import java.util.*;
 public class PlayerInventory {
     
     private final List<ItemDetails> items;
-    private ItemDetails activeWeapon, primarySlot, secondarySlot, knifeSlot;
-    private Collection<ItemDetails> utilities;
-    
-    
+    private volatile boolean processed = false;
+    private volatile Optional<ItemDetails> activeWeapon, primarySlot, secondarySlot, knifeSlot;
+    private volatile Collection<ItemDetails> utilities;
+
     private PlayerInventory(List<ItemDetails> items) {
         this.items = Collections.unmodifiableList(items);
-        
-        // Determine helper values
-        List<ItemDetails> utilities = new ArrayList<>();
-        for (ItemDetails item : items) {
-            if (activeWeapon == null && (item.getState().get() == WeaponState.ACTIVE
-                    || item.getState().get() == WeaponState.RELOADING))
-                activeWeapon = item;
-            if (knifeSlot == null && item.getType() != null && item.getType().get() == Weapon.Type.KNIFE)
-                knifeSlot = item;
-            if (item.getType() != null && item.getType().isResolved()) {
-                if (primarySlot == null && item.getType().get().isPrimaryWeapon())
-                    primarySlot = item;
-                if (secondarySlot == null && item.getType().get().isSecondaryWeapon())
-                    secondarySlot = item;
-                if (item.getType().get().isUtility())
-                    utilities.add(item);
-            }
-        }
-        this.utilities = Collections.unmodifiableList(utilities);
     }
     
     
@@ -63,8 +45,8 @@ public class PlayerInventory {
      *
      * @return the current active item
      */
-    public ItemDetails getActiveItem() {
-        return activeWeapon;
+    public Optional<ItemDetails> getActiveItem() {
+        return process().activeWeapon;
     }
     
     /**
@@ -72,8 +54,8 @@ public class PlayerInventory {
      *
      * @return the primary weapon (rifle), or null if they don't have one
      */
-    public ItemDetails getPrimarySlot() {
-        return primarySlot;
+    public Optional<ItemDetails> getPrimarySlot() {
+        return process().primarySlot;
     }
     
     /**
@@ -81,8 +63,8 @@ public class PlayerInventory {
      *
      * @return the secondary weapon (pistol), or null if they don't have one
      */
-    public ItemDetails getSecondarySlot() {
-        return secondarySlot;
+    public Optional<ItemDetails> getSecondarySlot() {
+        return process().secondarySlot;
     }
     
     /**
@@ -91,8 +73,8 @@ public class PlayerInventory {
      *
      * @return the knife item, or null if they don't have one
      */
-    public ItemDetails getKnifeSlot() {
-        return knifeSlot;
+    public Optional<ItemDetails> getKnifeSlot() {
+        return process().knifeSlot;
     }
     
     /**
@@ -103,8 +85,8 @@ public class PlayerInventory {
      *
      * @return the best weapon the player has, or null if they don't have one
      */
-    public ItemDetails getMainWeapon() {
-        return primarySlot != null ? primarySlot : secondarySlot;
+    public Optional<ItemDetails> getMainWeapon() {
+        return process().getPrimarySlot().or(this::getSecondarySlot);
     }
     
     /**
@@ -115,7 +97,7 @@ public class PlayerInventory {
      * @return a collection of utility items the player has
      */
     public Collection<ItemDetails> getUtilityItems() {
-        return utilities;
+        return process().utilities;
     }
     
     /**
@@ -124,12 +106,10 @@ public class PlayerInventory {
      * @param weapon the item to retrieve
      * @return the details of the requested item, or null if the player does not have the item
      */
-    public ItemDetails getItem(Weapon weapon) {
-        for (ItemDetails item : getItems()) {
-            if (item.getWeapon().get() == weapon)
-                return item;
-        }
-        return null;
+    public Optional<ItemDetails> getItem(Weapon weapon) {
+        return getItems().stream()
+                .filter(item -> item.getWeapon().enumVal() == weapon)
+                .findFirst();
     }
     
     /**
@@ -140,10 +120,37 @@ public class PlayerInventory {
      * @return true if the player has the item
      */
     public boolean hasItem(Weapon weapon) {
-        ItemDetails details = getItem(weapon);
-        return details != null && !details.isAmmoEmpty();
+        return getItem(weapon)
+                .filter(i -> !i.isAmmoEmpty())
+                .isPresent();
     }
-    
+
+
+    private synchronized PlayerInventory process() {
+        if (!processed) {
+            this.activeWeapon = items.stream()
+                    .filter(i -> i.getState().enumVal() == WeaponState.ACTIVE
+                            || i.getState().enumVal() == WeaponState.RELOADING)
+                    .findAny();
+            this.knifeSlot = items.stream()
+                    .filter(i -> i.getType().enumVal() == Weapon.Type.KNIFE)
+                    .findAny();
+            this.primarySlot = items.stream()
+                    .filter(i -> i.getType().asOptional()
+                            .map(Weapon.Type::isPrimaryWeapon).orElse(false))
+                    .findAny();
+            this.secondarySlot = items.stream()
+                    .filter(i -> i.getType().asOptional()
+                            .map(Weapon.Type::isSecondaryWeapon).orElse(false))
+                    .findAny();
+            this.utilities = Collections.unmodifiableSet(items.stream()
+                    .filter(i -> i.getType().asOptional()
+                            .map(Weapon.Type::isUtility).orElse(false))
+                    .collect(Collectors.toSet()));
+            this.processed = true;
+        }
+        return this;
+    }
     
     
     public static class ItemDetails {
@@ -256,8 +263,8 @@ public class PlayerInventory {
         @Override
         public String toString() {
             return "ItemDetails{" +
-                    "weapon=" + getWeapon() +
-                    ", skin='" + getSkin() + '\'' +
+                    "weapon='" + getWeapon() +
+                    "', skin='" + getSkin() + '\'' +
                     (ammoReserve != null ? (", ammo=" + getAmmoRemaining()) : "") +
                     ", state=" + getState() +
                     '}';
@@ -275,8 +282,7 @@ public class PlayerInventory {
         @SerializedName("reloading") RELOADING
     }
     
-    
-    
+
     static class JsonAdapter implements JsonDeserializer<PlayerInventory> {
         @Override
         public PlayerInventory deserialize(JsonElement json, Type typeOfT, JsonDeserializationContext context)
