@@ -11,6 +11,7 @@ import uk.oczadly.karl.csgsi.internal.httpserver.HTTPResponse;
 import java.io.BufferedReader;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.nio.charset.StandardCharsets;
 import java.util.stream.Collectors;
 
 import static uk.oczadly.karl.csgsi.internal.Util.GSON;
@@ -48,8 +49,11 @@ class GSIServerHTTPHandler implements HTTPRequestHandler {
         if (req.getMethod().equals("POST")
                 && req.getHeader("user-agent", "").startsWith("Valve/Steam HTTP Client")) {
             // Received state update from client
-            return gsi.handleStateUpdate(req.getBodyAsString(), req.getPath(), req.getRemoteAddress())
-                    ? RESPONSE_UPDATE : RESPONSE_IGNORED;
+            boolean handled = gsi.handleStateUpdate(
+                    req.getBodyAsString(StandardCharsets.UTF_8),
+                    req.getPath(),
+                    req.getRemoteAddress());
+            return handled ? RESPONSE_UPDATE : RESPONSE_IGNORED;
         } else if (gsi.diagnosticsEnabled && req.getMethod().equals("GET")) {
             // Browser requesting diagnostics info
             if (req.getPath().equals("/")) {

@@ -3,10 +3,11 @@ package uk.oczadly.karl.csgsi.internal.httpserver;
 import java.net.InetAddress;
 import java.nio.ByteBuffer;
 import java.nio.charset.Charset;
-import java.nio.charset.StandardCharsets;
 import java.util.Collections;
 import java.util.Map;
 import java.util.Optional;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 public class HTTPRequest {
 
@@ -62,10 +63,9 @@ public class HTTPRequest {
         return body.asReadOnlyBuffer();
     }
 
-    public synchronized String getBodyAsString() {
+    public synchronized String getBodyAsString(Charset charset) {
         if (bodyString == null) {
-            // todo: get charset from content-type
-            bodyString = HTTPConnection.CHARSET.decode(getBody()).toString();
+            bodyString = charset.decode(getBody()).toString();
         }
         return bodyString;
     }
