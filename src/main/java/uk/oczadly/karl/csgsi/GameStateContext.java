@@ -41,20 +41,21 @@ public final class GameStateContext {
     
     
     /**
-     * Gets the game state server which triggered this callback.
+     * Gets the associated game state server ({@link GSIServer}) which received and processed the game state.
      *
-     * @return the {@link GSIServer} that triggered the callback
+     * @return the associated {@link GSIServer}
      */
-    public GSIServer getGsiServer() {
+    public GSIServer getServer() {
         return server;
     }
     
     /**
-     * Gets the URI path which the game client sent the state HTTP request to.
+     * Gets the URI path which the game client sent the state HTTP request to. This is typically "{@code /}", the root
+     * path.
      *
      * @return the URI of the request
      */
-    public String getUriPath() {
+    public String getPath() {
         return uriPath;
     }
     
@@ -130,10 +131,13 @@ public final class GameStateContext {
     /**
      * Returns the raw state JSON data (as a Gson {@link JsonObject}) sent by the game client.
      *
+     * <p><strong>Note:</strong> calls to this method will invoke {@link JsonObject#deepCopy()} on the source object. Repeat calls to this
+     * method should be avoided unless necessary.</p>
+     *
      * @return the raw state JSON
      */
     public JsonObject getStateJson() {
-        return rawJson;
+        return rawJson.deepCopy();
     }
     
     /**

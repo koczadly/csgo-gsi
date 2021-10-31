@@ -4,7 +4,7 @@ import uk.oczadly.karl.csgsi.state.GameState;
 
 /**
  * This interface must be implemented by classes that wish to subscribe to game state updates. Instances should be
- * registered to a {@link GSIServer} instance through the {@link GSIServer#registerListener(GSIListener)} method.
+ * registered to a {@link GSIServer} instance through the {@link GSIServer#subscribe(GSIListener)} method.
  */
 @FunctionalInterface
 public interface GSIListener {

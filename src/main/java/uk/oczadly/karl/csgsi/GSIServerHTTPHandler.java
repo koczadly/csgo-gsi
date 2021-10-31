@@ -48,8 +48,8 @@ class GSIServerHTTPHandler implements HTTPRequestHandler {
         if (req.getMethod().equals("POST")
                 && req.getHeader("user-agent", "").startsWith("Valve/Steam HTTP Client")) {
             // Received state update from client
-            boolean status = gsi.handleStateUpdate(req.getBodyAsString(), req.getPath(), req.getRemoteAddress());
-            return status ? RESPONSE_UPDATE : RESPONSE_IGNORED;
+            return gsi.handleStateUpdate(req.getBodyAsString(), req.getPath(), req.getRemoteAddress())
+                    ? RESPONSE_UPDATE : RESPONSE_IGNORED;
         } else if (gsi.diagnosticsEnabled && req.getMethod().equals("GET")) {
             // Browser requesting diagnostics info
             if (req.getPath().equals("/")) {
@@ -86,8 +86,8 @@ class GSIServerHTTPHandler implements HTTPRequestHandler {
             json.addProperty("requiresAuth",  gsi.requiresAuthTokens());
             json.addProperty("listenerCount", gsi.listeners.size());
             json.addProperty("stateCount",    srvState.getStateCount());
-            json.addProperty("rejectCount",   srvState.getStateRejectCount());
             json.addProperty("discardCount",  srvState.getStateDiscardCount());
+            json.addProperty("rejectCount",   srvState.getStateRejectCount());
             json.add("historicalTimestamps", GSON.toJsonTree(srvState.getHistoricalStateTimestamps()).getAsJsonArray());
             srvState.getLatestContext().ifPresent(ctx -> {
                 json.addProperty("clientAddress", ctx.getClientAddress().getHostAddress());

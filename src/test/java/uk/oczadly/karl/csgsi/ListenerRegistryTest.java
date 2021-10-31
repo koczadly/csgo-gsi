@@ -19,11 +19,11 @@ public class ListenerRegistryTest {
         ListenerRegistry reg = new ListenerRegistry();
         MockListener obs1 = new MockListener(), obs2 = new MockListener();
         assertEquals(0, reg.size());
-        reg.register(obs1);
-        reg.register(obs2);
+        reg.subscribe(obs1);
+        reg.subscribe(obs2);
         assertEquals(2, reg.size());
-        assertTrue(reg.listeners.contains(obs1));
-        assertTrue(reg.listeners.contains(obs2));
+        assertTrue(reg.subscribed.contains(obs1));
+        assertTrue(reg.subscribed.contains(obs2));
     }
     
     @Test
@@ -31,18 +31,18 @@ public class ListenerRegistryTest {
         ListenerRegistry reg = new ListenerRegistry();
         MockListener obs1 = new MockListener(), obs2 = new MockListener();
         assertEquals(0, reg.size());
-        reg.register(Set.of(obs1, obs2));
+        reg.subscribe(Set.of(obs1, obs2));
         assertEquals(2, reg.size());
-        assertTrue(reg.listeners.contains(obs1));
-        assertTrue(reg.listeners.contains(obs2));
+        assertTrue(reg.subscribed.contains(obs1));
+        assertTrue(reg.subscribed.contains(obs2));
     }
     
     @Test
     public void testRemove() {
         ListenerRegistry reg = new ListenerRegistry();
         MockListener obs1 = new MockListener(), obs2 = new MockListener();
-        reg.register(Set.of(obs1, obs2));
-        reg.remove(obs2);
+        reg.subscribe(Set.of(obs1, obs2));
+        reg.unsubscribe(obs2);
         assertEquals(1, reg.size());
     }
     
@@ -50,7 +50,7 @@ public class ListenerRegistryTest {
     public void testClear() {
         ListenerRegistry reg = new ListenerRegistry();
         MockListener obs1 = new MockListener(), obs2 = new MockListener();
-        reg.register(Set.of(obs1, obs2));
+        reg.subscribe(Set.of(obs1, obs2));
         reg.clear();
         assertEquals(0, reg.size());
     }
@@ -60,7 +60,7 @@ public class ListenerRegistryTest {
         ListenerRegistry reg = new ListenerRegistry();
         CountDownLatch obsLatch = new CountDownLatch(2);
         MockListener obs1 = new MockListener(obsLatch), obs2 = new MockListener(obsLatch);
-        reg.register(Set.of(obs1, obs2));
+        reg.subscribe(Set.of(obs1, obs2));
         GameState mockState = new GameState();
         reg.notify(mockState, null); // Notify
         assertTrue(obsLatch.await(1, TimeUnit.SECONDS)); // Wait for notification

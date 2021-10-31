@@ -35,13 +35,14 @@ public class GSIServerTest {
                 .requireAuthToken("t3", "v3") // Single add
                 .requireAuthTokens(Map.of("t1", "v1", "t2", "v2")) // Multi add
                 .disableDiagnosticsPage()
-                .registerListener(observer).build();
+                .subscribe(observer)
+                .build();
         
         assertFalse(srv.diagnosticsEnabled);
         assertEquals(1337, srv.getBindAddress().getPort());
         assertSame(addr, srv.getBindAddress().getAddress());
         assertEquals(Map.of("t1", "v1", "t2", "v2", "t3", "v3"), srv.getRequiredAuthTokens());
-        assertEquals(Set.of(observer), srv.listeners.listeners);
+        assertEquals(Set.of(observer), srv.listeners.subscribed);
     }
     
     @Test
@@ -49,7 +50,7 @@ public class GSIServerTest {
         CountDownLatch observerLatch = new CountDownLatch(1);
         MockListener observer = new MockListener(observerLatch);
         GSIServer server = new GSIServer.Builder(1337).build();
-        server.registerListener(observer);
+        server.subscribe(observer);
         
         server.handleStateUpdate(AUTH_TOKEN_JSON, "/", ADDRESS);
         assertTrue(observerLatch.await(OBSERVER_TIMEOUT, TimeUnit.MILLISECONDS)); // Wait for observer
@@ -102,8 +103,8 @@ public class GSIServerTest {
         CountDownLatch observerLatch = new CountDownLatch(2);
         MockListener observer1 = new MockListener(observerLatch), observer2 = new MockListener(observerLatch);
         GSIServer server = new GSIServer.Builder(1337)
-                .registerListener(observer1)
-                .registerListener(observer2).build();
+                .subscribe(observer1)
+                .subscribe(observer2).build();
         
         // Create mock objects
         GameState state = new GameState(), previous = new GameState();
@@ -122,8 +123,8 @@ public class GSIServerTest {
         // Verify objects match
         assertSame(state, observer1.state);
         assertSame(state, observer2.state);
-        assertSame(uriPath, observer1.context.getUriPath());
-        assertSame(uriPath, observer2.context.getUriPath());
+        assertSame(uriPath, observer1.context.getPath());
+        assertSame(uriPath, observer2.context.getPath());
         assertSame(i1, observer1.context.getTimestamp());
         assertSame(i1, observer2.context.getTimestamp());
         assertSame(previous, observer1.context.getPreviousState().get());
@@ -138,8 +139,8 @@ public class GSIServerTest {
         assertEquals(authTokens, observer2.context.getAuthTokens());
         assertSame(address, observer1.context.getClientAddress());
         assertSame(address, observer2.context.getClientAddress());
-        assertSame(server, observer1.context.getGsiServer());
-        assertSame(server, observer2.context.getGsiServer());
+        assertSame(server, observer1.context.getServer());
+        assertSame(server, observer2.context.getServer());
         assertSame(jsonObject, observer1.context.getStateJson());
         assertSame(jsonObject, observer2.context.getStateJson());
         assertSame(jsonString, observer1.context.getRawStateContents());
@@ -152,7 +153,7 @@ public class GSIServerTest {
         MockListener observer = new MockListener(observerLatch);
         GSIServer server = new GSIServer.Builder(1337)
                 .requireAuthTokens(expectedTokens)
-                .registerListener(observer).build();
+                .subscribe(observer).build();
         server.handleStateUpdate(AUTH_TOKEN_JSON, "/", ADDRESS);
         return observerLatch.await(OBSERVER_TIMEOUT, TimeUnit.MILLISECONDS) && observer.called;
     }

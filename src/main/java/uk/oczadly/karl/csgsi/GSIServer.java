@@ -25,7 +25,7 @@ import static uk.oczadly.karl.csgsi.internal.Util.GSON;
  *
  * <p>The class can be constructed using the provided {@link Builder} class, where you can set the listening port and
  * other configuration details for the {@link GSIServer} through the setter methods. The server can be started using the
- * {@link #start()} method, and listeners can be registered through the {@link #registerListener(GSIListener)} method,
+ * {@link #start()} method, and listeners can be registered through the {@link #subscribe(GSIListener)} method,
  * which subscribes the listener to new game state information as it is received. Listeners may be registered while
  * the server is active.</p>
  *
@@ -85,7 +85,7 @@ public final class GSIServer {
               boolean diagnosticsEnabled) {
         this.server = new HTTPServer(bindAddr, new GSIServerHTTPHandler(this));
         this.requiredAuthTokens = Collections.unmodifiableMap(authTokens);
-        this.listeners.register(listeners);
+        this.listeners.subscribe(listeners);
         this.diagnosticsEnabled = diagnosticsEnabled;
     }
     
@@ -96,36 +96,38 @@ public final class GSIServer {
     public Optional<GameState> getLatestGameState() {
         return srvState.getLatestState();
     }
-    
-    
+
+
     /**
-     * Subscribes a new listener to receive game state information when sent by the game client. New listeners can be
-     * registered regardless of the running state of the server.
+     * Subscribes a new listener instance to the server, which will receive future game state data sent from the game
+     * client.
+     *
+     * <p>New listeners may be registered while the server is active, though there are no guarantees that </p>
+     *
+     * <p>Listeners will be executed in parallel from different threads, though the server will wait for all listeners
+     * to finish processing before allowing the game client to send an update. If you wish to perform long-lasting
+     * tasks and don't want to block state updates, initiate a new thread from inside the listener.</p>
      *
      * @param listener the listener to register
      */
-    public void registerListener(GSIListener listener) {
-        synchronized (readWriteLock) {
-            listeners.register(listener);
-        }
+    public void subscribe(GSIListener listener) {
+        listeners.subscribe(listener);
     }
-    
+
     /**
      * Removes a listener from the list, and will no longer receive updates. Listeners can be removed while the server
      * is running, although they may still receive updates for a short period while being removed.
      *
      * @param listener the listener to unsubscribe
      */
-    public void removeListener(GSIListener listener) {
-        synchronized (readWriteLock) {
-            listeners.remove(listener);
-        }
+    public void unsubscribe(GSIListener listener) {
+        listeners.unsubscribe(listener);
     }
-    
+
     /**
      * Removes all subscribed listeners from the registry.
      */
-    public void removeAllListeners() {
+    public void clearListeners() {
         listeners.clear();
     }
     
@@ -201,23 +203,25 @@ public final class GSIServer {
      */
     boolean handleStateUpdate(String rawJson, String path, InetAddress address) {
         log.debug("Handling new state update on server running on interface {}...", getBindAddress());
+        Instant receiveTime = Instant.now();
 
-        Instant receivedTime = Instant.now();
-
+        // Obtain state lock
         if (!newStateLock.tryLock()) {
-            log.warn("Discarding state as lock is already in use.");
+            log.warn("Received new state while still processing previous one!");
             srvState.incrementStateDiscardCounter();
             return false;
         }
 
         try {
+            long startTime = System.nanoTime();
+
             // Parse as JSON object
             JsonObject json;
             try {
                 json = JsonParser.parseString(rawJson).getAsJsonObject();
             } catch (JsonParseException e) {
                 log.warn("GSI server received invalid JSON state!", e);
-                srvState.incrementStateDiscardCounter();
+                srvState.incrementStateRejectCounter();
                 return false;
             }
 
@@ -237,9 +241,17 @@ public final class GSIServer {
             // Parse the game state and update
             GameState gameState = GSON.fromJson(json, GameState.class);
             GameStateContext stateContext = srvState.updateState(gameState,
-                    path, receivedTime, address, authTokens, json, rawJson);
+                    path, receiveTime, address, authTokens, json, rawJson);
 
-            // Notify listeners of new state
+            // Log performance values
+            long deserializeTime = System.nanoTime() - startTime;
+            if (deserializeTime > 50_000_000) {
+                log.warn("Deserializing state JSON took {}ms.", deserializeTime / 1_000_000);
+            } else {
+                log.debug("Deserializing state JSON took {}us.", deserializeTime / 1000);
+            }
+
+            // Notify listeners of new state and handle
             listeners.notify(gameState, stateContext);
             return true;
         } finally {
@@ -351,16 +363,21 @@ public final class GSIServer {
             authTokens.put(key, value);
             return this;
         }
-        
+
         /**
-         * Pre-registers a listener instance to listen to state updates.
+         * Subscribes a new listener instance to the server, which will receive game state data sent from the game
+         * client.
+         *
+         * <p>Listeners will be executed in parallel from different threads, though the server will wait for all
+         * listeners to finish processing before allowing the game client to send an update. If you wish to perform
+         * long-lasting tasks and don't want to block state updates, initiate a new thread from inside the listener.</p>
          *
          * @param listener the listener to register
          * @return this builder
-         * 
-         * @see GSIServer#registerListener(GSIListener)
+         *
+         * @see GSIServer#subscribe(GSIListener)
          */
-        public Builder registerListener(GSIListener listener) {
+        public Builder subscribe(GSIListener listener) {
             listeners.add(listener);
             return this;
         }

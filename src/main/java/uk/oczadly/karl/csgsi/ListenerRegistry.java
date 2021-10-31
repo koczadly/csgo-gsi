@@ -16,57 +16,57 @@ import java.util.concurrent.*;
  */
 class ListenerRegistry {
     
-    private static final Logger LOGGER = LoggerFactory.getLogger(ListenerRegistry.class);
+    private static final Logger log = LoggerFactory.getLogger(ListenerRegistry.class);
     private static final ExecutorService HANDLER_EXECUTOR = Executors.newCachedThreadPool();
     
-    final Set<GSIListener> listeners = new CopyOnWriteArraySet<>();
+    final Set<GSIListener> subscribed = new CopyOnWriteArraySet<>();
     
     
     /**
      * Registers a listener.
      * @param listener the listener to register
      */
-    public void register(GSIListener listener) {
+    public void subscribe(GSIListener listener) {
         if (listener == null) throw new IllegalArgumentException("Listener cannot be null.");
-        if (LOGGER.isDebugEnabled())
-            LOGGER.debug("Registering listener {}...", Util.refVal(listener));
-        listeners.add(listener);
+        if (log.isDebugEnabled())
+            log.debug("Registering listener {}...", Util.refVal(listener));
+        subscribed.add(listener);
     }
     
     /**
      * Registers a collection of listeners.
      * @param listeners the listeners to register
      */
-    public void register(Collection<GSIListener> listeners) {
+    public void subscribe(Collection<GSIListener> listeners) {
         if (listeners == null) throw new IllegalArgumentException("Listener collection cannot be null.");
-        LOGGER.debug("Registering {} new listener...", listeners.size());
-        this.listeners.addAll(listeners);
+        log.debug("Registering {} new listener...", listeners.size());
+        this.subscribed.addAll(listeners);
     }
     
     /**
      * Removes a listener, if contained within the set.
      * @param listener the listener to remove
      */
-    public void remove(GSIListener listener) {
+    public void unsubscribe(GSIListener listener) {
         if (listener == null) throw new IllegalArgumentException("Listener cannot be null.");
-        if (LOGGER.isDebugEnabled())
-            LOGGER.debug("Removing listener {}...", Util.refVal(listener));
-        listeners.remove(listener);
+        if (log.isDebugEnabled())
+            log.debug("Removing listener {}...", Util.refVal(listener));
+        subscribed.remove(listener);
     }
     
     /**
      * Clears all listeners from the registry.
      */
     public void clear() {
-        LOGGER.debug("Clearing listener registry...");
-        listeners.clear();
+        log.debug("Clearing listener registry...");
+        subscribed.clear();
     }
     
     /**
      * @return the number of listeners registered
      */
     public int size() {
-        return listeners.size();
+        return subscribed.size();
     }
     
     
@@ -77,11 +77,13 @@ class ListenerRegistry {
      * @param context the game state and request context
      */
     public void notify(GameState state, GameStateContext context) {
-        LOGGER.debug("Notifying {} listeners of new GSI state...", listeners.size());
+        log.debug("Notifying {} listeners of new GSI state...", subscribed.size());
+
+        long time = System.nanoTime();
         
         // Submit tasks and collect list of futures
-        List<Future<?>> futures = new ArrayList<>(listeners.size());
-        for (GSIListener listener : listeners) {
+        List<Future<?>> futures = new ArrayList<>(subscribed.size());
+        for (GSIListener listener : subscribed) {
             futures.add(HANDLER_EXECUTOR.submit(() -> listener.update(state, context)));
         }
         
@@ -91,10 +93,16 @@ class ListenerRegistry {
                 f.get();
             } catch (InterruptedException ignored) {
             } catch (ExecutionException e) {
-                LOGGER.error("Unhandled exception in listener notification task", e.getCause());
+                log.error("Unhandled exception in listener notification task", e.getCause());
             }
         }
-        LOGGER.debug("Finished notifying state listeners.");
+
+        long timeTaken = System.nanoTime() - time;
+        if (timeTaken > 200_000_000) {
+            log.warn("Took {}ms for listeners to process state update.", timeTaken / 1_000_000);
+        } else {
+            log.debug("Took {}us for listeners to process state update.", timeTaken / 1_000);
+        }
     }
     
 }

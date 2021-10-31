@@ -35,19 +35,19 @@
             border: 2px solid black;
             text-align: center;
         }
-        #settings {
+        #toolbar {
             position: fixed;
             left: 0; bottom: 0;
             width: 100%;
             overflow: hidden;
-            padding: 4px 15px;
+            padding: 4px 8px;
             box-shadow: 0px 1px 6px black;
             background-color: #d6d6d6;
             white-space: nowrap;
             overflow: auto;
         }
-        #settings > * {
-            margin-right: 1.3em;
+        #toolbar > .settings > * {
+            margin-left: 1em;
         }
         #d-state-json {
             display: block;
@@ -85,18 +85,21 @@
     <h2>State JSON contents</h2>
     <div id="state-json-container" style="display:none;">
         <p>
-            <button onclick="window.location.href='/api/state'">View raw</button>
+            <button onclick="window.open('/api/state', '_blank')">View raw</button>
             <button onclick="copyState()">Copy to clipboard</button>
         </p>
         <pre><code id="d-state-json"></code></pre>
     </div>
     <p id="state-json-notice"></p>
 
-    <div id="settings">
-        <span><button onclick="fetchState()">Refresh</button></span>
-        <span><b>Auto update: </b><input type="checkbox" id="s-update-enabled" checked="checked"></span>
-        <span><b>Update rate: </b><input type="number" value="250" min="0" max="10000" step="50" id="s-update-rate" style="width:40px">ms</span>
-        <span><b>Play beep sound on new state: </b><input type="checkbox" id="s-sound"></span>
+    <div id="toolbar">
+        <button onclick="copyDebugInfo()">Copy debug info</button>
+        <button onclick="fetchState()">Refresh</button>
+        <span class="settings">
+            <span><b>Auto update: </b><input type="checkbox" id="s-update-enabled" checked="checked"></span>
+            <span><b>Update rate: </b><input type="number" value="250" min="0" max="10000" step="50" id="s-update-rate" style="width:40px">ms</span>
+            <span><b>Play beep sound on new state: </b><input type="checkbox" id="s-sound"></span>
+        </span>
     </div>
 
 
@@ -125,14 +128,14 @@
                 updateDiagnosticInfo(await response.json());
             } catch (err) {
                 console.log(err);
+                alert("Couldn't connect to GSI server! Has it been shut down?");
             }
         }
 
         function updateDiagnosticInfo(info) {
-            const time = info.srvTime;
-
             var hasNewState = info.stateCount != prevInfo.stateCount || info.startupTime != prevInfo.startupTime;
             prevInfo = info;
+            const time = info.srvTime;
 
             if (hasNewState) {
                 console.log("New state!");
@@ -148,8 +151,8 @@
             setProperty('d-auth', info.requiresAuth ? "Yes" : "No");
             setProperty('d-listeners', info.listenerCount, e => e.toLocaleString());
             setProperty('d-state-count', info.stateCount, e => e.toLocaleString());
-            setProperty('d-reject-count', info.rejectCount, e => e.toLocaleString());
             setProperty('d-discard-count', info.discardCount, e => e.toLocaleString());
+            setProperty('d-reject-count', info.rejectCount, e => e.toLocaleString());
             setProperty('d-client-addr', info.clientAddress);
             setProperty('d-state-time', info.historicalTimestamps[0], formatDate);
             setProperty('d-state-ago', info.historicalTimestamps[0], e => formatTime(time - e));
@@ -185,7 +188,7 @@
         }
 
         function getIntervalColour(intervalMs) {
-            return intervalMs <= 75 ? "55db48"
+            return intervalMs <= 75 ? "99ed98"
                     : intervalMs <= 500 ? "79eb6e"
                     : intervalMs <= 2000 ? "dce649"
                     : intervalMs <= 5000 ? "e6ae49"
@@ -197,8 +200,10 @@
                 return "???";
             } else if (millis < 1000) {
                 return millis + "ms";
-            } else if (millis < 60000) {
+            } else if (millis < 10000) {
                 return (millis / 1000).toFixed(3) + "s";
+            } else if (millis < 60000) {
+                return (millis / 1000).toFixed(2) + "s";
             } else if (millis > 60000) {
                 return (millis / 60000).toFixed(2) + "m";
             } else {
@@ -214,6 +219,22 @@
             if (prevInfo != null) {
                 copyToClipboard(prevInfo.stateContents);
             }
+        }
+
+        function copyDebugInfo() {
+            var infoCopy = Object.assign({}, prevInfo);
+            var state = infoCopy?.stateContents;
+            delete infoCopy?.stateContents;
+            var debugStr = "URL: '" + window.location.href + "'"
+                    + "\n---- DIAGNOSTICS:\n"
+                    + (Object.keys(infoCopy).length > 0
+                            ? JSON.stringify(infoCopy, null, '\t')
+                            : "[none received]")
+                    + "\n---- STATE:\n"
+                    + (state != null
+                            ? state
+                            : "[none received]");
+            copyToClipboard(btoa(unescape(encodeURIComponent(debugStr)))); // js is dumb
         }
 
         function copyToClipboard(value) {
