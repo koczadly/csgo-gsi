@@ -77,7 +77,7 @@ public final class GameStateContext {
      *
      * @return the time interval between this state and the previous, or <em>empty</em> for the first state
      */
-    public Optional<Duration> getUpdateTimeInterval() {
+    public Optional<Duration> getElapsedInterval() {
         return getPreviousStateTimestamp().map(pt -> Duration.between(pt, timestamp));
     }
     
