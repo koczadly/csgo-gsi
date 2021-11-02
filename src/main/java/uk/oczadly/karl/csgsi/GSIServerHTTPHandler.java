@@ -28,8 +28,8 @@ class GSIServerHTTPHandler implements HTTPRequestHandler {
     private static final HTTPResponse RESPONSE_UPDATE = new HTTPResponse(200);
     private static final HTTPResponse RESPONSE_IGNORED = new HTTPResponse(503);
     private static final HTTPResponse RESPONSE_404 = new HTTPResponse(404, "text/plain",
-            "This HTTP server is used to receive game state information from the CS:GO game client.\n"
-                    + "See " + Util.REPO_URL + " for more info.");
+            "This HTTP server is used to receive game state information from a Counter-Strike: Global Offensive " +
+                    "game client.\nSee " + Util.REPO_URL + " for more info.");
     private static final HTTPResponse RESPONSE_WEB_REDIRECT = new HTTPResponse(404, MIME_HTML,
             "<!DOCTYPE html>\n<head><meta http-equiv=\"refresh\" content=\"0; url=/\" /></head>");
 
