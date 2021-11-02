@@ -24,7 +24,7 @@ public class MockListener implements GSIListener {
     
     
     @Override
-    public void update(GameState state, GameStateContext context) {
+    public void onStateUpdate(GameState state, GameStateContext context) {
         this.called = true;
         this.state = state;
         this.context = context;

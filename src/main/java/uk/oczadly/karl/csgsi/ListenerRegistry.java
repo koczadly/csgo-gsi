@@ -19,7 +19,7 @@ class ListenerRegistry {
     private static final Logger log = LoggerFactory.getLogger(ListenerRegistry.class);
     private static final ExecutorService HANDLER_EXECUTOR = Executors.newCachedThreadPool();
     
-    final Set<GSIListener> subscribed = new CopyOnWriteArraySet<>();
+    protected final Set<GSIListener> subscribed = new CopyOnWriteArraySet<>();
     
     
     /**
@@ -68,15 +68,15 @@ class ListenerRegistry {
     public int size() {
         return subscribed.size();
     }
-    
-    
+
+
     /**
      * Notifies the registered listeners of an updated state.
      *
      * @param state   the new game state information
      * @param context the game state and request context
      */
-    public void notify(GameState state, GameStateContext context) {
+    public void notifyState(GameState state, GameStateContext context) {
         log.debug("Notifying {} listeners of new GSI state...", subscribed.size());
 
         long time = System.nanoTime();
@@ -84,7 +84,7 @@ class ListenerRegistry {
         // Submit tasks and collect list of futures
         List<Future<?>> futures = new ArrayList<>(subscribed.size());
         for (GSIListener listener : subscribed) {
-            futures.add(HANDLER_EXECUTOR.submit(() -> listener.update(state, context)));
+            futures.add(HANDLER_EXECUTOR.submit(() -> listener.onStateUpdate(state, context)));
         }
         
         // Wait for all tasks to complete (and log any errors)

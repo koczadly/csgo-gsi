@@ -62,7 +62,7 @@ public class ListenerRegistryTest {
         MockListener obs1 = new MockListener(obsLatch), obs2 = new MockListener(obsLatch);
         reg.subscribe(Set.of(obs1, obs2));
         GameState mockState = new GameState();
-        reg.notify(mockState, null); // Notify
+        reg.notifyState(mockState, null); // Notify
         assertTrue(obsLatch.await(1, TimeUnit.SECONDS)); // Wait for notification
         assertTrue(obs1.called && obs2.called);
         assertSame(mockState, obs1.state);

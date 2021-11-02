@@ -42,7 +42,7 @@ public class GSIServerTest {
         assertEquals(1337, srv.getBindAddress().getPort());
         assertSame(addr, srv.getBindAddress().getAddress());
         assertEquals(Map.of("t1", "v1", "t2", "v2", "t3", "v3"), srv.getRequiredAuthTokens());
-        assertEquals(Set.of(observer), srv.listeners.subscribed);
+        assertEquals(1, srv.listeners.size());
     }
     
     @Test
@@ -117,7 +117,7 @@ public class GSIServerTest {
                 server, uriPath, previous, i1, i2, 43, address, authTokens, jsonObject, jsonString);
         
         // Notify observing object
-        server.listeners.notify(state, context);
+        server.listeners.notifyState(state, context);
         assertTrue(observerLatch.await(OBSERVER_TIMEOUT, TimeUnit.MILLISECONDS)); // Wait for observers
         
         // Verify objects match
