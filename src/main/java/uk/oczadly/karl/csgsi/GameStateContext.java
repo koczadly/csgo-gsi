@@ -77,8 +77,8 @@ public final class GameStateContext {
      *
      * @return the time interval between this state and the previous, or <em>empty</em> for the first state
      */
-    public Optional<Duration> getElapsedInterval() {
-        return getPreviousStateTimestamp().map(pt -> Duration.between(pt, timestamp));
+    public Optional<Duration> getUpdateInterval() {
+        return getPreviousTimestamp().map(pt -> Duration.between(pt, timestamp));
     }
     
     /**
@@ -89,19 +89,33 @@ public final class GameStateContext {
     public Instant getTimestamp() {
         return timestamp;
     }
+
+    /**
+     * Computes and returns the current time elapsed since the server first received this state from the game client.
+     *
+     * <p>When reading immediately after notification of a new state this should only be a few milliseconds, but may
+     * be higher on slower machines.</p>
+     *
+     * @return the age of this state since first received
+     */
+    public Duration getLifetime() {
+        return Duration.between(getTimestamp(), Instant.now());
+    }
     
     /**
      * Gets the local timestamp of when the previous state was received.
      *
      * @return the timestamp of the previous state, or <em>empty</em> for the first state
      */
-    public Optional<Instant> getPreviousStateTimestamp() {
+    public Optional<Instant> getPreviousTimestamp() {
         return Optional.ofNullable(prevTimestamp);
     }
     
     /**
-     * Returns the sequential index of this state update. The first state will return a value of {@code 0}, with each
-     * additional state incrementing the index by {@code 1}.
+     * Returns the sequential index of this state update. For the first state this will return a value of {@code 0},
+     * with each successive state incrementing the index by {@code 1}.
+     *
+     * <p>This value is reset when the GSI server instance is restarted.</p>
      *
      * @return the sequential index of this state
      */
@@ -110,10 +124,10 @@ public final class GameStateContext {
     }
     
     /**
-     * Gets the network address of the game client which sent the associated state data. For local instances, this will
-     * return the local {@link InetAddress#getLoopbackAddress() loopback address} (typically {@code 127.0.0.1}).
+     * Returns the network address of the game client which sent the associated state data. For local instances, this
+     * will return the local {@link InetAddress#getLoopbackAddress() loopback address}.
      *
-     * @return the address of the game client
+     * @return the remote address of the game client
      */
     public InetAddress getClientAddress() {
         return address;
