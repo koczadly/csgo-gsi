@@ -99,9 +99,9 @@ class ListenerRegistry {
 
         long timeTaken = System.nanoTime() - time;
         if (timeTaken > 200_000_000) {
-            log.warn("Took {}ms for listeners to process state update.", timeTaken / 1_000_000);
+            log.warn("Took {}ms for listeners to process state update.", timeTaken / 1e6);
         } else {
-            log.debug("Took {}us for listeners to process state update.", timeTaken / 1_000);
+            log.debug("Took {}ms for listeners to process state update.", timeTaken / 1e6);
         }
     }
     

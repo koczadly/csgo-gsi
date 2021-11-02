@@ -246,9 +246,9 @@ public final class GSIServer {
             // Log performance values
             long deserializeTime = System.nanoTime() - startTime;
             if (deserializeTime > 50_000_000) {
-                log.warn("Deserializing state JSON took {}ms.", deserializeTime / 1_000_000);
+                log.warn("Deserializing state JSON took {}ms.", deserializeTime / 1e6);
             } else {
-                log.debug("Deserializing state JSON took {}us.", deserializeTime / 1000);
+                log.debug("Deserializing state JSON took {}ms.", deserializeTime / 1e6);
             }
 
             // Notify listeners of new state and handle
