@@ -8,7 +8,6 @@ import java.net.InetAddress;
 import java.time.Instant;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.Set;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 
@@ -117,7 +116,7 @@ public class GSIServerTest {
                 server, uriPath, previous, i1, i2, 43, address, authTokens, jsonObject, jsonString);
         
         // Notify observing object
-        server.listeners.notifyState(state, context);
+        server.listeners.notifyNewState(state, context);
         assertTrue(observerLatch.await(OBSERVER_TIMEOUT, TimeUnit.MILLISECONDS)); // Wait for observers
         
         // Verify objects match

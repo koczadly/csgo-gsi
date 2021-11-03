@@ -252,7 +252,7 @@ public final class GSIServer {
             }
 
             // Notify listeners of new state and handle
-            listeners.notifyState(gameState, stateContext);
+            listeners.notifyNewState(gameState, stateContext);
             return true;
         } finally {
             newStateLock.unlock();

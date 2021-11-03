@@ -2,35 +2,39 @@ package uk.oczadly.karl.csgsi;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import uk.oczadly.karl.csgsi.internal.NamedThreadFactory;
 import uk.oczadly.karl.csgsi.internal.Util;
 import uk.oczadly.karl.csgsi.state.GameState;
 
-import java.util.ArrayList;
 import java.util.Collection;
-import java.util.List;
 import java.util.Set;
 import java.util.concurrent.*;
+import java.util.function.Consumer;
 
 /**
  * Handles a set of registered listeners, and notifies them.
  */
 class ListenerRegistry {
+
+    private static final long NOTIFY_WARN_TIME = 100 * 1_000_000; // in nanos
     
     private static final Logger log = LoggerFactory.getLogger(ListenerRegistry.class);
-    private static final ExecutorService HANDLER_EXECUTOR = Executors.newCachedThreadPool();
+    private static final ExecutorService LISTENER_ES =
+            Executors.newCachedThreadPool(new NamedThreadFactory("listener-thread-pool"));
     
-    protected final Set<GSIListener> subscribed = new CopyOnWriteArraySet<>();
-    
-    
+    protected final Set<GSIListener> subscribers = new CopyOnWriteArraySet<>();
+
+
     /**
      * Registers a listener.
      * @param listener the listener to register
      */
     public void subscribe(GSIListener listener) {
-        if (listener == null) throw new IllegalArgumentException("Listener cannot be null.");
+        if (listener == null)
+            throw new IllegalArgumentException("Listener cannot be null.");
         if (log.isDebugEnabled())
             log.debug("Registering listener {}...", Util.refVal(listener));
-        subscribed.add(listener);
+        subscribers.add(listener);
     }
     
     /**
@@ -38,9 +42,10 @@ class ListenerRegistry {
      * @param listeners the listeners to register
      */
     public void subscribe(Collection<GSIListener> listeners) {
-        if (listeners == null) throw new IllegalArgumentException("Listener collection cannot be null.");
+        if (listeners == null)
+            throw new IllegalArgumentException("Listener collection cannot be null.");
         log.debug("Registering {} new listener...", listeners.size());
-        this.subscribed.addAll(listeners);
+        this.subscribers.addAll(listeners);
     }
     
     /**
@@ -48,10 +53,11 @@ class ListenerRegistry {
      * @param listener the listener to remove
      */
     public void unsubscribe(GSIListener listener) {
-        if (listener == null) throw new IllegalArgumentException("Listener cannot be null.");
+        if (listener == null)
+            throw new IllegalArgumentException("Listener cannot be null.");
         if (log.isDebugEnabled())
             log.debug("Removing listener {}...", Util.refVal(listener));
-        subscribed.remove(listener);
+        subscribers.remove(listener);
     }
     
     /**
@@ -59,14 +65,14 @@ class ListenerRegistry {
      */
     public void clear() {
         log.debug("Clearing listener registry...");
-        subscribed.clear();
+        subscribers.clear();
     }
     
     /**
      * @return the number of listeners registered
      */
     public int size() {
-        return subscribed.size();
+        return subscribers.size();
     }
 
 
@@ -76,33 +82,67 @@ class ListenerRegistry {
      * @param state   the new game state information
      * @param context the game state and request context
      */
-    public void notifyState(GameState state, GameStateContext context) {
-        log.debug("Notifying {} listeners of new GSI state...", subscribed.size());
+    public void notifyNewState(GameState state, GameStateContext context) {
+        log.debug("Notifying listeners of state update...");
+        notifyListeners(l -> l.onStateUpdate(state, context));
+    }
 
-        long time = System.nanoTime();
-        
-        // Submit tasks and collect list of futures
-        List<Future<?>> futures = new ArrayList<>(subscribed.size());
-        for (GSIListener listener : subscribed) {
-            futures.add(HANDLER_EXECUTOR.submit(() -> listener.onStateUpdate(state, context)));
-        }
-        
-        // Wait for all tasks to complete (and log any errors)
-        for (Future<?> f : futures) {
-            try {
-                f.get();
-            } catch (InterruptedException ignored) {
-            } catch (ExecutionException e) {
-                log.error("Unhandled exception in listener notification task", e.getCause());
-            }
-        }
 
-        long timeTaken = System.nanoTime() - time;
-        if (timeTaken > 200_000_000) {
-            log.warn("Took {}ms for listeners to process state update.", timeTaken / 1e6);
-        } else {
-            log.debug("Took {}ms for listeners to process state update.", timeTaken / 1e6);
+    /**
+     * Notifies all listeners by applying the action consumer.
+     */
+    private void notifyListeners(Consumer<GSIListener> invoker) {
+        Set<GSIListener> listeners = new CopyOnWriteArraySet<>(subscribers);
+        CountDownLatch completionLatch = new CountDownLatch(listeners.size());
+        log.debug("Notifying {} listeners...", listeners.size());
+        // Invoke notification handlers
+        listeners.stream()
+                .map(l -> new NotifierTask(l, invoker, completionLatch))
+                .forEach(LISTENER_ES::submit);
+        // Block until completion
+        try {
+            completionLatch.await();
+        } catch (InterruptedException e) {
+            log.warn("Interruption while waiting for listeners to complete.", e);
         }
     }
-    
+
+
+    private static class NotifierTask implements Runnable {
+        private final GSIListener listener;
+        private final Consumer<GSIListener> action;
+        private final CountDownLatch latch;
+
+        public NotifierTask(GSIListener listener, Consumer<GSIListener> action, CountDownLatch latch) {
+            this.listener = listener;
+            this.action = action;
+            this.latch = latch;
+        }
+
+        @Override
+        public void run() {
+            long startTime = System.nanoTime();
+            try {
+                action.accept(listener); // Notify listener
+            } catch (Throwable e) {
+                log.error("Unhandled exception occurred in listener {}", listener, e);
+            } finally {
+                latch.countDown();
+                // Log performance metrics
+                long timeTaken = System.nanoTime() - startTime;
+                if (timeTaken > NOTIFY_WARN_TIME) {
+                    log.warn("Took {}ms for listener {} to process notification.", timeTaken / 1e6, listener);
+                } else {
+                    log.debug("Took {}ms for listener {} to process notification.", timeTaken / 1e6, listener);
+                }
+            }
+        }
+    }
+
+    private static class ListenerThreadFactory implements ThreadFactory {
+        @Override
+        public Thread newThread(Runnable r) {
+            return null;
+        }
+    }
 }

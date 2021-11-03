@@ -22,8 +22,8 @@ public class ListenerRegistryTest {
         reg.subscribe(obs1);
         reg.subscribe(obs2);
         assertEquals(2, reg.size());
-        assertTrue(reg.subscribed.contains(obs1));
-        assertTrue(reg.subscribed.contains(obs2));
+        assertTrue(reg.subscribers.contains(obs1));
+        assertTrue(reg.subscribers.contains(obs2));
     }
     
     @Test
@@ -33,8 +33,8 @@ public class ListenerRegistryTest {
         assertEquals(0, reg.size());
         reg.subscribe(Set.of(obs1, obs2));
         assertEquals(2, reg.size());
-        assertTrue(reg.subscribed.contains(obs1));
-        assertTrue(reg.subscribed.contains(obs2));
+        assertTrue(reg.subscribers.contains(obs1));
+        assertTrue(reg.subscribers.contains(obs2));
     }
     
     @Test
@@ -62,7 +62,7 @@ public class ListenerRegistryTest {
         MockListener obs1 = new MockListener(obsLatch), obs2 = new MockListener(obsLatch);
         reg.subscribe(Set.of(obs1, obs2));
         GameState mockState = new GameState();
-        reg.notifyState(mockState, null); // Notify
+        reg.notifyNewState(mockState, null); // Notify
         assertTrue(obsLatch.await(1, TimeUnit.SECONDS)); // Wait for notification
         assertTrue(obs1.called && obs2.called);
         assertSame(mockState, obs1.state);
