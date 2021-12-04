@@ -1,4 +1,4 @@
-package uk.oczadly.karl.csgsi.util.system;
+package uk.oczadly.karl.csgsi.internal;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -9,7 +9,7 @@ import java.io.InputStreamReader;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-class OSUtil {
+public class OSUtil {
 
     private static final Logger log = LoggerFactory.getLogger(OSUtil.class);
 
@@ -58,6 +58,6 @@ class OSUtil {
     }
 
 
-    enum Family { WINDOWS, MAC, LINUX, UNIX, UNRECOGNIZED }
+    public enum Family { WINDOWS, MAC, LINUX, UNIX, UNRECOGNIZED }
 
 }

@@ -5,7 +5,7 @@ import org.slf4j.LoggerFactory;
 import uk.oczadly.karl.csgsi.internal.Util;
 import uk.oczadly.karl.csgsi.util.system.CsgoUtils;
 import uk.oczadly.karl.csgsi.util.system.GameNotFoundException;
-import uk.oczadly.karl.csgsi.util.system.ValveConfigWriter;
+import uk.oczadly.karl.csgsi.internal.ValveConfigWriter;
 
 import java.io.*;
 import java.math.RoundingMode;

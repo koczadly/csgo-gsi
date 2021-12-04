@@ -1,6 +1,4 @@
-package uk.oczadly.karl.csgsi.util.system;
-
-import uk.oczadly.karl.csgsi.internal.Util;
+package uk.oczadly.karl.csgsi.internal;
 
 import java.io.*;
 import java.util.LinkedHashMap;
