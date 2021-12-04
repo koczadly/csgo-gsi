@@ -9,24 +9,27 @@ import java.time.Instant;
 import java.util.Collections;
 import java.util.Map;
 import java.util.Optional;
+import java.util.concurrent.atomic.AtomicInteger;
 
 /**
  * This class contains additional contextual information accompanying a {@link GameState} state update.
  */
 public final class GameStateContext {
-    
+
+    private static final AtomicInteger uidCounter = new AtomicInteger(0);
+
     private final GSIServer server;
     private final GameState previousState;
     private final Instant timestamp, prevTimestamp;
-    private final int sequenceIndex;
+    private final int sequenceIndex, stateId;
     private final InetAddress address;
     private final Map<String, String> authTokens;
     private final JsonObject rawJson;
     private final String uriPath, rawJsonString;
     
     GameStateContext(GSIServer server, String uriPath, GameState previousState, Instant timestamp,
-                     Instant prevTimestamp, int sequenceIndex, InetAddress address, Map<String, String> authTokens,
-                     JsonObject rawJson, String rawJsonString) {
+                     Instant prevTimestamp, int sequenceIndex, InetAddress address,
+                     Map<String, String> authTokens, JsonObject rawJson, String rawJsonString) {
         this.server = server;
         this.uriPath = uriPath;
         this.previousState = previousState;
@@ -37,6 +40,7 @@ public final class GameStateContext {
         this.authTokens = Collections.unmodifiableMap(authTokens);
         this.rawJson = rawJson;
         this.rawJsonString = rawJsonString;
+        this.stateId = uidCounter.getAndIncrement();
     }
     
     
@@ -57,6 +61,14 @@ public final class GameStateContext {
      */
     public String getPath() {
         return uriPath;
+    }
+
+    /**
+     * Returns whether the associated state is the first one to be received by the {@link GSIServer}.
+     * @return true if this is the first state received
+     */
+    public boolean isFirst() {
+        return previousState == null;
     }
     
     /**
@@ -110,7 +122,16 @@ public final class GameStateContext {
     public Optional<Instant> getPreviousTimestamp() {
         return Optional.ofNullable(prevTimestamp);
     }
-    
+
+    /**
+     * Returns a value which uniquely represents this state across the lifetime of the JVM. The behaviour of the value
+     * is undefined, though will <em>currently</em> count sequentially from {@code 0}.
+     * @return the unique identifier of this state update
+     */
+    public int getUID() {
+        return stateId;
+    }
+
     /**
      * Returns the sequential index of this state update. For the first state this will return a value of {@code 0},
      * with each successive state incrementing the index by {@code 1}.
