@@ -20,11 +20,13 @@ import java.util.stream.Collectors;
  */
 @com.google.gson.annotations.JsonAdapter(PlayerInventory.JsonAdapter.class)
 public class PlayerInventory {
-    
+
+    private static final String DEFAULT_SKIN_NAME = "default";
+
     private final List<ItemDetails> items;
     private volatile boolean processed = false;
     private volatile Optional<ItemDetails> activeWeapon, primarySlot, secondarySlot, knifeSlot;
-    private volatile Collection<ItemDetails> utilities;
+    private volatile Set<ItemDetails> utilities;
 
     private PlayerInventory(List<ItemDetails> items) {
         this.items = Collections.unmodifiableList(items);
@@ -96,7 +98,7 @@ public class PlayerInventory {
      *
      * @return a collection of utility items the player has
      */
-    public Collection<ItemDetails> getUtilityItems() {
+    public Set<ItemDetails> getUtilityItems() {
         return process().utilities;
     }
     
@@ -137,15 +139,18 @@ public class PlayerInventory {
                     .findAny();
             this.primarySlot = items.stream()
                     .filter(i -> i.getType().asOptional()
-                            .map(Weapon.Type::isPrimaryWeapon).orElse(false))
+                            .map(Weapon.Type::isPrimaryWeapon)
+                            .orElse(false))
                     .findAny();
             this.secondarySlot = items.stream()
                     .filter(i -> i.getType().asOptional()
-                            .map(Weapon.Type::isSecondaryWeapon).orElse(false))
+                            .map(Weapon.Type::isSecondaryWeapon)
+                            .orElse(false))
                     .findAny();
             this.utilities = Collections.unmodifiableSet(items.stream()
                     .filter(i -> i.getType().asOptional()
-                            .map(Weapon.Type::isUtility).orElse(false))
+                            .map(Weapon.Type::isUtility)
+                            .orElse(false))
                     .collect(Collectors.toSet()));
             this.processed = true;
         }
@@ -194,7 +199,7 @@ public class PlayerInventory {
          * @return true if the player is using the default weapon skin, or if the item cannot be skinned
          */
         public boolean isDefaultSkin() {
-            return skin == null || skin.equalsIgnoreCase("default");
+            return skin == null || skin.equalsIgnoreCase(DEFAULT_SKIN_NAME);
         }
     
         /**
