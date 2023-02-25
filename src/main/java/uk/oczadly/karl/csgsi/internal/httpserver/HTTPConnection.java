@@ -44,7 +44,7 @@ class HTTPConnection implements Runnable {
     @Override
     public void run() {
         boolean keepalive = true;
-        try {
+        try (socket) {
             do {
                 // Read start-line header
                 String requestLine = readLine();
@@ -78,15 +78,10 @@ class HTTPConnection implements Runnable {
                 writeResponse(response, keepalive);
             } while (keepalive && socket.isConnected());
         } catch (SocketTimeoutException e) {
-            if (log.isDebugEnabled())
-                log.debug("Socket timeout (keepalive: {}).", keepalive, e);
+            log.debug("Client socket timed out (keepalive: {}).", keepalive);
         } catch (IOException e) {
-            log.warn("Network failure with HTTP connection.", e);
+            log.error("Network failure with HTTP connection.", e);
         } finally {
-            //Close socket
-            try {
-                socket.close();
-            } catch (IOException ignored) {}
             log.debug("HTTP exchange finished.");
         }
     }

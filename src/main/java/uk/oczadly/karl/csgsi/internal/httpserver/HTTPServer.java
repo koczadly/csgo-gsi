@@ -18,7 +18,7 @@ public class HTTPServer {
     
     private static final Logger log = LoggerFactory.getLogger(HTTPServer.class);
 
-    private static final int TIMEOUT = 15000; // Timeout for read & keepalive
+    private static final int TIMEOUT = 120000; // Timeout for read & keepalive
 
     private final InetSocketAddress bindAddr;
     private final HTTPRequestHandler handler;
@@ -57,7 +57,7 @@ public class HTTPServer {
         
         log.info("Starting HTTP server on interface {}...", bindAddr);
         socket = new ServerSocket(bindAddr.getPort(), 50, bindAddr.getAddress());
-        socket.setSoTimeout(TIMEOUT);
+        socket.setSoTimeout(0);
         thread = new Thread(new ConnectionAcceptorTask());
         thread.start();
     }
@@ -85,14 +85,16 @@ public class HTTPServer {
         public void run() {
             while (!Thread.currentThread().isInterrupted()) {
                 try {
-                    log.debug("Awaiting HTTP connection...");
+                    log.trace("Awaiting HTTP connection...");
                     Socket conn = socket.accept();
                     conn.setSoTimeout(TIMEOUT);
-                    conn.setKeepAlive(false);
+                    conn.setKeepAlive(true);
                     log.debug("Incoming HTTP request from {} on server interface {}...",
                             conn.getInetAddress(), getBindAddress());
                     executorService.submit(new HTTPConnection(conn, handler));
-                } catch (IOException ignored) {}
+                } catch (IOException e) {
+                    log.debug("Error/timeout while waiting for HTTP connection.", e);
+                }
             }
         }
     }
