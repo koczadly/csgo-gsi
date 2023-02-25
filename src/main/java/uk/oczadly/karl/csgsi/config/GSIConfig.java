@@ -3,8 +3,8 @@ package uk.oczadly.karl.csgsi.config;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import uk.oczadly.karl.csgsi.internal.Util;
-import uk.oczadly.karl.csgsi.util.system.CsgoUtils;
-import uk.oczadly.karl.csgsi.util.system.GameNotFoundException;
+import uk.oczadly.karl.csgsi.util.game.CsgoUtils;
+import uk.oczadly.karl.csgsi.util.game.GameNotFoundException;
 import uk.oczadly.karl.csgsi.internal.ValveConfigWriter;
 
 import java.io.*;

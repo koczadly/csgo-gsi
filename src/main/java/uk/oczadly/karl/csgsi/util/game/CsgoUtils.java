@@ -1,4 +1,4 @@
-package uk.oczadly.karl.csgsi.util.system;
+package uk.oczadly.karl.csgsi.util.game;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
