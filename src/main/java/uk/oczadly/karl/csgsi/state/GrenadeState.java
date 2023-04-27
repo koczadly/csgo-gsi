@@ -44,7 +44,7 @@ public class GrenadeState {
     public Map<Integer, Grenade> getByType(Grenade.Type type) {
         Map<Integer, Grenade> matches = new HashMap<>();
         for (Map.Entry<Integer, Grenade> g : grenades.entrySet()) {
-            if (g.getValue().getType().enumVal() == type)
+            if (g.getValue().getType().asEnum() == type)
                 matches.put(g.getKey(), g.getValue());
         }
         return Collections.unmodifiableMap(matches);

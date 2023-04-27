@@ -19,21 +19,22 @@ import java.util.function.Consumer;
 /**
  * This class is a wrapper for {@code Enum} values, allowing for cases where the corresponding enum constant cannot be
  * parsed, while still retaining the original serialized string information.
- *
- * In most implementations, the {@link #enumVal()} method can be used to retrieve the enum value as normal. For cases
+ * <p>
+ * In most implementations, the {@link #asEnum()} method can be used to retrieve the enum value as normal. For cases
  * where the originally returned value could not be parsed as an enum constant (resulting in a null enum value), the
- * {@link #rawVal()} value will return the raw serialized value received from the game client.
+ * {@link #asString()} value will return the raw serialized value received from the game client.
  *
  * @param <E> the enum class
  *
- * @see #enumVal()
+ * @see #asEnum()
  */
 @JsonAdapter(EnumValue.DeserializerFactory.class)
-public class EnumValue<E extends Enum<E>> {
+public final class EnumValue<E extends Enum<E>> {
     
     private final E enumVal;
     private final String stringVal;
-    
+
+
     public EnumValue(E enumVal, String stringVal) {
         if (stringVal == null)
             throw new IllegalArgumentException("The raw string value cannot be null.");
@@ -46,16 +47,16 @@ public class EnumValue<E extends Enum<E>> {
     /**
      * Returns the parsed enum value, or null in cases where the corresponding enum constant could not be parsed. If
      * the game client did not send a null value, and the value returned from this method is null, then the
-     * {@link #rawVal()} method will return the serialized string value.
+     * {@link #asString()} method will return the serialized string value.
      *
      * @return the parsed enum value, or null if not resolved
      */
-    public E enumVal() {
+    public E asEnum() {
         return enumVal;
     }
 
     /**
-     * Returns the parsed enum value, or empty in cases where the corresponding enum constant could not be parsed.
+     * Returns an optional containing the parsed enum value, or empty if it could not be resolved into an enum instance.
      *
      * @return the parsed enum value, or empty if not resolved
      */
@@ -68,13 +69,13 @@ public class EnumValue<E extends Enum<E>> {
      * game state data, as it will always contain the correct value sent by the game client.
      * @return the raw value sent by the game client
      */
-    public String rawVal() {
+    public String asString() {
         return stringVal;
     }
     
     /**
-     * Returns whether the enum value could be resolved or not. If this value is false, {@link #enumVal()} will return a
-     * null value and {@link #rawVal()} should be used instead.
+     * Returns whether the enum value could be resolved or not. If this value is false, {@link #asEnum()} will return a
+     * null value and {@link #asString()} should be used instead.
      * @return true if the value is resolved
      */
     public boolean isResolved() {
@@ -86,8 +87,19 @@ public class EnumValue<E extends Enum<E>> {
      * @param consumer the consumer function to execute
      */
     public void ifResolved(Consumer<? super E> consumer) {
-        if (isResolved()) consumer.accept(enumVal());
+        if (isResolved()) consumer.accept(asEnum());
     }
+
+
+    /**
+     * A case-insensitive test for whether the given {@code value} String matches the raw string value.
+     * @param value the string value to compare against
+     * @return true if {@code value} is equal to the raw string value
+     */
+    public boolean valueEquals(String value) {
+        return stringVal.equalsIgnoreCase(value);
+    }
+
     
     /**
      * Returns a string value of the contained object. If the enum can be resolved, then the {@link Enum#toString()}
@@ -97,7 +109,7 @@ public class EnumValue<E extends Enum<E>> {
      */
     @Override
     public String toString() {
-        return isResolved() ? enumVal().toString() : rawVal();
+        return isResolved() ? asEnum().toString() : asString();
     }
     
     
@@ -165,9 +177,9 @@ public class EnumValue<E extends Enum<E>> {
             @Override
             public void write(JsonWriter out, EnumValue<E> value) throws IOException {
                 if (value.isResolved()) {
-                    enumAdapter.write(out, value.enumVal());
+                    enumAdapter.write(out, value.asEnum());
                 } else {
-                    out.value(value.rawVal());
+                    out.value(value.asString());
                 }
             }
         }

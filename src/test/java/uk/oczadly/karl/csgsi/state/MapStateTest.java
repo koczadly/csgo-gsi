@@ -51,16 +51,16 @@ public class MapStateTest extends GameStateBaseTest {
     public void testRoundResults() {
         assertNotNull(mapState.getRoundResults());
         assertEquals(4, mapState.getRoundResults().size());
-        assertEquals(MapState.RoundOutcome.T_BOMB_EXPLODE, mapState.getRoundResults().get(0).enumVal());
-        assertEquals(MapState.RoundOutcome.T_ELIMINATION, mapState.getRoundResults().get(1).enumVal());
-        assertEquals(MapState.RoundOutcome.T_TIME, mapState.getRoundResults().get(2).enumVal());
-        assertEquals(MapState.RoundOutcome.CT_ELIMINATION, mapState.getRoundResults().get(3).enumVal());
+        assertEquals(MapState.RoundOutcome.T_BOMB_EXPLODE, mapState.getRoundResults().get(0).asEnum());
+        assertEquals(MapState.RoundOutcome.T_ELIMINATION, mapState.getRoundResults().get(1).asEnum());
+        assertEquals(MapState.RoundOutcome.T_TIME, mapState.getRoundResults().get(2).asEnum());
+        assertEquals(MapState.RoundOutcome.CT_ELIMINATION, mapState.getRoundResults().get(3).asEnum());
     }
     
     @Test
     public void testGameMode() {
         assertNotNull(mapState.getMode());
-        assertEquals(MapState.GameMode.COMPETITIVE, mapState.getMode().enumVal());
+        assertEquals(MapState.GameMode.COMPETITIVE, mapState.getMode().asEnum());
     }
     
     @Test
@@ -72,7 +72,7 @@ public class MapStateTest extends GameStateBaseTest {
     @Test
     public void testPhase() {
         assertNotNull(mapState.getPhase());
-        assertEquals(MapState.GamePhase.LIVE, mapState.getPhase().enumVal());
+        assertEquals(MapState.GamePhase.LIVE, mapState.getPhase().asEnum());
     }
     
     @Test

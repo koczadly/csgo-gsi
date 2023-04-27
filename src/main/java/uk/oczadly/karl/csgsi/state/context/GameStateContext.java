@@ -1,35 +1,33 @@
-package uk.oczadly.karl.csgsi;
+package uk.oczadly.karl.csgsi.state.context;
 
 import com.google.gson.JsonObject;
+import uk.oczadly.karl.csgsi.server.GameStateServer;
 import uk.oczadly.karl.csgsi.state.GameState;
 
 import java.net.InetAddress;
 import java.time.Duration;
 import java.time.Instant;
-import java.util.Collections;
-import java.util.Map;
 import java.util.Optional;
-import java.util.concurrent.atomic.AtomicInteger;
 
 /**
  * This class contains additional contextual information accompanying a {@link GameState} state update.
  */
+//todo redocument/check existing javadocs
 public final class GameStateContext {
 
-    private static final AtomicInteger uidCounter = new AtomicInteger(0);
-
-    private final GSIServer server;
+    private final GameStateServer server;
     private final GameState previousState;
     private final Instant timestamp, prevTimestamp;
-    private final int sequenceIndex, stateId;
+    private final int sequenceIndex;
     private final InetAddress address;
-    private final Map<String, String> authTokens;
+    private final AuthTokenMap authTokens;
     private final JsonObject rawJson;
     private final String uriPath, rawJsonString;
-    
-    GameStateContext(GSIServer server, String uriPath, GameState previousState, Instant timestamp,
-                     Instant prevTimestamp, int sequenceIndex, InetAddress address,
-                     Map<String, String> authTokens, JsonObject rawJson, String rawJsonString) {
+
+
+    public GameStateContext(GameStateServer server, String uriPath, GameState previousState, Instant timestamp,
+                            Instant prevTimestamp, int sequenceIndex, InetAddress address,
+                            AuthTokenMap authTokens, JsonObject rawJson, String rawJsonString) {
         this.server = server;
         this.uriPath = uriPath;
         this.previousState = previousState;
@@ -37,19 +35,18 @@ public final class GameStateContext {
         this.prevTimestamp = prevTimestamp;
         this.sequenceIndex = sequenceIndex;
         this.address = address;
-        this.authTokens = Collections.unmodifiableMap(authTokens);
+        this.authTokens = authTokens;
         this.rawJson = rawJson;
         this.rawJsonString = rawJsonString;
-        this.stateId = uidCounter.getAndIncrement();
     }
     
     
     /**
-     * Gets the associated game state server ({@link GSIServer}) which received and processed the game state.
+     * Gets the associated game state server ({@link GameStateServer}) which received and processed the game state.
      *
-     * @return the associated {@link GSIServer}
+     * @return the associated {@link GameStateServer}
      */
-    public GSIServer getServer() {
+    public GameStateServer getServer() {
         return server;
     }
     
@@ -64,35 +61,17 @@ public final class GameStateContext {
     }
 
     /**
-     * Returns whether the associated state is the first one to be received by the {@link GSIServer}.
+     * Returns whether the associated state is the first one to be received by the {@link GameStateServer}.
      * @return true if this is the first state received
      */
     public boolean isFirst() {
         return previousState == null;
     }
-    
-    /**
-     * Gets the previous game state object from the {@link GSIServer}.
-     *
-     * @return the previous game state, or <em>empty</em> if it's the first state
-     */
-    public Optional<GameState> getPreviousState() {
-        return Optional.ofNullable(previousState);
+
+    public boolean isHeartbeat() {
+        return !isFirst() && !rawJson.has("added") && !rawJson.has("previously");
     }
-    
-    /**
-     * Gets the elapsed time duration between this state and the previous, returning empty if this is the first
-     * received state.
-     *
-     * <p>This value is based on local timestamps of when the data was received and parsed, and <em>not</em> on the
-     * timestamp provided by the client in the {@code provider} component.</p>
-     *
-     * @return the time interval between this state and the previous, or <em>empty</em> for the first state
-     */
-    public Optional<Duration> getUpdateInterval() {
-        return getPreviousTimestamp().map(pt -> Duration.between(pt, timestamp));
-    }
-    
+
     /**
      * Gets the local timestamp of when this state update was received.
      *
@@ -110,10 +89,32 @@ public final class GameStateContext {
      *
      * @return the age of this state since first received
      */
-    public Duration getLifetime() {
+    public Duration getAge() {
         return Duration.between(getTimestamp(), Instant.now());
     }
-    
+
+    /**
+     * Gets the elapsed time duration between this state and the previous, returning empty if this is the first
+     * received state.
+     *
+     * <p>This value is based on local timestamps of when the data was received and parsed, and <em>not</em> on the
+     * timestamp provided by the client in the {@code provider} component.</p>
+     *
+     * @return the time interval between this state and the previous, or <em>empty</em> for the first state
+     */
+    public Optional<Duration> getInterval() {
+        return getPreviousTimestamp().map(pt -> Duration.between(pt, timestamp));
+    }
+
+    /**
+     * Gets the previous game state object from the {@link GameStateServer}.
+     *
+     * @return the previous game state, or <em>empty</em> if it's the first state
+     */
+    public Optional<GameState> getPreviousState() {
+        return Optional.ofNullable(previousState);
+    }
+
     /**
      * Gets the local timestamp of when the previous state was received.
      *
@@ -124,23 +125,14 @@ public final class GameStateContext {
     }
 
     /**
-     * Returns a value which uniquely represents this state across the lifetime of the JVM. The behaviour of the value
-     * is undefined, though will <em>currently</em> count sequentially from {@code 0}.
-     * @return the unique identifier of this state update
-     */
-    public int getUID() {
-        return stateId;
-    }
-
-    /**
-     * Returns the sequential index of this state update. For the first state this will return a value of {@code 0},
+     * Returns the sequential index of this state update. For the first state this will return a value of {@code 1},
      * with each successive state incrementing the index by {@code 1}.
      *
      * <p>This value is reset when the GSI server instance is restarted.</p>
      *
      * @return the sequential index of this state
      */
-    public int getSequenceIndex() {
+    public int getSequence() {
         return sequenceIndex;
     }
     
@@ -153,16 +145,16 @@ public final class GameStateContext {
     public InetAddress getClientAddress() {
         return address;
     }
-    
+
     /**
      * Returns an immutable map of the received authentication tokens (passwords) sent by the game client.
      *
      * @return an immutable map of auth tokens sent by the game
      */
-    public Map<String, String> getAuthTokens() {
+    public AuthTokenMap getAuthTokens() {
         return authTokens;
     }
-    
+
     /**
      * Returns the raw state JSON data (as a Gson {@link JsonObject}) sent by the game client.
      *
@@ -174,7 +166,7 @@ public final class GameStateContext {
     public JsonObject getStateJson() {
         return rawJson.deepCopy();
     }
-    
+
     /**
      * Returns the unmodified JSON state data sent from the client. This will preserve any formatting and indentation
      * sent from the game.

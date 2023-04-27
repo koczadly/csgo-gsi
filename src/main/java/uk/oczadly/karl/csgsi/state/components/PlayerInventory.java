@@ -110,7 +110,7 @@ public class PlayerInventory {
      */
     public Optional<ItemDetails> getItem(Weapon weapon) {
         return getItems().stream()
-                .filter(item -> item.getWeapon().enumVal() == weapon)
+                .filter(item -> item.getWeapon().asEnum() == weapon)
                 .findFirst();
     }
     
@@ -131,11 +131,11 @@ public class PlayerInventory {
     private synchronized PlayerInventory process() {
         if (!processed) {
             this.activeWeapon = items.stream()
-                    .filter(i -> i.getState().enumVal() == WeaponState.ACTIVE
-                            || i.getState().enumVal() == WeaponState.RELOADING)
+                    .filter(i -> i.getState().asEnum() == WeaponState.ACTIVE
+                            || i.getState().asEnum() == WeaponState.RELOADING)
                     .findAny();
             this.knifeSlot = items.stream()
-                    .filter(i -> i.getType().enumVal() == Weapon.Type.KNIFE)
+                    .filter(i -> i.getType().asEnum() == Weapon.Type.KNIFE)
                     .findAny();
             this.primarySlot = items.stream()
                     .filter(i -> i.getType().asOptional()

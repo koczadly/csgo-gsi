@@ -20,7 +20,7 @@ public class PhaseCountdownStateTest extends GameStateBaseTest {
         assertTrue(gameState.getPhaseCountdowns().isPresent());
         PhaseCountdownState state = gameState.getPhaseCountdowns().get();
         
-        assertEquals(PhaseCountdownState.Phase.FREEZE_TIME, state.getPhase().enumVal());
+        assertEquals(PhaseCountdownState.Phase.FREEZE_TIME, state.getPhase().asEnum());
         assertEquals(13.1d, state.getRemainingTime(), 1e-9);
     }
     

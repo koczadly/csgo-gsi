@@ -74,7 +74,7 @@ public interface Grenade {
             EnumValue<Grenade.Type> gType = EnumValue.of(
                     obj.get("type").getAsString(), Grenade.Type.class, Util.GSON);
             Class<? extends Grenade> classType = gType.isResolved()
-                    ? gType.enumVal().getObjectClass() : BasicGrenade.class;
+                    ? gType.asEnum().getObjectClass() : BasicGrenade.class;
             return context.deserialize(obj, classType);
         }
     }

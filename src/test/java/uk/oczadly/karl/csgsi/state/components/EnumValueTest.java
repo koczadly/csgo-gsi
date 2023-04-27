@@ -20,22 +20,22 @@ public class EnumValueTest {
         TestContainer vals = gson.fromJson("{\"standard\": \"B\", \"named\": \"BB\", \"deserializer\": \"VAL_B\"" +
                 ", \"notFound\": \"D\", \"list\": [\"A\",\"B\",\"D\"]}", TestContainer.class);
         
-        assertSame(Enum.B, vals.standard.enumVal());
-        assertEquals("B", vals.standard.rawVal());
+        assertSame(Enum.B, vals.standard.asEnum());
+        assertEquals("B", vals.standard.asString());
         
-        assertSame(EnumWithNames.B, vals.named.enumVal());
-        assertEquals("BB", vals.named.rawVal());
+        assertSame(EnumWithNames.B, vals.named.asEnum());
+        assertEquals("BB", vals.named.asString());
         
-        assertSame(EnumWithDeserializer.B, vals.deserializer.enumVal());
-        assertEquals("VAL_B", vals.deserializer.rawVal());
+        assertSame(EnumWithDeserializer.B, vals.deserializer.asEnum());
+        assertEquals("VAL_B", vals.deserializer.asString());
         
-        assertSame(null, vals.notFound.enumVal());
-        assertEquals("D", vals.notFound.rawVal());
+        assertSame(null, vals.notFound.asEnum());
+        assertEquals("D", vals.notFound.asString());
         
         assertSame(3, vals.list.size());
-        assertSame(Enum.A, vals.list.get(0).enumVal());
-        assertSame(Enum.B, vals.list.get(1).enumVal());
-        assertNull(vals.list.get(2).enumVal());
+        assertSame(Enum.A, vals.list.get(0).asEnum());
+        assertSame(Enum.B, vals.list.get(1).asEnum());
+        assertNull(vals.list.get(2).asEnum());
     }
     
     @Test
@@ -43,14 +43,14 @@ public class EnumValueTest {
         // Valid
         EnumValue<EnumWithNames> val1 = EnumValue.of("BB", EnumWithNames.class, gson);
         assertNotNull(val1);
-        assertEquals(EnumWithNames.B, val1.enumVal());
-        assertEquals("BB", val1.rawVal());
+        assertEquals(EnumWithNames.B, val1.asEnum());
+        assertEquals("BB", val1.asString());
     
         // Invalid
         EnumValue<EnumWithNames> val2 = EnumValue.of("DD", EnumWithNames.class, gson);
         assertNotNull(val2);
-        assertNull(val2.enumVal());
-        assertEquals("DD", val2.rawVal());
+        assertNull(val2.asEnum());
+        assertEquals("DD", val2.asString());
     }
     
     

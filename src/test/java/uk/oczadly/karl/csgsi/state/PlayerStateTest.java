@@ -99,12 +99,12 @@ public class PlayerStateTest extends GameStateBaseTest {
     
     @Test
     public void testTeam() {
-        assertEquals(Team.TERRORIST, playerState.getTeam().enumVal());
+        assertEquals(Team.TERRORIST, playerState.getTeam().asEnum());
     }
     
     @Test
     public void testActivity() {
-        assertEquals(PlayerState.Activity.PLAYING, playerState.getActivity().enumVal());
+        assertEquals(PlayerState.Activity.PLAYING, playerState.getActivity().asEnum());
     }
     
     @Test

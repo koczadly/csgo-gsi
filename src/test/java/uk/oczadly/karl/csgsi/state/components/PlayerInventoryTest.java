@@ -57,36 +57,36 @@ public class PlayerInventoryTest {
     
     @Test
     public void testGetItems() {
-        assertEquals(Weapon.KNIFE_T, inventory.getItems().get(0).getWeapon().enumVal());
-        assertEquals(Weapon.GLOCK, inventory.getItems().get(1).getWeapon().enumVal());
-        assertEquals(Weapon.C4, inventory.getItems().get(2).getWeapon().enumVal());
-        assertEquals(Weapon.HE_GRENADE, inventory.getItems().get(3).getWeapon().enumVal());
-        assertEquals(Weapon.AK_47, inventory.getItems().get(4).getWeapon().enumVal());
+        assertEquals(Weapon.KNIFE_T, inventory.getItems().get(0).getWeapon().asEnum());
+        assertEquals(Weapon.GLOCK, inventory.getItems().get(1).getWeapon().asEnum());
+        assertEquals(Weapon.C4, inventory.getItems().get(2).getWeapon().asEnum());
+        assertEquals(Weapon.HE_GRENADE, inventory.getItems().get(3).getWeapon().asEnum());
+        assertEquals(Weapon.AK_47, inventory.getItems().get(4).getWeapon().asEnum());
     }
     
     @Test
     public void testGetActiveItem() {
-        assertEquals(Weapon.C4, inventory.getActiveItem().get().getWeapon().enumVal());
+        assertEquals(Weapon.C4, inventory.getActiveItem().get().getWeapon().asEnum());
     }
     
     @Test
     public void testGetPrimarySlot() {
-        assertEquals(Weapon.AK_47, inventory.getPrimarySlot().get().getWeapon().enumVal());
+        assertEquals(Weapon.AK_47, inventory.getPrimarySlot().get().getWeapon().asEnum());
     }
     
     @Test
     public void testGetSecondarySlot() {
-        assertEquals(Weapon.GLOCK, inventory.getSecondarySlot().get().getWeapon().enumVal());
+        assertEquals(Weapon.GLOCK, inventory.getSecondarySlot().get().getWeapon().asEnum());
     }
     
     @Test
     public void testGetKnifeSlot() {
-        assertEquals(Weapon.KNIFE_T, inventory.getKnifeSlot().get().getWeapon().enumVal());
+        assertEquals(Weapon.KNIFE_T, inventory.getKnifeSlot().get().getWeapon().asEnum());
     }
     
     @Test
     public void testGetMainWeapon() {
-        assertEquals(Weapon.AK_47, inventory.getMainWeapon().get().getWeapon().enumVal());
+        assertEquals(Weapon.AK_47, inventory.getMainWeapon().get().getWeapon().asEnum());
     }
     
     @Test
